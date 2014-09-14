@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+using NUnit.Framework;
 using FluentAssertions;
 using InfluxDB.Net.Core;
 using InfluxDB.Net.Models;
-using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace InfluxDB.Net.Tests
 {
@@ -13,7 +13,7 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeSetUp()
         {
-            _client = InfluxDb.Connect("http://principalstrickland-delorean-1.c.influxdb.com:8086", "root", "root");
+            _client = new InfluxDb("http://principalstrickland-delorean-1.c.influxdb.com:8086", "root", "root");
         }
 
         [Test]
@@ -25,7 +25,9 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Create_DB_Success_Test()
         {
-            _client.CreateDatabase(Guid.NewGuid().ToString("N").Substring(10));
+            InfluxDbResponse response = _client.CreateDatabase(Guid.NewGuid().ToString("N").Substring(10));
+
+            response.Success.Should().BeTrue();
         }
 
         [Test]

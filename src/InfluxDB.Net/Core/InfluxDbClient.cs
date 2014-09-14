@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using InfluxDB.Net.Serialization;
 using RestSharp;
 using InfluxDB.Net.Models;

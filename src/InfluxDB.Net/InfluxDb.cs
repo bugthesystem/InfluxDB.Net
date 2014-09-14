@@ -16,18 +16,13 @@ namespace InfluxDB.Net
         public InfluxDb(string url, string username, string password)
             : this(new InfluxDbClient(url, username, password))
         {
+            Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
+            Check.NotNullOrEmpty(username, "The username may not be null or empty.");
         }
 
         internal InfluxDb(IInfluxDbClient influxDbClient)
         {
             _influxDbClient = influxDbClient;
-        }
-
-        public static IInfluxDb Connect(string url, string username, string password)
-        {
-            Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
-            Check.NotNullOrEmpty(username, "The username may not be null or empty.");
-            return new InfluxDb(url, username, password);
         }
 
         public Pong Ping()
@@ -60,12 +55,12 @@ namespace InfluxDB.Net
             return version;
         }
 
-        public void Write(string database, TimeUnit.Unit precision, params Serie[] series)
+        public InfluxDbResponse Write(string database, TimeUnit.Unit precision, params Serie[] series)
         {
-            _influxDbClient.Write(database, series, ToTimePrecision(precision));
+            return new InfluxDbResponse(_influxDbClient.Write(database, series, ToTimePrecision(precision)));
         }
 
-        public void WriteUdp(int port, TimeUnit precision, params Serie[] series)
+        public InfluxDbResponse WriteUdp(int port, TimeUnit precision, params Serie[] series)
         {
             throw new NotImplementedException("WriteUdp is not implemented yet, sorry.");
         }
@@ -75,20 +70,21 @@ namespace InfluxDB.Net
             return _influxDbClient.Query(database, query, ToTimePrecision(precision));
         }
 
-        public void CreateDatabase(string name)
+        public InfluxDbResponse CreateDatabase(string name)
         {
             var db = new Database { name = name };
-            IRestResponse restResponse = _influxDbClient.CreateDatabase(db);
+
+            return new InfluxDbResponse(_influxDbClient.CreateDatabase(db));
         }
 
-        public void CreateDatabase(DatabaseConfiguration config)
+        public InfluxDbResponse CreateDatabase(DatabaseConfiguration config)
         {
-            _influxDbClient.CreateDatabase(config.Name, config);
+            return new InfluxDbResponse(_influxDbClient.CreateDatabase(config.Name, config));
         }
 
-        public void DeleteDatabase(string name)
+        public InfluxDbResponse DeleteDatabase(string name)
         {
-            _influxDbClient.DeleteDatabase(name);
+            return new InfluxDbResponse(_influxDbClient.DeleteDatabase(name));
         }
 
         public List<Database> DescribeDatabases()
@@ -96,15 +92,15 @@ namespace InfluxDB.Net
             return _influxDbClient.DescribeDatabases();
         }
 
-        public void CreateClusterAdmin(string username, string adminPassword)
+        public InfluxDbResponse CreateClusterAdmin(string username, string adminPassword)
         {
             var user = new User { Name = username, Password = adminPassword };
-            _influxDbClient.CreateClusterAdmin(user);
+            return new InfluxDbResponse(_influxDbClient.CreateClusterAdmin(user));
         }
 
-        public void DeleteClusterAdmin(string username)
+        public InfluxDbResponse DeleteClusterAdmin(string username)
         {
-            _influxDbClient.DeleteClusterAdmin(username);
+            return new InfluxDbResponse(_influxDbClient.DeleteClusterAdmin(username));
         }
 
         public List<User> DescribeClusterAdmins()
@@ -112,23 +108,23 @@ namespace InfluxDB.Net
             return _influxDbClient.DescribeClusterAdmins();
         }
 
-        public void UpdateClusterAdmin(string username, string password)
+        public InfluxDbResponse UpdateClusterAdmin(string username, string password)
         {
             var user = new User { Name = username, Password = password };
 
-            _influxDbClient.UpdateClusterAdmin(user, username);
+            return new InfluxDbResponse(_influxDbClient.UpdateClusterAdmin(user, username));
         }
 
-        public void CreateDatabaseUser(string database, string name, string password, params string[] permissions)
+        public InfluxDbResponse CreateDatabaseUser(string database, string name, string password, params string[] permissions)
         {
             var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
-            _influxDbClient.CreateDatabaseUser(database, user);
+            return new InfluxDbResponse(_influxDbClient.CreateDatabaseUser(database, user));
         }
 
-        public void DeleteDatabaseUser(string database, string name)
+        public InfluxDbResponse DeleteDatabaseUser(string database, string name)
         {
-            _influxDbClient.DeleteDatabaseUser(database, name);
+            return new InfluxDbResponse(_influxDbClient.DeleteDatabaseUser(database, name));
         }
 
         public List<User> DescribeDatabaseUsers(string database)
@@ -136,23 +132,23 @@ namespace InfluxDB.Net
             return _influxDbClient.DescribeDatabaseUsers(database);
         }
 
-        public void UpdateDatabaseUser(string database, string name, string password, params string[] permissions)
+        public InfluxDbResponse UpdateDatabaseUser(string database, string name, string password, params string[] permissions)
         {
             var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
-            _influxDbClient.UpdateDatabaseUser(database, user, name);
+            return new InfluxDbResponse(_influxDbClient.UpdateDatabaseUser(database, user, name));
         }
 
-        public void AlterDatabasePrivilege(string database, string name, bool isAdmin, params string[] permissions)
+        public InfluxDbResponse AlterDatabasePrivilege(string database, string name, bool isAdmin, params string[] permissions)
         {
             var user = new User { Name = name, IsAdmin = isAdmin };
             user.SetPermissions(permissions);
-            _influxDbClient.UpdateDatabaseUser(database, user, name);
+            return new InfluxDbResponse(_influxDbClient.UpdateDatabaseUser(database, user, name));
         }
 
-        public void AuthenticateDatabaseUser(string database, string user, string password)
+        public InfluxDbResponse AuthenticateDatabaseUser(string database, string user, string password)
         {
-            _influxDbClient.AuthenticateDatabaseUser(database, user, password);
+            return new InfluxDbResponse(_influxDbClient.AuthenticateDatabaseUser(database, user, password));
         }
 
         public List<ContinuousQuery> DescribeContinuousQueries(string database)
@@ -160,19 +156,19 @@ namespace InfluxDB.Net
             return _influxDbClient.GetContinuousQueries(database);
         }
 
-        public void DeleteContinuousQuery(string database, int id)
+        public InfluxDbResponse DeleteContinuousQuery(string database, int id)
         {
-            _influxDbClient.DeleteContinuousQuery(database, id);
+            return new InfluxDbResponse(_influxDbClient.DeleteContinuousQuery(database, id));
         }
 
-        public void DeleteSeries(string database, string serieName)
+        public InfluxDbResponse DeleteSeries(string database, string serieName)
         {
-            _influxDbClient.DeleteSeries(database, serieName);
+            return new InfluxDbResponse(_influxDbClient.DeleteSeries(database, serieName));
         }
 
-        public void ForceRaftCompaction()
+        public InfluxDbResponse ForceRaftCompaction()
         {
-            _influxDbClient.ForceRaftCompaction();
+            return new InfluxDbResponse(_influxDbClient.ForceRaftCompaction());
         }
 
         public List<string> Interfaces()
@@ -190,15 +186,15 @@ namespace InfluxDB.Net
             return _influxDbClient.ListServers();
         }
 
-        public void RemoveServers(int id)
+        public InfluxDbResponse RemoveServers(int id)
         {
-            _influxDbClient.RemoveServers(id);
+            return new InfluxDbResponse(_influxDbClient.RemoveServers(id));
         }
 
         [Obsolete]
-        public void CreateShard(Shard shard)
+        public InfluxDbResponse CreateShard(Shard shard)
         {
-            _influxDbClient.CreateShard(shard);
+            return new InfluxDbResponse(_influxDbClient.CreateShard(shard));
         }
 
         [Obsolete]
@@ -208,9 +204,9 @@ namespace InfluxDB.Net
         }
 
         [Obsolete]
-        public void DropShard(Shard shard)
+        public InfluxDbResponse DropShard(Shard shard)
         {
-            _influxDbClient.DropShard(shard.Id, shard.Shards.First());
+            return new InfluxDbResponse(_influxDbClient.DropShard(shard.Id, shard.Shards.First()));
         }
 
         public List<ShardSpace> GetShardSpaces()
@@ -218,14 +214,14 @@ namespace InfluxDB.Net
             return _influxDbClient.GetShardSpaces();
         }
 
-        public void DropShardSpace(string database, string name)
+        public InfluxDbResponse DropShardSpace(string database, string name)
         {
-            _influxDbClient.DropShardSpace(database, name);
+            return new InfluxDbResponse(_influxDbClient.DropShardSpace(database, name));
         }
 
-        public void CreateShardSpace(string database, ShardSpace shardSpace)
+        public InfluxDbResponse CreateShardSpace(string database, ShardSpace shardSpace)
         {
-            _influxDbClient.CreateShardSpace(database, shardSpace);
+            return new InfluxDbResponse(_influxDbClient.CreateShardSpace(database, shardSpace));
         }
 
 
@@ -260,8 +256,7 @@ namespace InfluxDB.Net
                 case TimeUnit.Unit.Microseconds:
                     return "u";
                 default:
-                    throw new ArgumentException("time precision must be " + TimeUnit.Unit.Seconds + ", " +
-                                                TimeUnit.Unit.Milliseconds + " or " + TimeUnit.Unit.Microseconds);
+                    throw new ArgumentException("time precision must be " + TimeUnit.Unit.Seconds + ", " + TimeUnit.Unit.Milliseconds + " or " + TimeUnit.Unit.Microseconds);
             }
         }
     }

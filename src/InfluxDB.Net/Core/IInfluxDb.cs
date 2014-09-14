@@ -8,38 +8,38 @@ namespace InfluxDB.Net.Core
     {
         Pong Ping();
         String Version();
-        void Write(string database, TimeUnit.Unit precision, params Serie[] series);
-        void WriteUdp(int port, TimeUnit precision, params Serie[] series);
+        InfluxDbResponse Write(string database, TimeUnit.Unit precision, params Serie[] series);
+        InfluxDbResponse WriteUdp(int port, TimeUnit precision, params Serie[] series);
         List<Serie> Query(string database, string query, TimeUnit.Unit precision);
-        void CreateDatabase(String name);
-        void CreateDatabase(DatabaseConfiguration config);
-        void DeleteDatabase(String name);
+        InfluxDbResponse CreateDatabase(String name);
+        InfluxDbResponse CreateDatabase(DatabaseConfiguration config);
+        InfluxDbResponse DeleteDatabase(String name);
         List<Database> DescribeDatabases();
-        void CreateClusterAdmin(String username, String adminPassword);
-        void DeleteClusterAdmin(String username);
+        InfluxDbResponse CreateClusterAdmin(String username, String adminPassword);
+        InfluxDbResponse DeleteClusterAdmin(String username);
         List<User> DescribeClusterAdmins();
-        void UpdateClusterAdmin(String username, String password);
-        void CreateDatabaseUser(String database, String name, String password, params String[] permissions);
-        void DeleteDatabaseUser(String database, String name);
+        InfluxDbResponse UpdateClusterAdmin(String username, String password);
+        InfluxDbResponse CreateDatabaseUser(String database, String name, String password, params String[] permissions);
+        InfluxDbResponse DeleteDatabaseUser(String database, String name);
         List<User> DescribeDatabaseUsers(String database);
-        void UpdateDatabaseUser(String database, String name, String password, params String[] permissions);
-        void AlterDatabasePrivilege(String database, String name, bool isAdmin, params String[] permissions);
-        void AuthenticateDatabaseUser(String database, String user, String password);
+        InfluxDbResponse UpdateDatabaseUser(String database, String name, String password, params String[] permissions);
+        InfluxDbResponse AlterDatabasePrivilege(String database, String name, bool isAdmin, params String[] permissions);
+        InfluxDbResponse AuthenticateDatabaseUser(String database, String user, String password);
         List<ContinuousQuery> DescribeContinuousQueries(String database);
-        void DeleteContinuousQuery(String database, int id);
-        void DeleteSeries(String database, String serieName);
-        void ForceRaftCompaction();
+        InfluxDbResponse DeleteContinuousQuery(String database, int id);
+        InfluxDbResponse DeleteSeries(String database, String serieName);
+        InfluxDbResponse ForceRaftCompaction();
         List<String> Interfaces();
         Boolean Sync();
         List<Server> ListServers();
-        void RemoveServers(int id);
+        InfluxDbResponse RemoveServers(int id);
 
-        void CreateShard(Shard shard);
+        InfluxDbResponse CreateShard(Shard shard);
         Shards GetShards();
-        void DropShard(Shard shard);
+        InfluxDbResponse DropShard(Shard shard);
 
         List<ShardSpace> GetShardSpaces();
-        void DropShardSpace(String database, String name);
-        void CreateShardSpace(String database, ShardSpace shardSpace);
+        InfluxDbResponse DropShardSpace(String database, String name);
+        InfluxDbResponse CreateShardSpace(String database, ShardSpace shardSpace);
     }
 }

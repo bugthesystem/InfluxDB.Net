@@ -54,6 +54,7 @@
     <Compile Include="Core\InfluxDbException.cs" />
     <Compile Include="Core\IInfluxDbClient.cs" />
     <Compile Include="Core\InfluxDbClient.cs" />
+    <Compile Include="Core\InfluxDbResponse.cs" />
     <Compile Include="Core\LogLevel.cs" />
     <Compile Include="Core\ObjectExtensions.cs" />
     <Compile Include="InfluxDb.cs" />
