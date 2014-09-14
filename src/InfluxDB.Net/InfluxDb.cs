@@ -23,6 +23,13 @@ namespace InfluxDB.Net
             _influxDbClient = influxDbClient;
         }
 
+        public static IInfluxDb Connect(string url, string username, string password)
+        {
+            Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
+            Check.NotNullOrEmpty(username, "The username may not be null or empty.");
+            return new InfluxDb(url, username, password);
+        }
+
         public Pong Ping()
         {
             var watch = new Stopwatch();
@@ -70,8 +77,8 @@ namespace InfluxDB.Net
 
         public void CreateDatabase(string name)
         {
-            var db = new Database { Name = name };
-            _influxDbClient.CreateDatabase(db);
+            var db = new Database { name = name };
+            IRestResponse restResponse = _influxDbClient.CreateDatabase(db);
         }
 
         public void CreateDatabase(DatabaseConfiguration config)

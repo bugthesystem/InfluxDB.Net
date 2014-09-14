@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using InfluxDB.Net.Serialization;
 using RestSharp;
 using InfluxDB.Net.Models;
-using RestSharp.Serializers;
 using System.Collections.Generic;
+using RestSharp.Extensions;
 
 namespace InfluxDB.Net.Core
 {
@@ -276,17 +279,31 @@ namespace InfluxDB.Net.Core
         {
             string url = string.Format("{0}{1}", _url, path);
 
-            var client = new RestClient(url);
-            request = new RestRequest(requestMethod)
-            {
-                RequestFormat = DataFormat.Json,
-                JsonSerializer = new JsonSerializer()
-            };
-
             if (includeAuthToQuery)
             {
-                request.AddParameter(U, _username);
-                request.AddParameter(P, _password);
+                url += string.Format("?{0}={1}&{2}={3}", U, _username.UrlEncode(), P, _password.UrlEncode());
+            }
+
+            if (extraParams != null && extraParams.Count > 0)
+            {
+                List<string> keyValues = new List<string>(extraParams.Count);
+                keyValues.AddRange(extraParams.Select(param => string.Format("{0}={1}", param.Key, param.Value)));
+                url += string.Format("{0}{1}", includeAuthToQuery ? "&" : "?", string.Join("&", keyValues));
+            }
+
+            var client = new RestClient(url);
+
+            request = new RestRequest
+            {
+                Method = requestMethod
+            };
+
+            request.AddHeader("Accept", "application/json");
+            request.Parameters.Clear();
+
+            if (body != null)
+            {
+                request.AddParameter("application/json", new JsonNetSerializer().Serialize(body), ParameterType.RequestBody);
             }
 
             if (segmentParams != null && segmentParams.Count > 0)
@@ -295,18 +312,6 @@ namespace InfluxDB.Net.Core
                 {
                     request.AddUrlSegment(param.Key, param.Value);
                 }
-            }
-            if (extraParams != null && extraParams.Count > 0)
-            {
-                foreach (KeyValuePair<string, string> param in extraParams)
-                {
-                    request.AddParameter(param.Key, param.Value);
-                }
-            }
-
-            if (body != null)
-            {
-                request.AddBody(body);
             }
 
             return client;
