@@ -14,7 +14,7 @@ namespace InfluxDB.Net
 
 
         public InfluxDb(string url, string username, string password)
-            : this(new InfluxDbClient(url,username,password))
+            : this(new InfluxDbClient(url, username, password))
         {
         }
 
@@ -60,7 +60,7 @@ namespace InfluxDB.Net
 
         public void WriteUdp(int port, TimeUnit precision, params Serie[] series)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("WriteUdp is not implemented yet, sorry.");
         }
 
         public List<Serie> Query(string database, string query, TimeUnit.Unit precision)
@@ -71,17 +71,17 @@ namespace InfluxDB.Net
         public void CreateDatabase(string name)
         {
             var db = new Database { Name = name };
-            _influxDbClient.CreateDatabase(db );
+            _influxDbClient.CreateDatabase(db);
         }
 
         public void CreateDatabase(DatabaseConfiguration config)
         {
-            _influxDbClient.CreateDatabase(config.Name, config );
+            _influxDbClient.CreateDatabase(config.Name, config);
         }
 
         public void DeleteDatabase(string name)
         {
-            _influxDbClient.DeleteDatabase(name );
+            _influxDbClient.DeleteDatabase(name);
         }
 
         public List<Database> DescribeDatabases()
@@ -92,12 +92,12 @@ namespace InfluxDB.Net
         public void CreateClusterAdmin(string username, string adminPassword)
         {
             var user = new User { Name = username, Password = adminPassword };
-            _influxDbClient.CreateClusterAdmin(user );
+            _influxDbClient.CreateClusterAdmin(user);
         }
 
         public void DeleteClusterAdmin(string username)
         {
-            _influxDbClient.DeleteClusterAdmin(username );
+            _influxDbClient.DeleteClusterAdmin(username);
         }
 
         public List<User> DescribeClusterAdmins()
@@ -109,38 +109,38 @@ namespace InfluxDB.Net
         {
             var user = new User { Name = username, Password = password };
 
-            _influxDbClient.UpdateClusterAdmin(user, username );
+            _influxDbClient.UpdateClusterAdmin(user, username);
         }
 
         public void CreateDatabaseUser(string database, string name, string password, params string[] permissions)
         {
             var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
-            _influxDbClient.CreateDatabaseUser(database, user );
+            _influxDbClient.CreateDatabaseUser(database, user);
         }
 
         public void DeleteDatabaseUser(string database, string name)
         {
-            _influxDbClient.DeleteDatabaseUser(database, name );
+            _influxDbClient.DeleteDatabaseUser(database, name);
         }
 
         public List<User> DescribeDatabaseUsers(string database)
         {
-            return _influxDbClient.DescribeDatabaseUsers(database );
+            return _influxDbClient.DescribeDatabaseUsers(database);
         }
 
         public void UpdateDatabaseUser(string database, string name, string password, params string[] permissions)
         {
             var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
-            _influxDbClient.UpdateDatabaseUser(database, user, name );
+            _influxDbClient.UpdateDatabaseUser(database, user, name);
         }
 
         public void AlterDatabasePrivilege(string database, string name, bool isAdmin, params string[] permissions)
         {
             var user = new User { Name = name, IsAdmin = isAdmin };
             user.SetPermissions(permissions);
-            _influxDbClient.UpdateDatabaseUser(database, user, name );
+            _influxDbClient.UpdateDatabaseUser(database, user, name);
         }
 
         public void AuthenticateDatabaseUser(string database, string user, string password)
@@ -150,12 +150,12 @@ namespace InfluxDB.Net
 
         public List<ContinuousQuery> DescribeContinuousQueries(string database)
         {
-            return _influxDbClient.GetContinuousQueries(database );
+            return _influxDbClient.GetContinuousQueries(database);
         }
 
         public void DeleteContinuousQuery(string database, int id)
         {
-            _influxDbClient.DeleteContinuousQuery(database, id );
+            _influxDbClient.DeleteContinuousQuery(database, id);
         }
 
         public void DeleteSeries(string database, string serieName)
@@ -191,7 +191,7 @@ namespace InfluxDB.Net
         [Obsolete]
         public void CreateShard(Shard shard)
         {
-            _influxDbClient.CreateShard( shard);
+            _influxDbClient.CreateShard(shard);
         }
 
         [Obsolete]

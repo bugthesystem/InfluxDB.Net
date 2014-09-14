@@ -11,43 +11,43 @@ namespace InfluxDB.Net.Core
 
         IRestResponse Version();
 
-        String CreateDatabase(Database database);
+        IRestResponse CreateDatabase(Database database);
 
-        String CreateDatabase(String name, DatabaseConfiguration config);
+        IRestResponse CreateDatabase(string name, DatabaseConfiguration config);
 
-        String DeleteDatabase(String name);
+        IRestResponse DeleteDatabase(string name);
 
         List<Database> DescribeDatabases();
 
-        String Write(String name, Serie[] series, String timePrecision);
+        IRestResponse Write(string name, Serie[] series, string timePrecision);
 
         List<Serie> Query(String name, String query, String timePrecision);
 
-        String CreateClusterAdmin(User user);
+        IRestResponse CreateClusterAdmin(User user);
 
-        String DeleteClusterAdmin(String name);
+        IRestResponse DeleteClusterAdmin(string name);
 
         List<User> DescribeClusterAdmins();
 
-        String UpdateClusterAdmin(User user, String name);
+        IRestResponse UpdateClusterAdmin(User user, string name);
 
-        String CreateDatabaseUser(String database, User user);
+        IRestResponse CreateDatabaseUser(string database, User user);
 
-        String DeleteDatabaseUser(String database, String name);
+        IRestResponse DeleteDatabaseUser(string database, string name);
 
         List<User> DescribeDatabaseUsers(String database);
 
-        String UpdateDatabaseUser(String database, User user, String name);
+        IRestResponse UpdateDatabaseUser(string database, User user, string name);
 
-        String AuthenticateDatabaseUser(String database, string user, string password);
+        IRestResponse AuthenticateDatabaseUser(string database, string user, string password);
 
         List<ContinuousQuery> GetContinuousQueries(String database);
 
-        String DeleteContinuousQuery(String database, int id);
+        IRestResponse DeleteContinuousQuery(string database, int id);
 
-        String DeleteSeries(String database, String name);
+        IRestResponse DeleteSeries(string database, string name);
 
-        String ForceRaftCompaction();
+        IRestResponse ForceRaftCompaction();
 
         List<String> Interfaces();
 
@@ -55,19 +55,19 @@ namespace InfluxDB.Net.Core
 
         List<Server> ListServers();
 
-        String RemoveServers(int id);
+        IRestResponse RemoveServers(int id);
 
-        String CreateShard(Shard shard);
+        IRestResponse CreateShard(Shard shard);
 
         Shards GetShards();
 
-        String DropShard(int id, Shard.Member servers);
+        IRestResponse DropShard(int id, Shard.Member servers);
 
         List<ShardSpace> GetShardSpaces();
 
-        String DropShardSpace(String database, String name);
+        IRestResponse DropShardSpace(string database, string name);
 
-        String CreateShardSpace(String database, ShardSpace shardSpace);
+        IRestResponse CreateShardSpace(string database, ShardSpace shardSpace);
 
     }
 }
