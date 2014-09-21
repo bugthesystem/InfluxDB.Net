@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using RestSharp;
@@ -33,13 +32,13 @@ namespace InfluxDB.Net.Core
 
         public Pong Ping()
         {
-            IRestResponse response = Request(Method.GET, "/ping", null, null, null, false);
+            IRestResponse response = Request(Method.GET, "/ping", null, null, false);
             return response.ReadAs<Pong>();
         }
 
         public IRestResponse Version()
         {
-            return Request(Method.GET, "/interfaces", null, null, null, false);
+            return Request(Method.GET, "/interfaces", null, null, false);
         }
 
         public IRestResponse CreateDatabase(Database database)
@@ -49,18 +48,12 @@ namespace InfluxDB.Net.Core
 
         public IRestResponse CreateDatabase(DatabaseConfiguration config)
         {
-            return Request(Method.POST, "/cluster/database_configs/{name}", config, new Dictionary<string, string>
-            {
-                { NAME, config.Name }
-            });
+            return Request(Method.POST, string.Format("/cluster/database_configs/{0}", config.Name), config);
         }
 
         public IRestResponse DeleteDatabase(string name)
         {
-            return Request(Method.DELETE, "/db/{name}", body: null, segmentParams: new Dictionary<string, string>
-            {
-                { NAME, name }
-            });
+            return Request(Method.DELETE, string.Format("/db/{0}", name));
         }
 
         public List<Database> DescribeDatabases()
@@ -68,14 +61,10 @@ namespace InfluxDB.Net.Core
             IRestResponse response = Request(Method.GET, "/db");
             return response.ReadAs<List<Database>>();
         }
-        
+
         public IRestResponse Write(string name, Serie[] series, string timePrecision)
         {
-            return Request(Method.POST, "/db/{name}/series", series, new Dictionary<string, string>
-            {
-                { NAME, name },
-                
-            }, new Dictionary<string, string>
+            return Request(Method.POST, string.Format("/db/{0}/series", name), series, new Dictionary<string, string>
             {
                 {TIME_PRECISION,timePrecision}
             });
@@ -83,11 +72,7 @@ namespace InfluxDB.Net.Core
 
         public List<Serie> Query(string name, string query, string timePrecision)
         {
-            IRestResponse response = Request(Method.GET, "/db/{name}/series", null, new Dictionary<string, string>
-            {
-                {NAME, name}
-
-            }, new Dictionary<string, string>
+            IRestResponse response = Request(Method.GET, string.Format("/db/{0}/series", name), null, new Dictionary<string, string>
             {
                 {Q, query},
                 {TIME_PRECISION, timePrecision}
@@ -103,10 +88,7 @@ namespace InfluxDB.Net.Core
 
         public IRestResponse DeleteClusterAdmin(string name)
         {
-            return Request(Method.DELETE, "/cluster_admins/{name}", null, new Dictionary<string, string>
-            {
-                { NAME, name }
-            });
+            return Request(Method.DELETE, string.Format("/cluster_admins/{0}", name));
         }
 
         public List<User> DescribeClusterAdmins()
@@ -126,74 +108,46 @@ namespace InfluxDB.Net.Core
 
         public IRestResponse CreateDatabaseUser(string database, User user)
         {
-            return Request(Method.POST, "/db/{database}/users", user, new Dictionary<string, string>
-            {
-                { DATABASE, database }
-            });
+            return Request(Method.POST, string.Format("/db/{0}/users", database), user);
         }
 
         public IRestResponse DeleteDatabaseUser(string database, string name)
         {
-            return Request(Method.DELETE, "/db/{database}/users/{name}", null, new Dictionary<string, string>
-            {
-                { DATABASE, database },
-                { NAME, name }
-            });
+            return Request(Method.DELETE, string.Format("/db/{0}/users/{1}", database, name));
         }
 
         public List<User> DescribeDatabaseUsers(string database)
         {
-            IRestResponse response = Request(Method.GET, "/db/{database}/users", null, new Dictionary<string, string>
-            {
-                { DATABASE, database }
-            });
+            IRestResponse response = Request(Method.GET, string.Format("/db/{0}/users", database));
 
             return response.ReadAs<List<User>>();
         }
 
         public IRestResponse UpdateDatabaseUser(string database, User user, string name)
         {
-            return Request(Method.POST, "/db/{database}/users/{name}", user, new Dictionary<string, string>
-            {
-                { DATABASE, database },
-                { NAME, name }
-            });
+            return Request(Method.POST, string.Format("/db/{0}/users/{1}", database, name), user);
         }
 
         public IRestResponse AuthenticateDatabaseUser(string database, string user, string password)
         {
-            return Request(Method.GET, "/db/{database}/authenticate", null, new Dictionary<string, string>
-            {
-                { DATABASE, database }
-            });
+            return Request(Method.GET, string.Format("/db/{0}/authenticate", database));
         }
 
         public List<ContinuousQuery> GetContinuousQueries(string database)
         {
-            IRestResponse response = Request(Method.GET, "/db/{database}/continuous_queries", null, new Dictionary<string, string>
-            {
-                { DATABASE, database }
-            });
+            IRestResponse response = Request(Method.GET, string.Format("/db/{0}/continuous_queries", database));
 
             return response.ReadAs<List<ContinuousQuery>>();
         }
 
         public IRestResponse DeleteContinuousQuery(string database, int id)
         {
-            return Request(Method.DELETE, "/db/{database}/continuous_queries/{id}", null, new Dictionary<string, string>
-            {
-                { DATABASE, database },
-                { ID, id.ToString(CultureInfo.InvariantCulture) }
-            });
+            return Request(Method.DELETE, string.Format("/db/{0}/continuous_queries/{1}", database, id));
         }
 
         public IRestResponse DeleteSeries(string database, string name)
         {
-            return Request(Method.DELETE, "/db/{database}/series/{name}", null, new Dictionary<string, string>
-            {
-                { DATABASE, database },
-                { NAME, name }
-            });
+            return Request(Method.DELETE, string.Format("/db/{0}/series/{1}", database, name));
         }
 
         public IRestResponse ForceRaftCompaction()
@@ -224,7 +178,7 @@ namespace InfluxDB.Net.Core
 
         public IRestResponse RemoveServers(int id)
         {
-            return Request(Method.DELETE, "/cluster/servers/{id}", null, new Dictionary<string, string> { { ID, id.ToString(CultureInfo.InvariantCulture) } });
+            return Request(Method.DELETE, string.Format("/cluster/servers/{0}", id));
         }
 
         public IRestResponse CreateShard(Shard shard)
@@ -241,7 +195,7 @@ namespace InfluxDB.Net.Core
 
         public IRestResponse DropShard(int id, Shard.Member servers)
         {
-            return Request(Method.DELETE, "/cluster/shards/{id}", servers, new Dictionary<string, string> { { ID, id.ToString(CultureInfo.InvariantCulture) } });
+            return Request(Method.DELETE, string.Format("/cluster/shards/{0}", id), servers);
         }
 
         public List<ShardSpace> GetShardSpaces()
@@ -253,21 +207,20 @@ namespace InfluxDB.Net.Core
 
         public IRestResponse DropShardSpace(string database, string name)
         {
-            return Request(Method.DELETE, "/cluster/shard_spaces/{database}/{name}", null, new Dictionary<string, string> { { DATABASE, database }, { NAME, name } });
+            return Request(Method.DELETE, string.Format("/cluster/shard_spaces/{0}/{1}", database, name));
         }
 
         public IRestResponse CreateShardSpace(string database, ShardSpace shardSpace)
         {
-            return Request(Method.POST, "/cluster/shard_spaces/{database}", shardSpace, new Dictionary<string, string> { { DATABASE, database } });
+            return Request(Method.POST, string.Format("/cluster/shard_spaces/{0}", database), shardSpace);
         }
 
-        private IRestResponse Request(Method requestMethod, string path, object body = null, Dictionary<string, string> segmentParams = null,
-            Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, bool isJsonContent = true)
+        private IRestResponse Request(Method requestMethod, string path, object body = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
         {
             try
             {
                 RestRequest request;
-                IRestClient client = PrepareClient(requestMethod, path, body, segmentParams, extraParams, includeAuthToQuery, isJsonContent, out request);
+                IRestClient client = PrepareClient(requestMethod, path, body, extraParams, includeAuthToQuery, out request);
                 return client.Execute(request);
             }
             catch (Exception ex)
@@ -276,8 +229,7 @@ namespace InfluxDB.Net.Core
             }
         }
 
-        private IRestClient PrepareClient(Method requestMethod, string path, object body, Dictionary<string, string> segmentParams, Dictionary<string, string> extraParams,
-            bool includeAuthToQuery, bool isJsonContent, out RestRequest request)
+        private IRestClient PrepareClient(Method requestMethod, string path, object body, Dictionary<string, string> extraParams, bool includeAuthToQuery, out RestRequest request)
         {
             StringBuilder urlBuilder = new StringBuilder();
             urlBuilder.AppendFormat("{0}{1}", _url, path);
@@ -300,11 +252,7 @@ namespace InfluxDB.Net.Core
             {
                 Method = requestMethod
             };
-
-            if (isJsonContent)
-            {
-                request.AddHeader("Accept", "application/json");
-            }
+            request.AddHeader("Accept", "application/json");
 
             request.Parameters.Clear();
 
@@ -312,14 +260,6 @@ namespace InfluxDB.Net.Core
             {
                 string jsonBody = new JsonSerializer().Serialize(body);
                 request.AddParameter("application/json", jsonBody, ParameterType.RequestBody);
-            }
-
-            if (segmentParams != null && segmentParams.Count > 0)
-            {
-                foreach (KeyValuePair<string, string> param in segmentParams)
-                {
-                    request.AddUrlSegment(param.Key, param.Value);
-                }
             }
 
             return client;

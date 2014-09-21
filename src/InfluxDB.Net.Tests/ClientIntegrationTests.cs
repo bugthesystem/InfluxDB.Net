@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using FluentAssertions;
@@ -11,15 +12,12 @@ namespace InfluxDB.Net.Tests
     public class ClientIntegrationTests : TestBase
     {
         private IInfluxDb _client;
-        private string _sutDb;
 
         protected override void FinalizeSetUp()
         {
             _client = new InfluxDb("http://192.168.59.103:8086", "root", "root");
-            _sutDb = Guid.NewGuid().ToString("N").Substring(10);
 
-            //TODO: Start docker container and kill it on tear down.
-            // Use Ahmet Alp BALKAN's Docker.Net library
+            //TODO: Start docker container and kill it on tear down using Ahmet Alp BALKAN's Docker.Net library
             EnsureInfluxDbStarted();
         }
 
@@ -34,18 +32,46 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Create_DB_Test()
         {
-            CreateDbResponse response = _client.CreateDatabase(_sutDb);
+            string dbToCreate = GetNewDbName();
+            CreateDbResponse response = _client.CreateDatabase(dbToCreate);
 
             response.Success.Should().BeTrue();
         }
 
         [Test]
-        public void Create_DB_WithConfig_Test()
+        public void Create_DB_With_Config_Test()
         {
+            string dbToCreate = Guid.NewGuid().ToString("N").Substring(10);
+
             CreateDbResponse response = _client.CreateDatabase(new DatabaseConfiguration
             {
-                Name = Guid.NewGuid().ToString("N").Substring(10)
+                Name = dbToCreate
             });
+
+            response.Success.Should().BeTrue();
+        }
+
+        [Test]
+        public void DescribeDatabases_Test()
+        {
+            string dbToCreate = GetNewDbName();
+            CreateDbResponse createDbResponse = _client.CreateDatabase(dbToCreate);
+            createDbResponse.Success.Should().BeTrue();
+
+            List<Database> databases = _client.DescribeDatabases();
+            databases.Should().NotBeNullOrEmpty();
+            databases.Where(database => database.name.Equals(dbToCreate)).Should().NotBeNull();
+        }
+
+        [Test]
+        public void Delete_Database_Test()
+        {
+            string dbToDelete = GetNewDbName();
+            CreateDbResponse createDbResponse = _client.CreateDatabase(dbToDelete);
+
+            createDbResponse.Success.Should().BeTrue();
+
+            DeleteDbResponse response = _client.DeleteDatabase(dbToDelete);
 
             response.Success.Should().BeTrue();
         }
@@ -56,19 +82,9 @@ namespace InfluxDB.Net.Tests
 
         }
 
-        [Test]
-        public void DescribeDatabases_Test()
+        protected override void FinalizeTearDown()
         {
-            List<Database> databases = _client.DescribeDatabases();
-            databases.Should().NotBeNullOrEmpty();
-        }
-
-        [Test]
-        public void Delete_Database_Test()
-        {
-            InfluxDbResponse response = _client.DeleteDatabase("734b19891049933abe7ac9");
-
-            response.Success.Should().BeTrue();
+            //TODO: KILL CONTAINER
         }
 
         private void EnsureInfluxDbStarted()
@@ -98,9 +114,9 @@ namespace InfluxDB.Net.Tests
             Console.WriteLine("##################################################################################");
         }
 
-        protected override void FinalizeTearDown()
+        private static string GetNewDbName()
         {
-
+            return Guid.NewGuid().ToString("N").Substring(10);
         }
     }
 }

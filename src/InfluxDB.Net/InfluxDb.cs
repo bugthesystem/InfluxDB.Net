@@ -126,9 +126,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="name">The name of the database to delete.</param>
         /// <returns></returns>
-        public InfluxDbResponse DeleteDatabase(string name)
+        public DeleteDbResponse DeleteDatabase(string name)
         {
-            return new InfluxDbResponse(_influxDbClient.DeleteDatabase(name));
+            return new DeleteDbResponse(_influxDbClient.DeleteDatabase(name));
         }
 
         /// <summary>
