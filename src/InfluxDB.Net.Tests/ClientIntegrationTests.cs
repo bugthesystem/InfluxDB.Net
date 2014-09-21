@@ -17,7 +17,10 @@ namespace InfluxDB.Net.Tests
         {
             _client = new InfluxDb("http://192.168.59.103:8086", "root", "root");
 
-            //TODO: Start docker container and kill it on tear down using Ahmet Alp BALKAN's Docker.Net library
+            //TODO: Start docker container and kill it on tear down using Ahmet Alp BALKAN's Docker.DotNet library
+            //https://registry.hub.docker.com/u/tutum/influxdb/
+            //https://github.com/ahmetalpbalkan/Docker.DotNet
+
             EnsureInfluxDbStarted();
         }
 
@@ -33,7 +36,7 @@ namespace InfluxDB.Net.Tests
         public void Create_DB_Test()
         {
             string dbToCreate = GetNewDbName();
-            CreateDbResponse response = _client.CreateDatabase(dbToCreate);
+            CreateResponse response = _client.CreateDatabase(dbToCreate);
 
             response.Success.Should().BeTrue();
         }
@@ -43,7 +46,7 @@ namespace InfluxDB.Net.Tests
         {
             string dbToCreate = Guid.NewGuid().ToString("N").Substring(10);
 
-            CreateDbResponse response = _client.CreateDatabase(new DatabaseConfiguration
+            CreateResponse response = _client.CreateDatabase(new DatabaseConfiguration
             {
                 Name = dbToCreate
             });
@@ -55,8 +58,8 @@ namespace InfluxDB.Net.Tests
         public void DescribeDatabases_Test()
         {
             string dbToCreate = GetNewDbName();
-            CreateDbResponse createDbResponse = _client.CreateDatabase(dbToCreate);
-            createDbResponse.Success.Should().BeTrue();
+            CreateResponse createResponse = _client.CreateDatabase(dbToCreate);
+            createResponse.Success.Should().BeTrue();
 
             List<Database> databases = _client.DescribeDatabases();
             databases.Should().NotBeNullOrEmpty();
@@ -67,11 +70,11 @@ namespace InfluxDB.Net.Tests
         public void Delete_Database_Test()
         {
             string dbToDelete = GetNewDbName();
-            CreateDbResponse createDbResponse = _client.CreateDatabase(dbToDelete);
+            CreateResponse createResponse = _client.CreateDatabase(dbToDelete);
 
-            createDbResponse.Success.Should().BeTrue();
+            createResponse.Success.Should().BeTrue();
 
-            DeleteDbResponse response = _client.DeleteDatabase(dbToDelete);
+            DeleteResponse response = _client.DeleteDatabase(dbToDelete);
 
             response.Success.Should().BeTrue();
         }

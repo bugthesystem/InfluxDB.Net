@@ -104,11 +104,11 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="name">The name of the new database</param>
         /// <returns></returns>
-        public CreateDbResponse CreateDatabase(string name)
+        public CreateResponse CreateDatabase(string name)
         {
             var db = new Database { name = name };
 
-            return new CreateDbResponse(_influxDbClient.CreateDatabase(db));
+            return new CreateResponse(_influxDbClient.CreateDatabase(db));
         }
 
         /// <summary>
@@ -116,9 +116,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="config">The configuration for the database to create..</param>
         /// <returns></returns>
-        public CreateDbResponse CreateDatabase(DatabaseConfiguration config)
+        public CreateResponse CreateDatabase(DatabaseConfiguration config)
         {
-            return new CreateDbResponse(_influxDbClient.CreateDatabase(config));
+            return new CreateResponse(_influxDbClient.CreateDatabase(config));
         }
 
         /// <summary>
@@ -126,9 +126,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="name">The name of the database to delete.</param>
         /// <returns></returns>
-        public DeleteDbResponse DeleteDatabase(string name)
+        public DeleteResponse DeleteDatabase(string name)
         {
-            return new DeleteDbResponse(_influxDbClient.DeleteDatabase(name));
+            return new DeleteResponse(_influxDbClient.DeleteDatabase(name));
         }
 
         /// <summary>

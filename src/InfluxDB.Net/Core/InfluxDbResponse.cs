@@ -18,9 +18,9 @@ namespace InfluxDB.Net.Core
         }
     }
 
-    public class CreateDbResponse : InfluxDbResponse
+    public class CreateResponse : InfluxDbResponse
     {
-        public CreateDbResponse(IRestResponse response)
+        public CreateResponse(IRestResponse response)
             : base(response)
         {
         }
@@ -30,9 +30,9 @@ namespace InfluxDB.Net.Core
             get { return Raw.StatusCode == HttpStatusCode.Created; }
         }
     }
-    public class DeleteDbResponse : InfluxDbResponse
+    public class DeleteResponse : InfluxDbResponse
     {
-        public DeleteDbResponse(IRestResponse response)
+        public DeleteResponse(IRestResponse response)
             : base(response)
         {
         }
