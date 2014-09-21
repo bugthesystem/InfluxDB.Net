@@ -27,12 +27,6 @@ namespace InfluxDB.Net.Tests
         }
 
         [Test]
-        public void Connect_Test()
-        {
-            _client.Should().NotBeNull();
-        }
-
-        [Test]
         public void Create_DB_Test()
         {
             CreateDbResponse response = _client.CreateDatabase(_sutDb);
@@ -54,17 +48,9 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Write_DB_Test()
         {
-        //   _client.Write(_sutDb,TimeUnit.Unit.Minutes,new Serie[]
-        //   {
-        //       new Serie
-        //       {
-                   
-        //       }
-        //   })
+
         }
-
-
-
+        
         [Test]
         public void DescribeDatabases_Test()
         {
