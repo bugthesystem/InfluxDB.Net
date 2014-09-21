@@ -17,6 +17,15 @@ namespace InfluxDB.Net.Core
 
         public string Name { get; set; }
 
+        public List<string> ContinuousQueries
+        {
+            get { return _continuousQueries; }
+        }
+        public List<ShardSpace> ShardSpaces
+        {
+            get { return _spaces; }
+        }
+
         public List<ShardSpace> GetSpaces()
         {
             return _spaces;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using NUnit.Framework;
 using FluentAssertions;
 using InfluxDB.Net.Core;
@@ -14,8 +15,12 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeSetUp()
         {
-            _client = new InfluxDb("http://principalstrickland-delorean-1.c.influxdb.com:8086", "root", "root");
+            _client = new InfluxDb("http://192.168.59.103:8086", "root", "root");
             _sutDb = Guid.NewGuid().ToString("N").Substring(10);
+
+            //TODO: Start docker container and kill it on tear down.
+            // Use Ahmet Alp BALKAN's Docker.Net library
+            EnsureInfluxDbStarted();
         }
 
         [Test]
@@ -50,7 +55,7 @@ namespace InfluxDB.Net.Tests
         {
 
         }
-        
+
         [Test]
         public void DescribeDatabases_Test()
         {
@@ -61,9 +66,41 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Delete_Database_Test()
         {
-            InfluxDbResponse response = _client.DeleteDatabase("AT");
+            InfluxDbResponse response = _client.DeleteDatabase("734b19891049933abe7ac9");
 
             response.Success.Should().BeTrue();
+        }
+
+        private void EnsureInfluxDbStarted()
+        {
+            //TODO: Start influxdb docker container.
+            //
+            bool influxDBstarted = false;
+            do
+            {
+                try
+                {
+                    Pong response = _client.Ping();
+                    if (response.Status.Equals("ok"))
+                    {
+                        influxDBstarted = true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // NOOP intentional
+                }
+                Thread.Sleep(100);
+            } while (!influxDBstarted);
+
+            Console.WriteLine("##################################################################################");
+            Console.WriteLine("#  Connected to InfluxDB Version: " + _client.Version() + " #");
+            Console.WriteLine("##################################################################################");
+        }
+
+        protected override void FinalizeTearDown()
+        {
+
         }
     }
 }

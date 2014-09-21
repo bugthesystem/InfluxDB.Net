@@ -13,7 +13,7 @@ namespace InfluxDB.Net.Core
 
         IRestResponse CreateDatabase(Database database);
 
-        IRestResponse CreateDatabase(string name, DatabaseConfiguration config);
+        IRestResponse CreateDatabase(DatabaseConfiguration config);
 
         IRestResponse DeleteDatabase(string name);
 

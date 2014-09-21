@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using RestSharp;
 using InfluxDB.Net.Models;
 using System.Collections.Generic;
@@ -46,17 +47,17 @@ namespace InfluxDB.Net.Core
             return Request(Method.POST, "/db", database);
         }
 
-        public IRestResponse CreateDatabase(string name, DatabaseConfiguration config)
+        public IRestResponse CreateDatabase(DatabaseConfiguration config)
         {
             return Request(Method.POST, "/cluster/database_configs/{name}", config, new Dictionary<string, string>
             {
-                { NAME, name }
+                { NAME, config.Name }
             });
         }
 
         public IRestResponse DeleteDatabase(string name)
         {
-            return Request(Method.DELETE, "/db/{name}", null, new Dictionary<string, string>
+            return Request(Method.DELETE, "/db/{name}", body: null, segmentParams: new Dictionary<string, string>
             {
                 { NAME, name }
             });
@@ -67,7 +68,7 @@ namespace InfluxDB.Net.Core
             IRestResponse response = Request(Method.GET, "/db");
             return response.ReadAs<List<Database>>();
         }
-
+        
         public IRestResponse Write(string name, Serie[] series, string timePrecision)
         {
             return Request(Method.POST, "/db/{name}/series", series, new Dictionary<string, string>
@@ -260,12 +261,13 @@ namespace InfluxDB.Net.Core
             return Request(Method.POST, "/cluster/shard_spaces/{database}", shardSpace, new Dictionary<string, string> { { DATABASE, database } });
         }
 
-        private IRestResponse Request(Method requestMethod, string path, object body = null, Dictionary<string, string> segmentParams = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
+        private IRestResponse Request(Method requestMethod, string path, object body = null, Dictionary<string, string> segmentParams = null,
+            Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, bool isJsonContent = true)
         {
             try
             {
                 RestRequest request;
-                IRestClient client = PrepareClient(requestMethod, path, body, segmentParams, extraParams, includeAuthToQuery, out request);
+                IRestClient client = PrepareClient(requestMethod, path, body, segmentParams, extraParams, includeAuthToQuery, isJsonContent, out request);
                 return client.Execute(request);
             }
             catch (Exception ex)
@@ -274,30 +276,36 @@ namespace InfluxDB.Net.Core
             }
         }
 
-        private IRestClient PrepareClient(Method requestMethod, string path, object body, Dictionary<string, string> segmentParams, Dictionary<string, string> extraParams, bool includeAuthToQuery, out RestRequest request)
+        private IRestClient PrepareClient(Method requestMethod, string path, object body, Dictionary<string, string> segmentParams, Dictionary<string, string> extraParams,
+            bool includeAuthToQuery, bool isJsonContent, out RestRequest request)
         {
-            string url = string.Format("{0}{1}", _url, path);
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.AppendFormat("{0}{1}", _url, path);
 
             if (includeAuthToQuery)
             {
-                url += string.Format("?{0}={1}&{2}={3}", U, _username.UrlEncode(), P, _password.UrlEncode());
+                urlBuilder.AppendFormat("?{0}={1}&{2}={3}", U, _username.UrlEncode(), P, _password.UrlEncode());
             }
 
             if (extraParams != null && extraParams.Count > 0)
             {
                 List<string> keyValues = new List<string>(extraParams.Count);
                 keyValues.AddRange(extraParams.Select(param => string.Format("{0}={1}", param.Key, param.Value)));
-                url += string.Format("{0}{1}", includeAuthToQuery ? "&" : "?", string.Join("&", keyValues));
+                urlBuilder.AppendFormat("{0}{1}", includeAuthToQuery ? "&" : "?", string.Join("&", keyValues));
             }
 
-            var client = new RestClient(url);
+            var client = new RestClient(urlBuilder.ToString());
 
             request = new RestRequest
             {
                 Method = requestMethod
             };
 
-            request.AddHeader("Accept", "application/json");
+            if (isJsonContent)
+            {
+                request.AddHeader("Accept", "application/json");
+            }
+
             request.Parameters.Clear();
 
             if (body != null)
