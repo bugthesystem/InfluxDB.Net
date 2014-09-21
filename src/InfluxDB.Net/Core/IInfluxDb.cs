@@ -12,7 +12,7 @@ namespace InfluxDB.Net.Core
         InfluxDbResponse WriteUdp(int port, TimeUnit precision, params Serie[] series);
         List<Serie> Query(string database, string query, TimeUnit.Unit precision);
         CreateDbResponse CreateDatabase(string name);
-        InfluxDbResponse CreateDatabase(DatabaseConfiguration config);
+        CreateDbResponse CreateDatabase(DatabaseConfiguration config);
         InfluxDbResponse DeleteDatabase(String name);
         List<Database> DescribeDatabases();
         InfluxDbResponse CreateClusterAdmin(String username, String adminPassword);

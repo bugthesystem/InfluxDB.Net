@@ -77,9 +77,9 @@ namespace InfluxDB.Net
             return new CreateDbResponse(_influxDbClient.CreateDatabase(db));
         }
 
-        public InfluxDbResponse CreateDatabase(DatabaseConfiguration config)
+        public CreateDbResponse CreateDatabase(DatabaseConfiguration config)
         {
-            return new InfluxDbResponse(_influxDbClient.CreateDatabase(config.Name, config));
+            return new CreateDbResponse(_influxDbClient.CreateDatabase(config.Name, config));
         }
 
         public InfluxDbResponse DeleteDatabase(string name)
