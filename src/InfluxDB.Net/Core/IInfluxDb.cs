@@ -11,7 +11,7 @@ namespace InfluxDB.Net.Core
         InfluxDbResponse Write(string database, TimeUnit.Unit precision, params Serie[] series);
         InfluxDbResponse WriteUdp(int port, TimeUnit precision, params Serie[] series);
         List<Serie> Query(string database, string query, TimeUnit.Unit precision);
-        InfluxDbResponse CreateDatabase(String name);
+        CreateDbResponse CreateDatabase(string name);
         InfluxDbResponse CreateDatabase(DatabaseConfiguration config);
         InfluxDbResponse DeleteDatabase(String name);
         List<Database> DescribeDatabases();

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-using InfluxDB.Net.Serialization;
 using RestSharp;
 using InfluxDB.Net.Models;
 using System.Collections.Generic;
 using RestSharp.Extensions;
+using RestSharp.Serializers;
 
 namespace InfluxDB.Net.Core
 {
@@ -302,7 +302,8 @@ namespace InfluxDB.Net.Core
 
             if (body != null)
             {
-                request.AddParameter("application/json", new JsonNetSerializer().Serialize(body), ParameterType.RequestBody);
+                string jsonBody = new JsonSerializer().Serialize(body);
+                request.AddParameter("application/json", jsonBody, ParameterType.RequestBody);
             }
 
             if (segmentParams != null && segmentParams.Count > 0)

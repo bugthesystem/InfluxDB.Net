@@ -10,10 +10,12 @@ namespace InfluxDB.Net.Tests
     public class ClientIntegrationTests : TestBase
     {
         private IInfluxDb _client;
+        private string _dbName;
 
         protected override void FinalizeSetUp()
         {
             _client = new InfluxDb("http://principalstrickland-delorean-1.c.influxdb.com:8086", "root", "root");
+            _dbName = Guid.NewGuid().ToString("N").Substring(10);
         }
 
         [Test]
@@ -25,7 +27,7 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Create_DB_Success_Test()
         {
-            InfluxDbResponse response = _client.CreateDatabase(Guid.NewGuid().ToString("N").Substring(10));
+            CreateDbResponse response = _client.CreateDatabase(_dbName);
 
             response.Success.Should().BeTrue();
         }
@@ -35,6 +37,14 @@ namespace InfluxDB.Net.Tests
         {
             List<Database> databases = _client.DescribeDatabases();
             databases.Should().NotBeNullOrEmpty();
+        }
+
+        [Test]
+        public void DeleteDb_Success_Test()
+        {
+            InfluxDbResponse response = _client.DeleteDatabase("AT");
+
+            response.Success.Should().BeTrue();
         }
     }
 }

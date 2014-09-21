@@ -70,11 +70,11 @@ namespace InfluxDB.Net
             return _influxDbClient.Query(database, query, ToTimePrecision(precision));
         }
 
-        public InfluxDbResponse CreateDatabase(string name)
+        public CreateDbResponse CreateDatabase(string name)
         {
             var db = new Database { name = name };
 
-            return new InfluxDbResponse(_influxDbClient.CreateDatabase(db));
+            return new CreateDbResponse(_influxDbClient.CreateDatabase(db));
         }
 
         public InfluxDbResponse CreateDatabase(DatabaseConfiguration config)
