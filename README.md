@@ -37,3 +37,17 @@ A .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  dat
 - GetShardSpaces();
 - DropShardSpace(string database, string name);
 - CreateShardSpace(string database, ShardSpace shardSpace);
+
+##Bugs
+If you encounter a bug, performance issue, or malfunction, please add an [Issue](https://github.com/ziyasal/InfluxDB.Net/issues) with steps on how to reproduce the problem.
+
+##TODO
+- Add more tests
+- Add more documentation
+
+##Open Source  Projects in Use
+- [RestSharp](https://github.com/restsharp/RestSharp) by RestSharp Contributors
+
+##License
+
+Code and documentation are available according to the *MIT* License (see [LICENSE](https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE)).
