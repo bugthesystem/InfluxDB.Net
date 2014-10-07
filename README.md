@@ -7,7 +7,7 @@ A .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  dat
 
 ####List of supported methods (Detailed documentation available soon)
 - [Ping](#ping)
-- Version();
+- [Version](#version)
 - [CreateDatabase](#create-database)
 - [DeleteDatabase](#delete-database)
 - [DescribeDatabases](#describe-databases)
@@ -41,6 +41,11 @@ A .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  dat
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
   Pong pong = _client.Ping();
+```
+## Version
+```csharp
+var _client = new InfluxDb("http://...:8086", "root", "root");
+  Pong pong = _client.Version();
 ```
 ## Create Database
 ```csharp
