@@ -71,7 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientIntegrationTests.cs" />
+    <Compile Include="InfluxDBTests.cs" />
     <Compile Include="Extensions\AssertExtensions.cs" />
     <Compile Include="Extensions\MoqExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

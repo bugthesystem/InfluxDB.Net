@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace InfluxDB.Net.Tests
 {
-    public class ClientIntegrationTests : TestBase
+    public class InfluxDbTests : TestBase
     {
         private IInfluxDb _client;
 
