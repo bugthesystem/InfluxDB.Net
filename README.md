@@ -5,7 +5,7 @@ with no external dependencies. It is the new home for all of your metrics, event
 
 A .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.
 
-####List of supported methods (Detailed documentation available soon)
+####List of supported methods (More documentation available soon)
 - [Ping](#ping)
 - [Version](#version)
 - [CreateDatabase](#create-database)
@@ -45,7 +45,7 @@ var _client = new InfluxDb("http://...:8086", "root", "root");
 ## Version
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
-  Pong pong = _client.Version();
+  string version = _client.Version();
 ```
 ## Create Database
 ```csharp
