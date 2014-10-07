@@ -6,14 +6,13 @@ with no external dependencies. It is the new home for all of your metrics, event
 A .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.
 
 ####List of supported methods (Detailed documentation available soon)
-- Ping();
+- [Ping](#ping)
 - Version();
-- CreateDatabase(Database database);
-- CreateDatabase(DatabaseConfiguration config);
-- DeleteDatabase(string name);
-- DescribeDatabases();
-- Write(string name, Serie[] series, string timePrecision);
-- Query(String name, String query, String timePrecision);
+- [CreateDatabase](#create-database)
+- [DeleteDatabase](#delete-database)
+- [DescribeDatabases](#describe-databases)
+- [Write](#write)
+- [Query](#query)
 - CreateClusterAdmin(User user);
 - DeleteClusterAdmin(string name);
 - DescribeClusterAdmins();
@@ -37,6 +36,47 @@ A .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  dat
 - GetShardSpaces();
 - DropShardSpace(string database, string name);
 - CreateShardSpace(string database, ShardSpace shardSpace);
+
+## Ping
+```csharp
+var _client = new InfluxDb("http://...:8086", "root", "root");
+  Pong pong = _client.Ping();
+```
+## Create Database
+```csharp
+var _client = new InfluxDb("http://...:8086", "root", "root");
+ CreateResponse response = _client.CreateDatabase("MyDb");
+ //Or
+ CreateResponse response = _client.CreateDatabase(new DatabaseConfiguration
+            {
+                Name = "MyDb"
+            });
+```
+## Delete Database
+```csharp
+var _client = new InfluxDb("http://...:8086", "root", "root");
+DeleteResponse deleteResponse = _client.DeleteDatabase("MyDb");
+```
+## Describe Databases
+```csharp
+var _client = new InfluxDb("http://...:8086", "root", "root");
+List<Database> databases = _client.DescribeDatabases();
+```
+## Write
+```csharp
+var _client = new InfluxDb("http://...:8086", "root", "root");
+Serie serie = new Serie.Builder("testSeries")
+                .Columns("value1", "value2")
+                .Values(DateTime.Now.Millisecond, 5)
+                .Build();
+InfluxDbResponse writeResponse = _client.Write("MyDb", TimeUnit.Milliseconds, serie);
+```
+
+## Query
+```csharp
+var _client = new InfluxDb("http://...:8086", "root", "root");
+ List<Serie> series = _client.Query("MyDb", "select * from testSeries"), TimeUnit.Milliseconds);
+```
 
 ##Bugs
 If you encounter a bug, performance issue, or malfunction, please add an [Issue](https://github.com/ziyasal/InfluxDB.Net/issues) with steps on how to reproduce the problem.
