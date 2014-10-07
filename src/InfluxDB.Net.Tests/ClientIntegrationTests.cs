@@ -17,7 +17,7 @@ namespace InfluxDB.Net.Tests
         {
             _client = new InfluxDb("http://192.168.59.103:8086", "root", "root");
 
-            //TODO: Start docker container and kill it on tear down using Ahmet Alp BALKAN's Docker.DotNet library
+            //TODO: Start docker container and kill it.
             //https://registry.hub.docker.com/u/tutum/influxdb/
             //https://github.com/ahmetalpbalkan/Docker.DotNet
 
@@ -35,46 +35,58 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Create_DB_Test()
         {
-            string dbToCreate = GetNewDbName();
-            CreateResponse response = _client.CreateDatabase(dbToCreate);
+            string dbName = GetNewDbName();
+            CreateResponse response = _client.CreateDatabase(dbName);
+
+            DeleteResponse deleteResponse = _client.DeleteDatabase(dbName);
 
             response.Success.Should().BeTrue();
+            deleteResponse.Success.Should().BeTrue();
         }
 
         [Test]
         public void Create_DB_With_Config_Test()
         {
-            string dbToCreate = Guid.NewGuid().ToString("N").Substring(10);
+            string dbName = Guid.NewGuid().ToString("N").Substring(10);
 
             CreateResponse response = _client.CreateDatabase(new DatabaseConfiguration
             {
-                Name = dbToCreate
+                Name = dbName
             });
 
+
+            DeleteResponse deleteResponse = _client.DeleteDatabase(dbName);
+
             response.Success.Should().BeTrue();
+            deleteResponse.Success.Should().BeTrue();
         }
 
         [Test]
         public void DescribeDatabases_Test()
         {
-            string dbToCreate = GetNewDbName();
-            CreateResponse createResponse = _client.CreateDatabase(dbToCreate);
+            string dbName = GetNewDbName();
+            CreateResponse createResponse = _client.CreateDatabase(dbName);
             createResponse.Success.Should().BeTrue();
 
             List<Database> databases = _client.DescribeDatabases();
+
+
+            DeleteResponse deleteResponse = _client.DeleteDatabase(dbName);
+
             databases.Should().NotBeNullOrEmpty();
-            databases.Where(database => database.name.Equals(dbToCreate)).Should().NotBeNull();
+            databases.Where(database => database.name.Equals(dbName)).Should().NotBeNull();
+            deleteResponse.Success.Should().BeTrue();
         }
 
         [Test]
         public void Delete_Database_Test()
         {
-            string dbToDelete = GetNewDbName();
-            CreateResponse createResponse = _client.CreateDatabase(dbToDelete);
+            string dbName = GetNewDbName();
+            CreateResponse createResponse = _client.CreateDatabase(dbName);
 
             createResponse.Success.Should().BeTrue();
 
-            DeleteResponse response = _client.DeleteDatabase(dbToDelete);
+            DeleteResponse response = _client.DeleteDatabase(dbName);
 
             response.Success.Should().BeTrue();
         }
@@ -82,8 +94,50 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Write_DB_Test()
         {
+            var dbName = GetNewDbName();
 
+            CreateResponse createResponse = _client.CreateDatabase(dbName);
+
+            Serie serie = new Serie.Builder("testSeries")
+                .Columns("value1", "value2")
+                .Values(DateTime.Now.Millisecond, 5)
+                .Build();
+            InfluxDbResponse writeResponse = _client.Write(dbName, TimeUnit.Milliseconds, serie);
+
+            DeleteResponse deleteResponse = _client.DeleteDatabase(dbName);
+
+            createResponse.Success.Should().BeTrue();
+            writeResponse.Success.Should().BeTrue();
+            deleteResponse.Success.Should().BeTrue();
         }
+
+        [Test]
+        public void Query_DB_Test()
+        {
+            var dbName = GetNewDbName();
+
+            CreateResponse createResponse = _client.CreateDatabase(dbName);
+
+            const string TMP_SERIE_NAME = "testSeries";
+            Serie serie = new Serie.Builder(TMP_SERIE_NAME)
+                .Columns("value1", "value2")
+                .Values(DateTime.Now.Millisecond, 5)
+                .Build();
+            InfluxDbResponse writeResponse = _client.Write(dbName, TimeUnit.Milliseconds, serie);
+
+            List<Serie> series = _client.Query(dbName, string.Format("select * from {0}", TMP_SERIE_NAME), TimeUnit.Milliseconds);
+
+            DeleteResponse deleteResponse = _client.DeleteDatabase(dbName);
+
+            series.Should().NotBeNull();
+            series.Count.Should().Be(1);
+
+            createResponse.Success.Should().BeTrue();
+            writeResponse.Success.Should().BeTrue();
+            deleteResponse.Success.Should().BeTrue();
+        }
+
+
 
         protected override void FinalizeTearDown()
         {

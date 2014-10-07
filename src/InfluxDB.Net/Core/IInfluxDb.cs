@@ -8,9 +8,9 @@ namespace InfluxDB.Net.Core
     {
         Pong Ping();
         String Version();
-        InfluxDbResponse Write(string database, TimeUnit.Unit precision, params Serie[] series);
+        InfluxDbResponse Write(string database, TimeUnit precision, params Serie[] series);
         InfluxDbResponse WriteUdp(int port, TimeUnit precision, params Serie[] series);
-        List<Serie> Query(string database, string query, TimeUnit.Unit precision);
+        List<Serie> Query(string database, string query, TimeUnit precision);
         CreateResponse CreateDatabase(string name);
         CreateResponse CreateDatabase(DatabaseConfiguration config);
         DeleteResponse DeleteDatabase(String name);

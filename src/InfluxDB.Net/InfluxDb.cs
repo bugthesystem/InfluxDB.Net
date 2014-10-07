@@ -70,7 +70,7 @@ namespace InfluxDB.Net
         /// <param name="precision">The precision used for the values.</param>
         /// <param name="series">An array of <see cref="Serie"/> to write</param>
         /// <returns></returns>
-        public InfluxDbResponse Write(string database, TimeUnit.Unit precision, params Serie[] series)
+        public InfluxDbResponse Write(string database, TimeUnit precision, params Serie[] series)
         {
             return new InfluxDbResponse(_influxDbClient.Write(database, series, ToTimePrecision(precision)));
         }
@@ -94,7 +94,7 @@ namespace InfluxDB.Net
         /// <param name="query">the query to execute, for language specification please see <a href="http://influxdb.org/docs/query_language">http://influxdb.org/docs/query_language</a></param>
         /// <param name="precision">the precision used for the values.</param>
         /// <returns>A list of Series which matched the query.</returns>
-        public List<Serie> Query(string database, string query, TimeUnit.Unit precision)
+        public List<Serie> Query(string database, string query, TimeUnit precision)
         {
             return _influxDbClient.Query(database, query, ToTimePrecision(precision));
         }
@@ -426,18 +426,18 @@ namespace InfluxDB.Net
             return this;
         }
 
-        private static String ToTimePrecision(TimeUnit.Unit t)
+        private static String ToTimePrecision(TimeUnit t)
         {
             switch (t)
             {
-                case TimeUnit.Unit.Seconds:
+                case TimeUnit.Seconds:
                     return "s";
-                case TimeUnit.Unit.Milliseconds:
+                case TimeUnit.Milliseconds:
                     return "ms";
-                case TimeUnit.Unit.Microseconds:
+                case TimeUnit.Microseconds:
                     return "u";
                 default:
-                    throw new ArgumentException("time precision must be " + TimeUnit.Unit.Seconds + ", " + TimeUnit.Unit.Milliseconds + " or " + TimeUnit.Unit.Microseconds);
+                    throw new ArgumentException("time precision must be " + TimeUnit.Seconds + ", " + TimeUnit.Milliseconds + " or " + TimeUnit.Microseconds);
             }
         }
     }

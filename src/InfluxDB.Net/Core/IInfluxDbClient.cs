@@ -5,7 +5,7 @@ using RestSharp;
 
 namespace InfluxDB.Net.Core
 {
-    public interface IInfluxDbClient
+    internal interface IInfluxDbClient
     {
         Pong Ping();
 

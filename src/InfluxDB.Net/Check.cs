@@ -17,6 +17,12 @@ namespace InfluxDB.Net
                 throw new ArgumentNullException(paramName, message);
         }
 
+        public static void IfTrue(bool value, string message)
+        {
+            if (value)
+                throw new ArgumentException(message);
+        }
+
         public static void NotNullOrEmpty(string value, string paramName)
         {
             if (string.IsNullOrEmpty(value))

@@ -6,9 +6,13 @@ namespace InfluxDB.Net.Models
 {
     public class Serie
     {
+        public Serie()
+        {
+            
+        }
         private Serie(string name)
         {
-            Name = name;
+            this.Name = name;
         }
 
         public string Name { get; set; }
@@ -30,14 +34,14 @@ namespace InfluxDB.Net.Models
 
             public Builder Columns(params String[] columnNames)
             {
-                Check.NotZeroLength(_columns, "You can only call columns() once.");
+                Check.IfTrue(_columns.Count > 0, "You can only call columns() once.");
                 _columns.AddRange(columnNames);
                 return this;
             }
 
             public Builder Values(params object[] values)
             {
-                Check.NotZeroLength(_columns, "Value count differs from column count.");
+                Check.IfTrue(values.Length != _columns.Count, "Value count differs from column count.");
                 _valueRows.Add(values.ToList());
                 return this;
             }

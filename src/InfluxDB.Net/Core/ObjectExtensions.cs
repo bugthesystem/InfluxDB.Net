@@ -1,6 +1,6 @@
-﻿using RestSharp;
-using RestSharp.Deserializers;
-using RestSharp.Serializers;
+﻿using Newtonsoft.Json;
+using RestSharp;
+using JsonSerializer = RestSharp.Serializers.JsonSerializer;
 
 namespace InfluxDB.Net.Core
 {
@@ -14,8 +14,12 @@ namespace InfluxDB.Net.Core
 
         public static T ReadAs<T>(this IRestResponse response)
         {
-            JsonDeserializer serializer = new JsonDeserializer();
-            return serializer.Deserialize<T>(response);
+
+            T deserialize = JsonConvert.DeserializeObject<T>(response.Content);
+            return deserialize;
+            //TODO: Fix RestSharp json deserializer
+            //JsonDeserializer serializer = new JsonDeserializer();
+            //return serializer.Deserialize<T>(response);
         }
     }
 }
