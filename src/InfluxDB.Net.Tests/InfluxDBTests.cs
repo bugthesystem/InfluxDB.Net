@@ -14,7 +14,7 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeSetUp()
         {
-            _db = new InfluxDb("http://enchantmentunderthesea-onepointtwentyone-1.c.influxdb.com:8086", "root", "dc48ace4ff5d5878");
+            _db = new InfluxDb("http://test.influxdb.com:8086", "root", "Abc12");
 
             //TODO: Start docker container and kill it.
             //https://registry.hub.docker.com/u/tutum/influxdb/

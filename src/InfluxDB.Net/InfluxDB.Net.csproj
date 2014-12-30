@@ -50,9 +50,7 @@
     <Compile Include="InfluxDbException.cs" />
     <Compile Include="InfluxDbResponse.cs" />
     <Compile Include="IRequestContent.cs" />
-    <Compile Include="JsonIso8601AndUnixEpochDateConverter.cs" />
     <Compile Include="JsonRequestContent.cs" />
-    <Compile Include="JsonVersionConverter.cs" />
     <Compile Include="LogLevel.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="AnonymousCredentials.cs" />

@@ -7,25 +7,18 @@ namespace InfluxDB.Net
     /// </summary>
     internal class JsonSerializer
     {
-        private JsonConverter[] Converters { get; set; }
-
         public JsonSerializer()
         {
-            Converters = new JsonConverter[]
-            {
-                new JsonIso8601AndUnixEpochDateConverter(),
-                new JsonVersionConverter()
-            };
         }
 
         public T DeserializeObject<T>(string json)
         {
-            return JsonConvert.DeserializeObject<T>(json, this.Converters);
+            return JsonConvert.DeserializeObject<T>(json);
         }
 
         public string SerializeObject<T>(T value)
         {
-            return JsonConvert.SerializeObject(value, this.Converters);
+            return JsonConvert.SerializeObject(value);
         }
     }
 }
