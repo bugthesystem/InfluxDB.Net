@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
+using InfluxDB.Net.Core;
 using InfluxDB.Net.Models;
+using RestSharp;
 
 namespace InfluxDB.Net
 {
@@ -29,16 +29,15 @@ namespace InfluxDB.Net
         /// Ping this InfluxDB
         /// </summary>
         /// <returns>The response of the ping execution.</returns>
-        public Pong PingAsync()
+        public Pong Ping()
         {
-            //TODO: Stopwatch
-            //var watch = new Stopwatch();
-            //watch.Start();
+            var watch = new Stopwatch();
+            watch.Start();
 
             Pong pong = _influxDbClient.Ping();
-            //pong.ResponseTime = watch.ElapsedMilliseconds;
+            pong.ResponseTime = watch.ElapsedMilliseconds;
 
-            //watch.Stop();
+            watch.Stop();
 
             return pong;
         }
@@ -47,17 +46,18 @@ namespace InfluxDB.Net
         /// Return the version of the connected influxDB Server.
         /// </summary>
         /// <returns>The version String, otherwise unknown</returns>
-        public async Task<string> VersionAsync()
+        public string Version()
         {
-            HttpResponseMessage response = await _influxDbClient.Version();
+            IRestResponse response = _influxDbClient.Version();
             String version = "unknown";
-            HttpResponseHeaders headers = response.Headers;
+            IList<Parameter> headers = response.Headers;
 
-            IEnumerable<string> values;
-
-            if (headers.TryGetValues("X-Influxdb-Version", out values))
+            foreach (Parameter header in headers)
             {
-                version = values.First();
+                if (null != header.Name && header.Name.Equals("X-Influxdb-Version"))
+                {
+                    version = header.Value.ToString();
+                }
             }
 
             return version;
@@ -70,9 +70,9 @@ namespace InfluxDB.Net
         /// <param name="precision">The precision used for the values.</param>
         /// <param name="series">An array of <see cref="Serie"/> to write</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> WriteAsync(string database, TimeUnit precision, params Serie[] series)
+        public InfluxDbResponse Write(string database, TimeUnit precision, params Serie[] series)
         {
-            return new InfluxDbResponse(await _influxDbClient.Write(database, series, ToTimePrecision(precision)));
+            return new InfluxDbResponse(_influxDbClient.Write(database, series, ToTimePrecision(precision)));
         }
 
         /// <summary>
@@ -82,9 +82,9 @@ namespace InfluxDB.Net
         /// <param name="precision">The precision used for the values</param>
         /// <param name="series">An array of <see cref="Serie"/> to write</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> WriteUdpAsync(int port, TimeUnit precision, params Serie[] series)
+        public InfluxDbResponse WriteUdp(int port, TimeUnit precision, params Serie[] series)
         {
-            throw new NotImplementedException("WriteUdpAsync is not implemented yet, sorry.");
+            throw new NotImplementedException("WriteUdp is not implemented yet, sorry.");
         }
 
         /// <summary>
@@ -94,9 +94,9 @@ namespace InfluxDB.Net
         /// <param name="query">the query to execute, for language specification please see <a href="http://influxdb.org/docs/query_language">http://influxdb.org/docs/query_language</a></param>
         /// <param name="precision">the precision used for the values.</param>
         /// <returns>A list of Series which matched the query.</returns>
-        public async Task<List<Serie>> QueryAsync(string database, string query, TimeUnit precision)
+        public List<Serie> Query(string database, string query, TimeUnit precision)
         {
-            return await _influxDbClient.Query(database, query, ToTimePrecision(precision));
+            return _influxDbClient.Query(database, query, ToTimePrecision(precision));
         }
 
         /// <summary>
@@ -104,11 +104,11 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="name">The name of the new database</param>
         /// <returns></returns>
-        public async Task<CreateResponse> CreateDatabaseAsync(string name)
+        public CreateResponse CreateDatabase(string name)
         {
             var db = new Database { name = name };
 
-            return new CreateResponse(await _influxDbClient.CreateDatabase(db));
+            return new CreateResponse(_influxDbClient.CreateDatabase(db));
         }
 
         /// <summary>
@@ -116,9 +116,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="config">The configuration for the database to create..</param>
         /// <returns></returns>
-        public async Task<CreateResponse> CreateDatabaseAsync(DatabaseConfiguration config)
+        public CreateResponse CreateDatabase(DatabaseConfiguration config)
         {
-            return new CreateResponse(await _influxDbClient.CreateDatabase(config));
+            return new CreateResponse(_influxDbClient.CreateDatabase(config));
         }
 
         /// <summary>
@@ -126,18 +126,18 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="name">The name of the database to delete.</param>
         /// <returns></returns>
-        public async Task<DeleteResponse> DeleteDatabaseAsync(string name)
+        public DeleteResponse DeleteDatabase(string name)
         {
-            return new DeleteResponse(await _influxDbClient.DeleteDatabase(name));
+            return new DeleteResponse(_influxDbClient.DeleteDatabase(name));
         }
 
         /// <summary>
         /// Describe all available databases.
         /// </summary>
         /// <returns>A list of all Databases</returns>
-        public async Task<List<Database>> DescribeDatabasesAsync()
+        public List<Database> DescribeDatabases()
         {
-            return await _influxDbClient.DescribeDatabases();
+            return _influxDbClient.DescribeDatabases();
         }
 
         /// <summary>
@@ -146,10 +146,10 @@ namespace InfluxDB.Net
         /// <param name="username">The name of the new admin.</param>
         /// <param name="adminPassword">The password for the new admin.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> CreateClusterAdminAsync(string username, string adminPassword)
+        public InfluxDbResponse CreateClusterAdmin(string username, string adminPassword)
         {
             var user = new User { Name = username, Password = adminPassword };
-            return new InfluxDbResponse(await _influxDbClient.CreateClusterAdmin(user));
+            return new InfluxDbResponse(_influxDbClient.CreateClusterAdmin(user));
         }
 
         /// <summary>
@@ -157,18 +157,18 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="username">The name of the admin to delete.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> DeleteClusterAdminAsync(string username)
+        public InfluxDbResponse DeleteClusterAdmin(string username)
         {
-            return new InfluxDbResponse(await _influxDbClient.DeleteClusterAdmin(username));
+            return new InfluxDbResponse(_influxDbClient.DeleteClusterAdmin(username));
         }
 
         /// <summary>
         /// Describe all cluster admins.
         /// </summary>
         /// <returns>A list of all admins.</returns>
-        public async Task<List<User>> DescribeClusterAdminsAsync()
+        public List<User> DescribeClusterAdmins()
         {
-            return await _influxDbClient.DescribeClusterAdmins();
+            return _influxDbClient.DescribeClusterAdmins();
         }
 
         /// <summary>
@@ -177,11 +177,11 @@ namespace InfluxDB.Net
         /// <param name="username">The name of the admin for which the password should be updated.</param>
         /// <param name="password">The new password for the given admin.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> UpdateClusterAdminAsync(string username, string password)
+        public InfluxDbResponse UpdateClusterAdmin(string username, string password)
         {
             var user = new User { Name = username, Password = password };
 
-            return new InfluxDbResponse(await _influxDbClient.UpdateClusterAdmin(user, username));
+            return new InfluxDbResponse(_influxDbClient.UpdateClusterAdmin(user, username));
         }
 
         /// <summary>
@@ -194,11 +194,11 @@ namespace InfluxDB.Net
         /// <param name="password">The password for this user.</param>
         /// <param name="permissions">An array of readFrom and writeTo permissions (in this order) and given in regex form.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> CreateDatabaseUserAsync(string database, string name, string password, params string[] permissions)
+        public InfluxDbResponse CreateDatabaseUser(string database, string name, string password, params string[] permissions)
         {
             var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
-            return new InfluxDbResponse(await _influxDbClient.CreateDatabaseUser(database, user));
+            return new InfluxDbResponse(_influxDbClient.CreateDatabaseUser(database, user));
         }
 
         /// <summary>
@@ -207,9 +207,9 @@ namespace InfluxDB.Net
         /// <param name="database">The name of the database the given user should be removed from.</param>
         /// <param name="name">The name of the user to remove.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> DeleteDatabaseUserAsync(string database, string name)
+        public InfluxDbResponse DeleteDatabaseUser(string database, string name)
         {
-            return new InfluxDbResponse(await _influxDbClient.DeleteDatabaseUser(database, name));
+            return new InfluxDbResponse(_influxDbClient.DeleteDatabaseUser(database, name));
         }
 
         /// <summary>
@@ -217,9 +217,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="database">The name of the database for which all users should be described.</param>
         /// <returns>A list of all users.</returns>
-        public async Task<List<User>> DescribeDatabaseUsersAsync(string database)
+        public List<User> DescribeDatabaseUsers(string database)
         {
-            return await _influxDbClient.DescribeDatabaseUsers(database);
+            return _influxDbClient.DescribeDatabaseUsers(database);
         }
 
         /// <summary>
@@ -230,11 +230,11 @@ namespace InfluxDB.Net
         /// <param name="password">The password for this user.</param>
         /// <param name="permissions">An array of readFrom and writeTo permissions (in this order) and given in regex form.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> UpdateDatabaseUserAsync(string database, string name, string password, params string[] permissions)
+        public InfluxDbResponse UpdateDatabaseUser(string database, string name, string password, params string[] permissions)
         {
             var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
-            return new InfluxDbResponse(await _influxDbClient.UpdateDatabaseUser(database, user, name));
+            return new InfluxDbResponse(_influxDbClient.UpdateDatabaseUser(database, user, name));
         }
 
         /// <summary>
@@ -245,11 +245,11 @@ namespace InfluxDB.Net
         /// <param name="isAdmin">If set to true this user is a database admin, otherwise it isnt.</param>
         /// <param name="permissions">An array of readFrom and writeTo permissions (in this order) and given in regex form.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> AlterDatabasePrivilegeAsync(string database, string name, bool isAdmin, params string[] permissions)
+        public InfluxDbResponse AlterDatabasePrivilege(string database, string name, bool isAdmin, params string[] permissions)
         {
             var user = new User { Name = name, IsAdmin = isAdmin };
             user.SetPermissions(permissions);
-            return new InfluxDbResponse(await _influxDbClient.UpdateDatabaseUser(database, user, name));
+            return new InfluxDbResponse(_influxDbClient.UpdateDatabaseUser(database, user, name));
         }
 
         /// <summary>
@@ -259,9 +259,9 @@ namespace InfluxDB.Net
         /// <param name="user">The name of the existing database user.</param>
         /// <param name="password">The password for this user.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> AuthenticateDatabaseUserAsync(string database, string user, string password)
+        public InfluxDbResponse AuthenticateDatabaseUser(string database, string user, string password)
         {
-            return new InfluxDbResponse(await _influxDbClient.AuthenticateDatabaseUser(database, user, password));
+            return new InfluxDbResponse(_influxDbClient.AuthenticateDatabaseUser(database, user, password));
         }
 
         /// <summary>
@@ -269,9 +269,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="database">The name of the database for which all continuous queries should be described.</param>
         /// <returns>A list of all contious queries.</returns>
-        public async Task<List<ContinuousQuery>> DescribeContinuousQueriesAsync(string database)
+        public List<ContinuousQuery> DescribeContinuousQueries(string database)
         {
-            return await _influxDbClient.GetContinuousQueries(database);
+            return _influxDbClient.GetContinuousQueries(database);
         }
 
         /// <summary>
@@ -280,9 +280,9 @@ namespace InfluxDB.Net
         /// <param name="database">The name of the database for which this query should be deleted.</param>
         /// <param name="id">The id of the query.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> DeleteContinuousQueryAsync(string database, int id)
+        public InfluxDbResponse DeleteContinuousQuery(string database, int id)
         {
-            return new InfluxDbResponse(await _influxDbClient.DeleteContinuousQuery(database, id));
+            return new InfluxDbResponse(_influxDbClient.DeleteContinuousQuery(database, id));
         }
 
         /// <summary>
@@ -291,45 +291,45 @@ namespace InfluxDB.Net
         /// <param name="database">The database in which the given serie should be deleted.</param>
         /// <param name="serieName">The name of the serie.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> DeleteSeriesAsync(string database, string serieName)
+        public InfluxDbResponse DeleteSeries(string database, string serieName)
         {
-            return new InfluxDbResponse(await _influxDbClient.DeleteSeries(database, serieName));
+            return new InfluxDbResponse(_influxDbClient.DeleteSeries(database, serieName));
         }
 
         /// <summary>
         /// Force Database compaction.
         /// </summary>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> ForceRaftCompactionAsync()
+        public InfluxDbResponse ForceRaftCompaction()
         {
-            return new InfluxDbResponse(await _influxDbClient.ForceRaftCompaction());
+            return new InfluxDbResponse(_influxDbClient.ForceRaftCompaction());
         }
 
         /// <summary>
         /// List all interfaces influxDB is listening.
         /// </summary>
         /// <returns>A list of interface names.</returns>
-        public async Task<List<string>> InterfacesAsync()
+        public List<string> Interfaces()
         {
-            return await _influxDbClient.Interfaces();
+            return _influxDbClient.Interfaces();
         }
 
         /// <summary>
         /// Sync the database to the filesystem.
         /// </summary>
         /// <returns>true|false if successful.</returns>
-        public async Task<bool> SyncAsync()
+        public bool Sync()
         {
-            return await _influxDbClient.Sync();
+            return _influxDbClient.Sync();
         }
 
         /// <summary>
         /// List all servers which are member of the cluster.
         /// </summary>
         /// <returns>A list of all influxdb servers.</returns>
-        public async Task<List<Server>> ListServersAsync()
+        public List<Server> ListServers()
         {
-            return await _influxDbClient.ListServers();
+            return _influxDbClient.ListServers();
         }
 
         /// <summary>
@@ -337,9 +337,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="id">The id of the server to remove.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> RemoveServersAsync(int id)
+        public InfluxDbResponse RemoveServers(int id)
         {
-            return new InfluxDbResponse(await _influxDbClient.RemoveServers(id));
+            return new InfluxDbResponse(_influxDbClient.RemoveServers(id));
         }
 
         /// <summary>
@@ -348,9 +348,9 @@ namespace InfluxDB.Net
         /// <param name="shard">the new shard to create.</param>
         /// <returns></returns>
         [Obsolete("This functionality is gone with 0.8.0, will be removed in the next version.")]
-        public async Task<InfluxDbResponse> CreateShardAsync(Shard shard)
+        public InfluxDbResponse CreateShard(Shard shard)
         {
-            return new InfluxDbResponse(await _influxDbClient.CreateShard(shard));
+            return new InfluxDbResponse(_influxDbClient.CreateShard(shard));
         }
 
         /// <summary>
@@ -358,9 +358,9 @@ namespace InfluxDB.Net
         /// </summary>
         /// <returns>A list of all Shards.</returns>
         [Obsolete("This functionality is gone with 0.8.0, will be removed in the next version.")]
-        public async Task<Shards> GetShardsAsync()
+        public Shards GetShards()
         {
-            return await _influxDbClient.GetShards();
+            return _influxDbClient.GetShards();
         }
 
         /// <summary>
@@ -369,18 +369,18 @@ namespace InfluxDB.Net
         /// <param name="shard">The shard (<see cref="Shard"/>) to delete.</param>
         /// <returns></returns>
         [Obsolete("This functionality is gone with 0.8.0, will be removed in the next version.")]
-        public async Task<InfluxDbResponse> DropShardAsync(Shard shard)
+        public InfluxDbResponse DropShard(Shard shard)
         {
-            return new InfluxDbResponse(await _influxDbClient.DropShard(shard.Id, shard.Shards.First()));
+            return new InfluxDbResponse(_influxDbClient.DropShard(shard.Id, shard.Shards.First()));
         }
 
         /// <summary>
         /// Describe all existing shardspaces.
         /// </summary>
         /// <returns>A list of all <see cref="ShardSpace"></see>'s.</returns>
-        public async Task<List<ShardSpace>> GetShardSpacesAsync()
+        public List<ShardSpace> GetShardSpaces()
         {
-            return await _influxDbClient.GetShardSpaces();
+            return _influxDbClient.GetShardSpaces();
         }
 
         /// <summary>
@@ -389,9 +389,9 @@ namespace InfluxDB.Net
         /// <param name="database">The name of the database.</param>
         /// <param name="name">The name of the ShardSpace to delete.</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> DropShardSpaceAsync(string database, string name)
+        public InfluxDbResponse DropShardSpace(string database, string name)
         {
-            return new InfluxDbResponse(await _influxDbClient.DropShardSpace(database, name));
+            return new InfluxDbResponse(_influxDbClient.DropShardSpace(database, name));
         }
 
         /// <summary>
@@ -400,9 +400,9 @@ namespace InfluxDB.Net
         /// <param name="database">The name of the database.</param>
         /// <param name="shardSpace">The shardSpace to create in this database</param>
         /// <returns></returns>
-        public async Task<InfluxDbResponse> CreateShardSpaceAsync(string database, ShardSpace shardSpace)
+        public InfluxDbResponse CreateShardSpace(string database, ShardSpace shardSpace)
         {
-            return new InfluxDbResponse(await _influxDbClient.CreateShardSpace(database, shardSpace));
+            return new InfluxDbResponse(_influxDbClient.CreateShardSpace(database, shardSpace));
         }
 
 
