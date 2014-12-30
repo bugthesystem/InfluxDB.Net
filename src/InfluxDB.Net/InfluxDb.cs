@@ -105,9 +105,9 @@ namespace InfluxDB.Net
         {
             var db = new Database { name = name };
 
-            InfluxDbApiCreateResponse response = (InfluxDbApiCreateResponse)await _influxDbClient.CreateDatabase(NoErrorHandlers, db);
+            InfluxDbApiResponse response = await _influxDbClient.CreateDatabase(NoErrorHandlers, db);
 
-            return response;
+            return new InfluxDbApiCreateResponse(response.StatusCode, response.Body);
         }
 
         /// <summary>
@@ -117,8 +117,8 @@ namespace InfluxDB.Net
         /// <returns></returns>
         public async Task<InfluxDbApiCreateResponse> CreateDatabaseAsync(DatabaseConfiguration config)
         {
-            InfluxDbApiCreateResponse response = (InfluxDbApiCreateResponse)await _influxDbClient.CreateDatabase(NoErrorHandlers, config);
-            return response;
+            InfluxDbApiResponse response = await _influxDbClient.CreateDatabase(NoErrorHandlers, config);
+            return new InfluxDbApiCreateResponse(response.StatusCode,response.Body);
         }
 
         /// <summary>
@@ -128,9 +128,9 @@ namespace InfluxDB.Net
         /// <returns></returns>
         public async Task<InfluxDbApiDeleteResponse> DeleteDatabaseAsync(string name)
         {
-            InfluxDbApiDeleteResponse response = (InfluxDbApiDeleteResponse)await _influxDbClient.DeleteDatabase(NoErrorHandlers, name);
+            InfluxDbApiResponse response = await _influxDbClient.DeleteDatabase(NoErrorHandlers, name);
 
-            return response;
+            return new InfluxDbApiDeleteResponse(response.StatusCode,response.Body);
         }
 
         /// <summary>
