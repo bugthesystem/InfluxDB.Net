@@ -8,67 +8,67 @@ namespace InfluxDB.Net
 {
     internal interface IInfluxDbClient
     {
-        Pong Ping();
+        Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<HttpResponseMessage> Version();
+        Task<InfluxDbApiResponse> Version(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<HttpResponseMessage> CreateDatabase(Database database);
+        Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,Database database);
 
-        Task<HttpResponseMessage> CreateDatabase(DatabaseConfiguration config);
+        Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, DatabaseConfiguration config);
 
-        Task<HttpResponseMessage> DeleteDatabase(string name);
+        Task<InfluxDbApiResponse> DeleteDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name);
 
-        Task<List<Database>> DescribeDatabases();
+        Task<InfluxDbApiResponse> DescribeDatabases(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<HttpResponseMessage> Write(string name, Serie[] series, string timePrecision);
+        Task<InfluxDbApiResponse> Write(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, Serie[] series, string timePrecision);
 
-        Task<List<Serie>> Query(String name, String query, String timePrecision);
+        Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, string query, string timePrecision);
 
-        Task<HttpResponseMessage> CreateClusterAdmin(User user);
+        Task<InfluxDbApiResponse> CreateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user);
 
-        Task<HttpResponseMessage> DeleteClusterAdmin(string name);
+        Task<InfluxDbApiResponse> DeleteClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name);
 
-        Task<List<User>> DescribeClusterAdmins();
+        Task<InfluxDbApiResponse> DescribeClusterAdmins(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<HttpResponseMessage> UpdateClusterAdmin(User user, string name);
+        Task<InfluxDbApiResponse> UpdateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user, string name);
 
-        Task<HttpResponseMessage> CreateDatabaseUser(string database, User user);
+        Task<InfluxDbApiResponse> CreateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user);
 
-        Task<HttpResponseMessage> DeleteDatabaseUser(string database, string name);
+        Task<InfluxDbApiResponse> DeleteDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name);
 
-        Task<List<User>> DescribeDatabaseUsers(String database);
+        Task<InfluxDbApiResponse> DescribeDatabaseUsers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database);
 
-        Task<HttpResponseMessage> UpdateDatabaseUser(string database, User user, string name);
+        Task<InfluxDbApiResponse> UpdateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user, string name);
 
-        Task<HttpResponseMessage> AuthenticateDatabaseUser(string database, string user, string password);
+        Task<InfluxDbApiResponse> AuthenticateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string user, string password);
 
-        Task<List<ContinuousQuery>> GetContinuousQueries(String database);
+        Task<InfluxDbApiResponse> GetContinuousQueries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database);
 
-        Task<HttpResponseMessage> DeleteContinuousQuery(string database, int id);
+        Task<InfluxDbApiResponse> DeleteContinuousQuery(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id);
 
-        Task<HttpResponseMessage> DeleteSeries(string database, string name);
+        Task<InfluxDbApiResponse> DeleteSeries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name);
 
-        Task<HttpResponseMessage> ForceRaftCompaction();
+        Task<InfluxDbApiResponse> ForceRaftCompaction(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<List<string>> Interfaces();
+        Task<InfluxDbApiResponse> Interfaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<bool> Sync();
+        Task<InfluxDbApiResponse> Sync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<List<Server>> ListServers();
+        Task<InfluxDbApiResponse> ListServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<HttpResponseMessage> RemoveServers(int id);
+        Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id);
 
-        Task<HttpResponseMessage> CreateShard(Shard shard);
+        Task<InfluxDbApiResponse> CreateShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, Shard shard);
 
-        Task<Shards> GetShards();
+        Task<InfluxDbApiResponse> GetShards(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<HttpResponseMessage> DropShard(int id, Shard.Member servers);
+        Task<InfluxDbApiResponse> DropShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id, Shard.Member servers);
 
-        Task<List<ShardSpace>> GetShardSpaces();
+        Task<InfluxDbApiResponse> GetShardSpaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers);
 
-        Task<HttpResponseMessage> DropShardSpace(string database, string name);
+        Task<InfluxDbApiResponse> DropShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name);
 
-        Task<HttpResponseMessage> CreateShardSpace(string database, ShardSpace shardSpace);
+        Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, ShardSpace shardSpace);
 
     }
 }

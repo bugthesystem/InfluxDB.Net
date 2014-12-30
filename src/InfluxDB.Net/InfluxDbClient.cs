@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -21,17 +22,16 @@ namespace InfluxDB.Net
         public const String DATABASE = "database";
         public const String TIME_PRECISION = "time_precision";
 
-        private readonly string _url;
         private readonly InfluxDbClientConfiguration _configuration;
-        private readonly string _username;
-        private readonly string _password;
 
-        public InfluxDbClient(string url, string username, string password)
+        private readonly ApiResponseErrorHandlingDelegate _defaultErrorHandlingDelegate = (statusCode, body) =>
         {
-            _url = url;
-            _username = username;
-            _password = password;
-        }
+            if (statusCode < HttpStatusCode.OK || statusCode >= HttpStatusCode.BadRequest)
+            {
+                throw new InfluxDbApiException(statusCode, body);
+            }
+        };
+
         public InfluxDbClient(InfluxDbClientConfiguration configuration)
         {
             _configuration = configuration;
@@ -39,220 +39,226 @@ namespace InfluxDB.Net
 
         private HttpClient GetHttpClient()
         {
-            return this._configuration.Credentials.BuildHttpClient();
+            return _configuration.Credentials.BuildHttpClient();
         }
 
-        public Pong Ping()
+        public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            Task<HttpResponseMessage> response = Request(HttpMethod.Get, "/ping", null, null, false);
-            return response.Result.ReadAs<Pong>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/ping", null, null, false);
         }
 
-        public Task<HttpResponseMessage> Version()
+        public Task<InfluxDbApiResponse> Version(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return Request(HttpMethod.Get, "/interfaces", null, null, false);
+            return RequestAsync(errorHandlers, HttpMethod.Get, "/interfaces", data: null, extraParams: null, includeAuthToQuery: false, headerIsBody: true);
         }
 
-        public Task<HttpResponseMessage> CreateDatabase(Database database)
+        public Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, Database database)
         {
-            return Request(HttpMethod.Post, "/db", database);
+            return RequestAsync(errorHandlers, HttpMethod.Post, "/db", database);
         }
 
-        public Task<HttpResponseMessage> CreateDatabase(DatabaseConfiguration config)
+        public Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, DatabaseConfiguration config)
         {
-            return Request(HttpMethod.Post, string.Format("/cluster/database_configs/{0}", config.Name), config);
+            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("/cluster/database_configs/{0}", config.Name), config);
         }
 
-        public Task<HttpResponseMessage> DeleteDatabase(string name)
+        public Task<InfluxDbApiResponse> DeleteDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name)
         {
-            return Request(HttpMethod.Delete, string.Format("/db/{0}", name));
+            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/db/{0}", name));
         }
 
-        public async Task<List<Database>> DescribeDatabases()
+        public async Task<InfluxDbApiResponse> DescribeDatabases(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, "/db");
-            return response.ReadAs<List<Database>>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/db");
         }
 
-        public Task<HttpResponseMessage> Write(string name, Serie[] series, string timePrecision)
+        public Task<InfluxDbApiResponse> Write(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, Serie[] series, string timePrecision)
         {
-            return Request(HttpMethod.Post, string.Format("/db/{0}/series", name), series, new Dictionary<string, string>
+            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("/db/{0}/series", name), series, new Dictionary<string, string>
             {
                 {TIME_PRECISION,timePrecision}
             });
         }
 
-        public async Task<List<Serie>> Query(string name, string query, string timePrecision)
+        public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, string query, string timePrecision)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, string.Format("/db/{0}/series", name), null, new Dictionary<string, string>
+            return await RequestAsync(errorHandlers, HttpMethod.Get, string.Format("/db/{0}/series", name), null, new Dictionary<string, string>
             {
                 {Q, query},
                 {TIME_PRECISION, timePrecision}
             });
-
-            return response.ReadAs<List<Serie>>();
         }
 
-        public Task<HttpResponseMessage> CreateClusterAdmin(User user)
+        public Task<InfluxDbApiResponse> CreateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user)
         {
-            return Request(HttpMethod.Post, "/cluster_admins", user);
+            return RequestAsync(errorHandlers, HttpMethod.Post, "/cluster_admins", user);
         }
 
-        public Task<HttpResponseMessage> DeleteClusterAdmin(string name)
+        public Task<InfluxDbApiResponse> DeleteClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name)
         {
-            return Request(HttpMethod.Delete, string.Format("/cluster_admins/{0}", name));
+            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/cluster_admins/{0}", name));
         }
 
-        public async Task<List<User>> DescribeClusterAdmins()
+        public async Task<InfluxDbApiResponse> DescribeClusterAdmins(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, "/cluster_admins");
-
-            return response.ReadAs<List<User>>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/cluster_admins");
         }
 
-        public Task<HttpResponseMessage> UpdateClusterAdmin(User user, string name)
+        public Task<InfluxDbApiResponse> UpdateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user, string name)
         {
-            return Request(HttpMethod.Post, "/cluster_admins", user, new Dictionary<string, string>
+            return RequestAsync(errorHandlers, HttpMethod.Post, "/cluster_admins", user, new Dictionary<string, string>
             {
                 { NAME, name }
             });
         }
 
-        public Task<HttpResponseMessage> CreateDatabaseUser(string database, User user)
+        public Task<InfluxDbApiResponse> CreateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user)
         {
-            return Request(HttpMethod.Post, string.Format("/db/{0}/users", database), user);
+            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("/db/{0}/users", database), user);
         }
 
-        public Task<HttpResponseMessage> DeleteDatabaseUser(string database, string name)
+        public Task<InfluxDbApiResponse> DeleteDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
         {
-            return Request(HttpMethod.Delete, string.Format("/db/{0}/users/{1}", database, name));
+            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/db/{0}/users/{1}", database, name));
         }
 
-        public async Task<List<User>> DescribeDatabaseUsers(string database)
+        public async Task<InfluxDbApiResponse> DescribeDatabaseUsers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, string.Format("/db/{0}/users", database));
-
-            return response.ReadAs<List<User>>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, string.Format("/db/{0}/users", database));
         }
 
-        public Task<HttpResponseMessage> UpdateDatabaseUser(string database, User user, string name)
+        public Task<InfluxDbApiResponse> UpdateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user, string name)
         {
-            return Request(HttpMethod.Post, string.Format("/db/{0}/users/{1}", database, name), user);
+            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("/db/{0}/users/{1}", database, name), user);
         }
 
-        public Task<HttpResponseMessage> AuthenticateDatabaseUser(string database, string user, string password)
+        public Task<InfluxDbApiResponse> AuthenticateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string user, string password)
         {
-            return Request(HttpMethod.Get, string.Format("/db/{0}/authenticate", database));
+            return RequestAsync(errorHandlers, HttpMethod.Get, string.Format("/db/{0}/authenticate", database));
         }
 
-        public async Task<List<ContinuousQuery>> GetContinuousQueries(string database)
+        public async Task<InfluxDbApiResponse> GetContinuousQueries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, string.Format("/db/{0}/continuous_queries", database));
-
-            return response.ReadAs<List<ContinuousQuery>>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, string.Format("/db/{0}/continuous_queries", database));
         }
 
-        public Task<HttpResponseMessage> DeleteContinuousQuery(string database, int id)
+        public Task<InfluxDbApiResponse> DeleteContinuousQuery(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id)
         {
-            return Request(HttpMethod.Delete, string.Format("/db/{0}/continuous_queries/{1}", database, id));
+            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/db/{0}/continuous_queries/{1}", database, id));
         }
 
-        public Task<HttpResponseMessage> DeleteSeries(string database, string name)
+        public Task<InfluxDbApiResponse> DeleteSeries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
         {
-            return Request(HttpMethod.Delete, string.Format("/db/{0}/series/{1}", database, name));
+            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/db/{0}/series/{1}", database, name));
         }
 
-        public Task<HttpResponseMessage> ForceRaftCompaction()
+        public Task<InfluxDbApiResponse> ForceRaftCompaction(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return Request(HttpMethod.Post, "/raft/force_compaction");
+            return RequestAsync(errorHandlers, HttpMethod.Post, "/raft/force_compaction");
         }
 
-        public async Task<List<string>> Interfaces()
+        public async Task<InfluxDbApiResponse> Interfaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, "/interfaces");
-
-            return response.ReadAs<List<string>>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/interfaces");
         }
 
-        public async Task<bool> Sync()
+        public async Task<InfluxDbApiResponse> Sync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, "/sync");
-
-            return response.ReadAs<bool>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/sync");
         }
 
-        public async Task<List<Server>> ListServers()
+        public async Task<InfluxDbApiResponse> ListServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, "/cluster/servers");
-
-            return response.ReadAs<List<Server>>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/cluster/servers");
         }
 
-        public Task<HttpResponseMessage> RemoveServers(int id)
+        public Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id)
         {
-            return Request(HttpMethod.Delete, string.Format("/cluster/servers/{0}", id));
+            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/cluster/servers/{0}", id));
         }
 
-        public Task<HttpResponseMessage> CreateShard(Shard shard)
+        public Task<InfluxDbApiResponse> CreateShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, Shard shard)
         {
-            return Request(HttpMethod.Post, "/cluster/shards", shard);
+            return RequestAsync(errorHandlers, HttpMethod.Post, "/cluster/shards", shard);
         }
 
-        public async Task<Shards> GetShards()
+        public async Task<InfluxDbApiResponse> GetShards(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, "/cluster/shards");
-
-            return response.ReadAs<Shards>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/cluster/shards");
         }
 
-        public Task<HttpResponseMessage> DropShard(int id, Shard.Member servers)
+        public async Task<InfluxDbApiResponse> DropShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id, Shard.Member servers)
         {
-            return Request(HttpMethod.Delete, string.Format("/cluster/shards/{0}", id), servers);
+            return await RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/cluster/shards/{0}", id), servers);
         }
 
-        public async Task<List<ShardSpace>> GetShardSpaces()
+        public async Task<InfluxDbApiResponse> GetShardSpaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            HttpResponseMessage response = await Request(HttpMethod.Get, "/cluster/shard_spaces");
-
-            return response.ReadAs<List<ShardSpace>>();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "/cluster/shard_spaces");
         }
 
-        public Task<HttpResponseMessage> DropShardSpace(string database, string name)
+        public Task<InfluxDbApiResponse> DropShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
         {
-            return Request(HttpMethod.Delete, string.Format("/cluster/shard_spaces/{0}/{1}", database, name));
+            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("/cluster/shard_spaces/{0}/{1}", database, name));
         }
 
-        public Task<HttpResponseMessage> CreateShardSpace(string database, ShardSpace shardSpace)
+        public Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, ShardSpace shardSpace)
         {
-            return Request(HttpMethod.Post, string.Format("/cluster/shard_spaces/{0}", database), shardSpace);
+            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("/cluster/shard_spaces/{0}", database), shardSpace);
         }
 
-        private async Task<HttpResponseMessage> Request(HttpMethod method, string path, object body = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
+        private async Task<InfluxDbApiResponse> RequestAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, HttpMethod method, string path, object data = null,
+            Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, bool headerIsBody = true)
         {
-            try
+            HttpResponseMessage response = await RequestInnerAsync(null, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None, method, path, data, extraParams, includeAuthToQuery);
+            string content = string.Empty;
+
+            if (!headerIsBody)
             {
-                var uri = BuildUri(path, extraParams, includeAuthToQuery);
-
-                HttpClient client = GetHttpClient();
-
-                var request = PrepareRequest(method, body, uri);
-
-                return await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None);
+                content = await response.Content.ReadAsStringAsync();
             }
-            catch (Exception ex)
+            else
             {
-                throw new InfluxDbException(string.Format("An error occured while execute request. Path : {0} , Method : {1}", path, method), ex);
+                IEnumerable<string> values;
+
+                if (response.Headers.TryGetValues("X-Influxdb-Version", out values))
+                {
+                    content = values.First();
+                }
             }
+
+            HandleIfErrorResponse(response.StatusCode, content, errorHandlers);
+
+            return new InfluxDbApiResponse(response.StatusCode, content);
+        }
+
+        private async Task<HttpResponseMessage> RequestInnerAsync(TimeSpan? requestTimeout, HttpCompletionOption completionOption, CancellationToken cancellationToken, HttpMethod method, string path, object data = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
+        {
+            HttpClient client = GetHttpClient();
+
+            if (requestTimeout.HasValue)
+            {
+                client.Timeout = requestTimeout.Value;
+            }
+
+            var uri = BuildUri(path, extraParams, includeAuthToQuery);
+            var request = PrepareRequest(method, data, uri);
+
+            return await client.SendAsync(request, completionOption, cancellationToken);
         }
 
         private StringBuilder BuildUri(string path, Dictionary<string, string> extraParams, bool includeAuthToQuery)
         {
             StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.AppendFormat("{0}{1}", _url, path);
+            urlBuilder.AppendFormat("{0}{1}", _configuration.EndpointBaseUri, path);
 
             if (includeAuthToQuery)
             {
-                urlBuilder.AppendFormat("?{0}={1}&{2}={3}", U, HttpUtility.UrlEncode(_username), P, HttpUtility.UrlEncode(_password));
+                BasicAuthCredentials credentials = _configuration.Credentials as BasicAuthCredentials;
+                if (credentials != null)
+                {
+                    urlBuilder.AppendFormat("?{0}={1}&{2}={3}", U, HttpUtility.UrlEncode(credentials.Username), P, HttpUtility.UrlEncode(credentials.Password));
+                }
             }
 
             if (extraParams != null && extraParams.Count > 0)
@@ -275,7 +281,6 @@ namespace InfluxDB.Net
 
             if (body != null)
             {
-                //TODO: Pass parameter
                 var content = new JsonRequestContent(body, new JsonSerializer());
                 HttpContent requestContent = content.GetContent();
                 request.Content = requestContent;
@@ -283,5 +288,21 @@ namespace InfluxDB.Net
 
             return request;
         }
+
+        private void HandleIfErrorResponse(HttpStatusCode statusCode, string responseBody, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
+        {
+            if (handlers == null)
+            {
+                throw new ArgumentNullException("handlers");
+            }
+
+            foreach (var handler in handlers)
+            {
+                handler(statusCode, responseBody);
+            }
+            _defaultErrorHandlingDelegate(statusCode, responseBody);
+        }
     }
+
+    internal delegate void ApiResponseErrorHandlingDelegate(HttpStatusCode statusCode, string responseBody);
 }

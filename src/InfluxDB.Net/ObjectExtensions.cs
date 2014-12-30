@@ -1,5 +1,4 @@
-﻿using System.Net.Http;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace InfluxDB.Net
 {
@@ -10,9 +9,9 @@ namespace InfluxDB.Net
             return JsonConvert.SerializeObject(@object);
         }
 
-        public static T ReadAs<T>(this HttpResponseMessage response)
+        public static T ReadAs<T>(this InfluxDbApiResponse response)
         {
-            T o = JsonConvert.DeserializeObject<T>(response.Content.ReadAsStringAsync().Result);
+            T o = JsonConvert.DeserializeObject<T>(response.Body);
             return o;
         }
     } 

@@ -1,46 +1,48 @@
 ﻿using System.Net;
-using System.Net.Http;
 
 namespace InfluxDB.Net
 {
-    public class InfluxDbResponse
+    public class InfluxDbApiResponse
     {
-        public HttpResponseMessage Raw { get; private set; }
+        public HttpStatusCode StatusCode { get; private set; }
+
+        public string Body { get; private set; }
+
+        public InfluxDbApiResponse(HttpStatusCode statusCode, string body)
+        {
+            StatusCode = statusCode;
+            Body = body;
+        }
 
         public virtual bool Success
         {
-            get { return Raw.StatusCode == HttpStatusCode.OK; }
-        }
-
-        public InfluxDbResponse(HttpResponseMessage response)
-        {
-            Raw = response;
+            get { return StatusCode == HttpStatusCode.OK; }
         }
     }
 
-    public class CreateResponse : InfluxDbResponse
+    public class InfluxDbApiCreateResponse : InfluxDbApiResponse
     {
-        public CreateResponse(HttpResponseMessage response)
-            : base(response)
-        {
-        }
-
         public override bool Success
         {
-            get { return Raw.StatusCode == HttpStatusCode.Created; }
+            get { return StatusCode == HttpStatusCode.Created; }
+        }
+
+        public InfluxDbApiCreateResponse(HttpStatusCode statusCode, string body)
+            : base(statusCode, body)
+        {
         }
     }
-    public class DeleteResponse : InfluxDbResponse
+    public class InfluxDbApiDeleteResponse : InfluxDbApiResponse
     {
-        public DeleteResponse(HttpResponseMessage response)
-            : base(response)
+        public InfluxDbApiDeleteResponse(HttpStatusCode statusCode, string body)
+            : base(statusCode, body)
         {
         }
 
         public override bool Success
         {
             //TODO: Ask to influx db creators
-            get { return Raw.StatusCode == HttpStatusCode.NoContent; }
+            get { return StatusCode == HttpStatusCode.NoContent; }
         }
     }
 }
