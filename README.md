@@ -52,7 +52,7 @@ var _client = new InfluxDb("http://...:8086", "root", "root");
 var _client = new InfluxDb("http://...:8086", "root", "root");
  InfluxDbApiCreateResponse response =await  _client.CreateDatabaseAsync("MyDb");
  //Or
- InfluxDbApiCreateResponse response = _client.CreateDatabase(new DatabaseConfiguration
+ InfluxDbApiCreateResponse response = await _client.CreateDatabaseAsync(new DatabaseConfiguration
             {
                 Name = "MyDb"
             });
