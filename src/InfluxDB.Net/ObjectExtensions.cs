@@ -11,8 +11,8 @@ namespace InfluxDB.Net
 
         public static T ReadAs<T>(this InfluxDbApiResponse response)
         {
-            T @object = JsonConvert.DeserializeObject<T>(response.Body);
+            var @object = JsonConvert.DeserializeObject<T>(response.Body);
             return @object;
         }
-    } 
+    }
 }

@@ -9,10 +9,6 @@ namespace InfluxDB.Net
     {
         private const string JSON_MIME_TYPE = "application/json";
 
-        private object Value { get; set; }
-
-        private JsonSerializer Serializer { get; set; }
-
         public JsonRequestContent(object val, JsonSerializer serializer)
         {
             if (EqualityComparer<object>.Default.Equals(val))
@@ -28,6 +24,10 @@ namespace InfluxDB.Net
             Value = val;
             Serializer = serializer;
         }
+
+        private object Value { get; set; }
+
+        private JsonSerializer Serializer { get; set; }
 
         public HttpContent GetContent()
         {

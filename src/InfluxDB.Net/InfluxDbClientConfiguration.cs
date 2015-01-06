@@ -5,12 +5,7 @@ namespace InfluxDB.Net
 {
     public class InfluxDbClientConfiguration
     {
-        public Uri EndpointBaseUri { get; internal set; }
-
-        public string Username { get; private set; }
-        public string Password { get; private set; }
-
-        public InfluxDbClientConfiguration(Uri endpoint):this(endpoint,null,null)
+        public InfluxDbClientConfiguration(Uri endpoint) : this(endpoint, null, null)
         {
         }
 
@@ -24,15 +19,21 @@ namespace InfluxDB.Net
             EndpointBaseUri = SanitizeEndpoint(endpoint, false);
         }
 
+        public Uri EndpointBaseUri { get; internal set; }
+
+        public string Username { get; private set; }
+        public string Password { get; private set; }
+
         private static Uri SanitizeEndpoint(Uri endpoint, bool isTls)
         {
-            UriBuilder builder = new UriBuilder(endpoint);
+            var builder = new UriBuilder(endpoint);
 
             if (isTls)
             {
                 builder.Scheme = "https";
             }
-            else if (builder.Scheme.Equals("tcp", StringComparison.CurrentCultureIgnoreCase)) //InvariantCultureIgnoreCase, not supported in PCL
+            else if (builder.Scheme.Equals("tcp", StringComparison.CurrentCultureIgnoreCase))
+                //InvariantCultureIgnoreCase, not supported in PCL
             {
                 builder.Scheme = "http";
             }

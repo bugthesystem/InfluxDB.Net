@@ -20,11 +20,19 @@ namespace InfluxDB.Net
         Task<InfluxDbApiResponse> DeleteClusterAdminAsync(String username);
         Task<List<User>> DescribeClusterAdminsAsync();
         Task<InfluxDbApiResponse> UpdateClusterAdminAsync(String username, String password);
-        Task<InfluxDbApiResponse> CreateDatabaseUserAsync(String database, String name, String password, params String[] permissions);
+
+        Task<InfluxDbApiResponse> CreateDatabaseUserAsync(String database, String name, String password,
+            params String[] permissions);
+
         Task<InfluxDbApiResponse> DeleteDatabaseUserAsync(String database, String name);
         Task<List<User>> DescribeDatabaseUsersAsync(String database);
-        Task<InfluxDbApiResponse> UpdateDatabaseUserAsync(String database, String name, String password, params String[] permissions);
-        Task<InfluxDbApiResponse> AlterDatabasePrivilegeAsync(String database, String name, bool isAdmin, params String[] permissions);
+
+        Task<InfluxDbApiResponse> UpdateDatabaseUserAsync(String database, String name, String password,
+            params String[] permissions);
+
+        Task<InfluxDbApiResponse> AlterDatabasePrivilegeAsync(String database, String name, bool isAdmin,
+            params String[] permissions);
+
         Task<InfluxDbApiResponse> AuthenticateDatabaseUserAsync(String database, String user, String password);
         Task<List<ContinuousQuery>> DescribeContinuousQueriesAsync(String database);
         Task<InfluxDbApiResponse> DeleteContinuousQueryAsync(String database, int id);

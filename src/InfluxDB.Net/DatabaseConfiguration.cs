@@ -21,6 +21,7 @@ namespace InfluxDB.Net
         {
             get { return _continuousQueries; }
         }
+
         public List<ShardSpace> ShardSpaces
         {
             get { return _spaces; }

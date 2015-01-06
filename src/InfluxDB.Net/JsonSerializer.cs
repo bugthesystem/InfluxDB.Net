@@ -3,7 +3,7 @@
 namespace InfluxDB.Net
 {
     /// <summary>
-    /// Facade for <see cref="Newtonsoft.Json.JsonConvert"/>.
+    ///     Facade for <see cref="Newtonsoft.Json.JsonConvert" />.
     /// </summary>
     internal class JsonSerializer
     {
