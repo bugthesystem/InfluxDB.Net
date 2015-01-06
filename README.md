@@ -40,19 +40,19 @@ A .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  dat
 ## Ping
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
-  Pong pong = _client.Ping();
+  Pong pong =await _client.PingAsync();
 ```
 ## Version
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
-  string version = _client.Version();
+  string version =await  _client.VersionAsync();
 ```
 ## Create Database
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
- CreateResponse response = _client.CreateDatabase("MyDb");
+ InfluxDbApiCreateResponse response =await  _client.CreateDatabaseAsync("MyDb");
  //Or
- CreateResponse response = _client.CreateDatabase(new DatabaseConfiguration
+ InfluxDbApiCreateResponse response = _client.CreateDatabase(new DatabaseConfiguration
             {
                 Name = "MyDb"
             });
@@ -60,12 +60,12 @@ var _client = new InfluxDb("http://...:8086", "root", "root");
 ## Delete Database
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
-DeleteResponse deleteResponse = _client.DeleteDatabase("MyDb");
+InfluxDbApiDeleteResponse deleteResponse = await _client.DeleteDatabaseAsync("MyDb");
 ```
 ## Describe Databases
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
-List<Database> databases = _client.DescribeDatabases();
+List<Database> databases = await _client.DescribeDatabasesAsync();
 ```
 ## Write
 ```csharp
@@ -74,13 +74,13 @@ Serie serie = new Serie.Builder("testSeries")
                 .Columns("value1", "value2")
                 .Values(DateTime.Now.Millisecond, 5)
                 .Build();
-InfluxDbResponse writeResponse = _client.Write("MyDb", TimeUnit.Milliseconds, serie);
+InfluxDbApiResponse writeResponse =await _client.WriteAsync("MyDb", TimeUnit.Milliseconds, serie);
 ```
 
 ## Query
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
- List<Serie> series = _client.Query("MyDb", "select * from testSeries"), TimeUnit.Milliseconds);
+ List<Serie> series = await _client.QueryAsync("MyDb", "select * from testSeries"), TimeUnit.Milliseconds);
 ```
 
 ##Bugs
