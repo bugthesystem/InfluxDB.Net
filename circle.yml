@@ -8,7 +8,6 @@ dependencies:
     - wget http://s3.amazonaws.com/influxdb/influxdb_latest_i386.deb
     - sudo dpkg -i influxdb_latest_i386.deb
     - sudo /etc/init.d/influxdb start
-    - sudo mono -V
     - mono .nuget/NuGet.exe install NUnit.Runners
 
 test:
