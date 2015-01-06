@@ -6,8 +6,8 @@ machine:
 dependencies:
   pre:
     - wget http://s3.amazonaws.com/influxdb/influxdb_latest_i386.deb
-	- sudo dpkg -i influxdb_latest_i386.deb
-	- sudo /etc/init.d/influxdb start
+    - sudo dpkg -i influxdb_latest_i386.deb
+    - sudo /etc/init.d/influxdb start
 
 test:
   override:
