@@ -29,7 +29,7 @@ namespace InfluxDB.Net
         /// </summary>
         public long ElapsedMilliseconds
         {
-            get { return GetCurrentElapsedTicks()/TimeSpan.TicksPerMillisecond; }
+            get { return GetCurrentElapsedTicks() / TimeSpan.TicksPerMillisecond; }
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace InfluxDB.Net
         private long GetCurrentTicks()
         {
             // TickCount: Gets the number of milliseconds elapsed since the system started.
-            return Environment.TickCount*TimeSpan.TicksPerMillisecond;
+            return Environment.TickCount * TimeSpan.TicksPerMillisecond;
         }
     }
 }

@@ -14,7 +14,8 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeSetUp()
         {
-            _db = new InfluxDb("http://test.influxdb.com:8086", "root", "Abc12");
+            _db = new InfluxDb("http://localhost:8086", "root", "root");
+            //_db = new InfluxDb("http://enchantmentunderthesea-onepointtwentyone-1.c.influxdb.com:8086", "root", "dc48ace4ff5d5878");
 
             //TODO: Start docker container and kill it.
             //https://registry.hub.docker.com/u/tutum/influxdb/
@@ -115,7 +116,7 @@ namespace InfluxDB.Net.Tests
             InfluxDbApiDeleteResponse deleteResponse = await _db.DeleteDatabaseAsync(dbName);
 
             databases.Should().NotBeNullOrEmpty();
-            databases.Where(database => database.name.Equals(dbName)).Should().NotBeNull();
+            databases.Where(database => database.Name.Equals(dbName)).Should().NotBeNull();
             deleteResponse.Success.Should().BeTrue();
         }
 

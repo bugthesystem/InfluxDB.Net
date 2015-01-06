@@ -7,7 +7,7 @@ namespace InfluxDB.Net
 {
     internal class JsonRequestContent : IRequestContent
     {
-        private const string JSON_MIME_TYPE = "application/json";
+        private const string JsonMimeType = "application/json";
 
         public JsonRequestContent(object val, JsonSerializer serializer)
         {
@@ -32,7 +32,7 @@ namespace InfluxDB.Net
         public HttpContent GetContent()
         {
             string serializedObject = Serializer.SerializeObject(Value);
-            return new StringContent(serializedObject, Encoding.UTF8, JSON_MIME_TYPE);
+            return new StringContent(serializedObject, Encoding.UTF8, JsonMimeType);
         }
     }
 }

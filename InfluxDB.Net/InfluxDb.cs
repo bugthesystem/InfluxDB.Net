@@ -111,7 +111,7 @@ namespace InfluxDB.Net
         /// <returns></returns>
         public async Task<InfluxDbApiCreateResponse> CreateDatabaseAsync(string name)
         {
-            var db = new Database {name = name};
+            var db = new Database {Name = name};
 
             InfluxDbApiResponse response = await _influxDbClient.CreateDatabase(NoErrorHandlers, db);
 
