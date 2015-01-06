@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 build() {
-    #mono .nuget/NuGet.exe install NUnit.Runners -Version 2.6.4
-    #mono .nuget/NuGet.exe restore InfluxDB.Net.sln
+    mono .nuget/NuGet.exe restore InfluxDB.Net.sln
 
     xbuild /t:Rebuild InfluxDB.Net.sln
 
@@ -62,13 +61,6 @@ tests_failed() {
 
 tests_passed() {
     print_status "TESTS PASSED"
-}
-
-remove_rethink_data_directory() {
-    local influx_data_dir="rethinkdb_data"
-    if [ -d "${influx_data_dir}" ]; then
-        rm -rf "${influx_data_dir}"
-    fi
 }
 
 print_status() {
