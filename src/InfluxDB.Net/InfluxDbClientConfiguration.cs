@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 
 namespace InfluxDB.Net
 {
@@ -6,32 +7,21 @@ namespace InfluxDB.Net
     {
         public Uri EndpointBaseUri { get; internal set; }
 
-        public Credentials Credentials { get; internal set; }
+        public string Username { get; private set; }
+        public string Password { get; private set; }
 
-        public InfluxDbClientConfiguration(Uri endpoint)
-            : this(endpoint, new AnonymousCredentials())
+        public InfluxDbClientConfiguration(Uri endpoint):this(endpoint,null,null)
         {
         }
 
-        public InfluxDbClientConfiguration(Uri endpoint, Credentials credentials)
+        public InfluxDbClientConfiguration(Uri endpoint, string username, string password)
         {
-            if (endpoint == null)
-            {
-                throw new ArgumentNullException("endpoint");
-            }
-
-            if (credentials == null)
-            {
-                throw new ArgumentNullException("credentials");
-            }
-
-            EndpointBaseUri = SanitizeEndpoint(endpoint, credentials.IsTlsCredentials());
-            Credentials = credentials;
-        }
-
-        internal IInfluxDbClient CreateClient()
-        {
-            return new InfluxDbClient(this);
+            Check.NotNull(endpoint, "Endpoint may not be null or empty.");
+            Check.NotNullOrEmpty(password, "Password may not be null or empty.");
+            Check.NotNullOrEmpty(username, "Username may not be null or empty.");
+            Username = username;
+            Password = password;
+            EndpointBaseUri = SanitizeEndpoint(endpoint, false);
         }
 
         private static Uri SanitizeEndpoint(Uri endpoint, bool isTls)
@@ -48,6 +38,11 @@ namespace InfluxDB.Net
             }
 
             return builder.Uri;
+        }
+
+        public HttpClient BuildHttpClient()
+        {
+            return new HttpClient();
         }
     }
 }

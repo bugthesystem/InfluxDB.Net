@@ -12,8 +12,7 @@ namespace InfluxDB.Net
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
         public InfluxDb(string url, string username, string password)
-            : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url),
-                new BasicAuthCredentials(username, password))))
+            : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url),username,password)))
         {
             Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
             Check.NotNullOrEmpty(username, "The username may not be null or empty.");

@@ -7,10 +7,6 @@ namespace InfluxDB.Net
     /// </summary>
     internal class JsonSerializer
     {
-        public JsonSerializer()
-        {
-        }
-
         public T DeserializeObject<T>(string json)
         {
             return JsonConvert.DeserializeObject<T>(json);

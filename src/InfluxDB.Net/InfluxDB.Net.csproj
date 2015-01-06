@@ -53,8 +53,6 @@
     <Compile Include="JsonRequestContent.cs" />
     <Compile Include="LogLevel.cs" />
     <Compile Include="ObjectExtensions.cs" />
-    <Compile Include="AnonymousCredentials.cs" />
-    <Compile Include="Credentials.cs" />
     <Compile Include="HttpUtility.cs" />
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="InfluxDb.cs" />

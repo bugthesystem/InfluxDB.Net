@@ -14,13 +14,13 @@ namespace InfluxDB.Net
     {
         private const string USER_AGENT = "InfluxDb.Net";
 
-        public const String U = "u";
-        public const String P = "p";
-        public const String Q = "q";
-        public const String ID = "id";
-        public const String NAME = "name";
-        public const String DATABASE = "database";
-        public const String TIME_PRECISION = "time_precision";
+        private const string U = "u";
+        private const string P = "p";
+        private const string Q = "q";
+        private const string ID = "id";
+        private const string NAME = "name";
+        private const string DATABASE = "database";
+        private const string TIME_PRECISION = "time_precision";
 
         private readonly InfluxDbClientConfiguration _configuration;
 
@@ -39,7 +39,7 @@ namespace InfluxDB.Net
 
         private HttpClient GetHttpClient()
         {
-            return _configuration.Credentials.BuildHttpClient();
+            return _configuration.BuildHttpClient();
         }
 
         public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
@@ -254,11 +254,8 @@ namespace InfluxDB.Net
 
             if (includeAuthToQuery)
             {
-                BasicAuthCredentials credentials = _configuration.Credentials as BasicAuthCredentials;
-                if (credentials != null)
-                {
-                    urlBuilder.AppendFormat("?{0}={1}&{2}={3}", U, HttpUtility.UrlEncode(credentials.Username), P, HttpUtility.UrlEncode(credentials.Password));
-                }
+
+                urlBuilder.AppendFormat("?{0}={1}&{2}={3}", U, HttpUtility.UrlEncode(_configuration.Username), P, HttpUtility.UrlEncode(_configuration.Password));
             }
 
             if (extraParams != null && extraParams.Count > 0)
