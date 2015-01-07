@@ -15,11 +15,6 @@ namespace InfluxDB.Net.Tests
         protected override void FinalizeSetUp()
         {
             _db = new InfluxDb("http://localhost:8086", "root", "root");
-
-            //TODO: Start docker container and kill it.
-            //https://registry.hub.docker.com/u/tutum/influxdb/
-            //https://github.com/ahmetalpbalkan/Docker.DotNet
-
             EnsureInfluxDbStarted();
         }
 
