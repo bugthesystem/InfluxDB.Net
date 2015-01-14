@@ -15,6 +15,7 @@ dependencies:
     - sudo apt-get install  referenceassemblies-pcl
     - mozroots --import --sync
     - mono .nuget/NuGet.exe restore InfluxDB.Net.sln
+    - sudo chmod +x build.sh
 
 test:
   override:
