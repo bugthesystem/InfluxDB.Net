@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 build() {
     mono .nuget/NuGet.exe install NUnit.Runners
     mono .nuget/NuGet.exe restore InfluxDB.Net.sln
