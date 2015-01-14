@@ -25,8 +25,6 @@ namespace InfluxDB.Net.Tests
 
         private async void EnsureInfluxDbStarted()
         {
-            //TODO: Start influxdb docker container.
-            //
             bool influxDBstarted = false;
             do
             {
