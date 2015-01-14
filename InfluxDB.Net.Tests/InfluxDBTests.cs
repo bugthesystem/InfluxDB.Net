@@ -20,7 +20,7 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeTearDown()
         {
-            //TODO: KILL CONTAINER
+           
         }
 
         private async void EnsureInfluxDbStarted()
