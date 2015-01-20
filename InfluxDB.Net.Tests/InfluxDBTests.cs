@@ -20,13 +20,11 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeTearDown()
         {
-            //TODO: KILL CONTAINER
+           
         }
 
         private async void EnsureInfluxDbStarted()
         {
-            //TODO: Start influxdb docker container.
-            //
             bool influxDBstarted = false;
             do
             {
