@@ -5,6 +5,11 @@ with no external dependencies. It is the new home for all of your metrics, event
 
 A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.
 
+**Installation (NuGet)**
+```
+Install-Package InfluxDB.Net-Main -Pre
+```
+
 [![Circle CI](https://circleci.com/gh/ziyasal/InfluxDB.Net/tree/master.svg?style=svg)](https://circleci.com/gh/ziyasal/InfluxDB.Net/tree/master)
 
 ####List of supported methods (More documentation available soon)
