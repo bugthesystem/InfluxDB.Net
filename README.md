@@ -5,7 +5,9 @@ with no external dependencies. It is the new home for all of your metrics, event
 
 A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.
 
-**Installation (NuGet)**
+**Installation**  
+[NuGet - InfluxDB.Net](https://www.nuget.org/packages/InfluxDB.Net-Main/1.0.0-alpha)  
+**P.S.** One of this project's forks already uses InfluxDB.Net name. So, I called it **InfluxDB.Net-Main**.
 ```
 Install-Package InfluxDB.Net-Main -Pre
 ```
