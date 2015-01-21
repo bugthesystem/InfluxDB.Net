@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>InfluxDB.Net</id>
+    <version>1.0.0-alpha</version>
+    <title>InfluxDB.Net</title>
+    <authors>Ziya SARIKAYA</authors>
+    <owners>ziyasal</owners>
+    <licenseUrl>https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ziyasal/InfluxDB.Net</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      Portable .NET client for InfluxDB.
+      It is fully asynchronous and non-blocking way to interact with InfluxDB programmatically.
+    </description>
+    <summary>Portable .NET client for InfluxDB.</summary>
+    <copyright />
+    <dependencies>
+      <dependency id="Newtonsoft.Json" version="6.0.5" />
+      <dependency id="Microsoft.Net.Http" version="2.2.28" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\InfluxDB.Net.dll" target="lib\net45\InfluxDB.Net.dll" />
+  </files>
+</package>
