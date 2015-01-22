@@ -7,7 +7,7 @@ A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.c
 
 **Installation**  
 [NuGet - InfluxDB.Net](https://www.nuget.org/packages/InfluxDB.Net-Main/1.0.0-alpha)  
-**P.S.** One of this project's forks already uses InfluxDB.Net name. So, I called it **InfluxDB.Net-Main**.
+**P.S.** One of this project's fork already uses InfluxDB.Net name for NuGet package. So, I called my package **InfluxDB.Net-Main**.
 ```
 Install-Package InfluxDB.Net-Main -Pre
 ```
