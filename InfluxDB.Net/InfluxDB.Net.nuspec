@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>InfluxDB.Net</id>
-    <version>1.0.1-alpha</version>
+    <id>InfluxDB.Net-Main</id>
+    <version>1.0.0</version>
     <title>InfluxDB.Net</title>
     <authors>Ziya SARIKAYA</authors>
     <owners>ziyasal</owners>
