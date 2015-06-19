@@ -5,6 +5,7 @@ namespace InfluxDB.Net
         Seconds,
         Milliseconds,
         Microseconds,
+        Nanoseconds,
         Minutes,
         Hours,
         Days
