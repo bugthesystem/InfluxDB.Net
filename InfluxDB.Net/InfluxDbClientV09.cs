@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,7 +13,7 @@ using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net
 {
-    internal class InfluxDbClient : IInfluxDbClient
+    internal class InfluxDbClientV09 : IInfluxDbClient
     {
         private const string UserAgent = "InfluxDb.Net";
 
@@ -19,7 +22,7 @@ namespace InfluxDB.Net
         private const string Q = "q";
         private const string Id = "id";
         private const string Name = "name";
-        private const string Database = "database";
+        private const string Database = "db";
         private const string TimePrecision = "time_precision";
 
         private readonly InfluxDbClientConfiguration _configuration;
@@ -32,208 +35,240 @@ namespace InfluxDB.Net
             }
         };
 
-        public InfluxDbClient(InfluxDbClientConfiguration configuration)
+        public InfluxDbClientV09(InfluxDbClientConfiguration configuration)
         {
             _configuration = configuration;
         }
 
         public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "ping", null, null, false);
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "ping", null, null, 
+                includeAuthToQuery:false, headerIsBody:true, contentType: ContentType.Deflate);
         }
 
         public Task<InfluxDbApiResponse> Version(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Get, "interfaces", null, null, false, true);
+            throw new NotImplementedException("0.9 Currently doesn't support db version");
+            //return RequestAsync(errorHandlers, HttpMethod.Get, "interfaces", null, null, false, true);
         }
 
         public Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             Database database)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, "db", database);
+            return Query(errorHandlers, "", string.Format("CREATE DATABASE {0}", database.Name));
         }
 
         public Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             DatabaseConfiguration config)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post,
-                string.Format("cluster/database_configs/{0}", config.Name), config);
+            //return RequestAsync(errorHandlers, HttpMethod.Post,
+            //    string.Format("cluster/database_configs/{0}", config.Name), config);
+            throw new NotImplementedException("0.9 Currently doesn't support this");
         }
 
         public Task<InfluxDbApiResponse> DeleteDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string name)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("db/{0}", name));
+            return Query(errorHandlers, "", string.Format("DROP DATABASE {0}", name));
         }
 
         public async Task<InfluxDbApiResponse> DescribeDatabases(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "db");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, "db");
         }
 
         public Task<InfluxDbApiResponse> Write(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name,
             Serie[] series, string timePrecision)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("db/{0}/series", name), series,
+            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("write"), series,
                 new Dictionary<string, string>
                 {
+                    {Database, name},
                     {TimePrecision, timePrecision}
-                });
+                }, contentType:ContentType.Deflate);
         }
 
         public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-            string name, string query, string timePrecision)
+            string name, string query, string timePrecision="")
         {
+            var extraParams = new Dictionary<string, string>
+            {
+                {Q, query},
+            };
+            if(!string.IsNullOrEmpty(name))
+                extraParams.Add(Database, name);
+            if(!string.IsNullOrEmpty(timePrecision))
+                extraParams.Add(TimePrecision, timePrecision);
             return
                 await
-                    RequestAsync(errorHandlers, HttpMethod.Get, string.Format("db/{0}/series", name), null,
-                        new Dictionary<string, string>
-                        {
-                            {Q, query},
-                            {TimePrecision, timePrecision}
-                        });
+                    RequestAsync(errorHandlers, HttpMethod.Get, string.Format("query"), null,
+                        extraParams);
         }
 
         public Task<InfluxDbApiResponse> CreateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             User user)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, "cluster_admins", user);
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Post, "cluster_admins", user);
         }
 
         public Task<InfluxDbApiResponse> DeleteClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string name)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("cluster_admins/{0}", name));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("cluster_admins/{0}", name));
         }
 
         public async Task<InfluxDbApiResponse> DescribeClusterAdmins(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster_admins");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster_admins");
         }
 
         public Task<InfluxDbApiResponse> UpdateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             User user, string name)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, "cluster_admins", user, new Dictionary<string, string>
-            {
-                {Name, name}
-            });
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Post, "cluster_admins", user, new Dictionary<string, string>
+            //{
+            //    {Name, name}
+            //});
         }
 
         public Task<InfluxDbApiResponse> CreateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string database, User user)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("db/{0}/users", database), user);
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("db/{0}/users", database), user);
         }
 
         public Task<InfluxDbApiResponse> DeleteDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string database, string name)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("db/{0}/users/{1}", database, name));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("db/{0}/users/{1}", database, name));
         }
 
         public async Task<InfluxDbApiResponse> DescribeDatabaseUsers(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, string.Format("db/{0}/users", database));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, string.Format("db/{0}/users", database));
         }
 
         public Task<InfluxDbApiResponse> UpdateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string database, User user, string name)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("db/{0}/users/{1}", database, name), user);
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("db/{0}/users/{1}", database, name), user);
         }
 
         public Task<InfluxDbApiResponse> AuthenticateDatabaseUser(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string user, string password)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Get, string.Format("db/{0}/authenticate", database));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Get, string.Format("db/{0}/authenticate", database));
         }
 
         public async Task<InfluxDbApiResponse> GetContinuousQueries(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
         {
-            return
-                await RequestAsync(errorHandlers, HttpMethod.Get, string.Format("db/{0}/continuous_queries", database));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return
+            //    await RequestAsync(errorHandlers, HttpMethod.Get, string.Format("db/{0}/continuous_queries", database));
         }
 
         public Task<InfluxDbApiResponse> DeleteContinuousQuery(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Delete,
-                string.Format("db/{0}/continuous_queries/{1}", database, id));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Delete,
+            //    string.Format("db/{0}/continuous_queries/{1}", database, id));
         }
 
         public Task<InfluxDbApiResponse> DeleteSeries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string database, string name)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("db/{0}/series/{1}", database, name));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("db/{0}/series/{1}", database, name));
         }
 
         public Task<InfluxDbApiResponse> ForceRaftCompaction(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, "raft/force_compaction");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Post, "raft/force_compaction");
         }
 
         public async Task<InfluxDbApiResponse> Interfaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "interfaces");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, "interfaces");
         }
 
         public async Task<InfluxDbApiResponse> Sync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "sync");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, "sync");
         }
 
         public async Task<InfluxDbApiResponse> ListServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster/servers");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster/servers");
         }
 
         public Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             int id)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("cluster/servers/{0}", id));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("cluster/servers/{0}", id));
         }
 
         public Task<InfluxDbApiResponse> CreateShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             Shard shard)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, "cluster/shards", shard);
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Post, "cluster/shards", shard);
         }
 
         public async Task<InfluxDbApiResponse> GetShards(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster/shards");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster/shards");
         }
 
         public async Task<InfluxDbApiResponse> DropShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             int id, Shard.Member servers)
         {
-            return
-                await RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("cluster/shards/{0}", id), servers);
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return
+            //    await RequestAsync(errorHandlers, HttpMethod.Delete, string.Format("cluster/shards/{0}", id), servers);
         }
 
         public async Task<InfluxDbApiResponse> GetShardSpaces(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster/shard_spaces");
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return await RequestAsync(errorHandlers, HttpMethod.Get, "cluster/shard_spaces");
         }
 
         public Task<InfluxDbApiResponse> DropShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string database, string name)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Delete,
-                string.Format("cluster/shard_spaces/{0}/{1}", database, name));
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Delete,
+            //    string.Format("cluster/shard_spaces/{0}/{1}", database, name));
         }
 
         public Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string database, ShardSpace shardSpace)
         {
-            return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("cluster/shard_spaces/{0}", database),
-                shardSpace);
+            throw new NotImplementedException("0.9 Currently doesn't support this");
+            //return RequestAsync(errorHandlers, HttpMethod.Post, string.Format("cluster/shard_spaces/{0}", database),
+            //    shardSpace);
         }
 
         private HttpClient GetHttpClient()
@@ -244,12 +279,13 @@ namespace InfluxDB.Net
         private async Task<InfluxDbApiResponse> RequestAsync(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, HttpMethod method, string path,
             object data = null,
-            Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, bool headerIsBody = false)
+            Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, bool headerIsBody = false,
+            ContentType contentType= ContentType.Json)
         {
             HttpResponseMessage response =
                 await
                     RequestInnerAsync(null, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None, method,
-                        path, data, extraParams, includeAuthToQuery);
+                        path, data, extraParams, includeAuthToQuery, contentType);
             string content = string.Empty;
 
             if (!headerIsBody)
@@ -273,7 +309,7 @@ namespace InfluxDB.Net
 
         private async Task<HttpResponseMessage> RequestInnerAsync(TimeSpan? requestTimeout,
             HttpCompletionOption completionOption, CancellationToken cancellationToken, HttpMethod method, string path,
-            object data = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
+            object data = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, ContentType contentType= ContentType.Json)
         {
             HttpClient client = GetHttpClient();
 
@@ -283,7 +319,7 @@ namespace InfluxDB.Net
             }
 
             StringBuilder uri = BuildUri(path, extraParams, includeAuthToQuery);
-            HttpRequestMessage request = PrepareRequest(method, data, uri);
+            HttpRequestMessage request = PrepareRequest(method, data, uri, contentType);
 
             return await client.SendAsync(request, completionOption, cancellationToken);
         }
@@ -309,19 +345,55 @@ namespace InfluxDB.Net
             return urlBuilder;
         }
 
-        private static HttpRequestMessage PrepareRequest(HttpMethod method, object body, StringBuilder urlBuilder)
+        private static HttpRequestMessage PrepareRequest(HttpMethod method, object body, StringBuilder urlBuilder, ContentType bodyType)
         {
             var request = new HttpRequestMessage(method, urlBuilder.ToString());
-
             request.Headers.Add("User-Agent", UserAgent);
-
-            request.Headers.Add("Accept", "application/json");
-
-            if (body != null)
+            switch (bodyType)
             {
-                var content = new JsonRequestContent(body, new JsonSerializer());
-                HttpContent requestContent = content.GetContent();
-                request.Content = requestContent;
+                    case ContentType.Json:
+                        request.Headers.Add("Accept", "application/json");
+                        if (body != null)
+                        {
+                            var content = new JsonRequestContent(body, new JsonSerializer());
+                            HttpContent requestContent = content.GetContent();
+                            request.Content = requestContent;
+                        }
+                    break;
+                    case ContentType.Deflate:
+                        request.Headers.Add("Accept-Encoding", "deflate");
+                        if (body != null)
+                        {
+                            var bodyString = new StringBuilder();
+                            if (body is IEnumerable)
+                            {
+                                var enumerator = ((IEnumerable) body).GetEnumerator();
+                                while (enumerator.MoveNext())
+                                {
+                                    bodyString.Append(enumerator.Current.ToString()+"\n");
+                                }
+                                bodyString = bodyString.Remove(bodyString.Length - 1, 1);
+                            }
+                            else
+                            {
+                                bodyString.Append(body.ToString());
+                            }
+                            HttpContent requestContent = new StringContent(bodyString.ToString());
+                            request.Content = requestContent;
+                        }
+                    break;
+                    case ContentType.Gzip:
+                        request.Headers.Add("Accept-Encoding", "gzip");
+                        if (body != null)
+                        {
+                            using (var stringStream = new MemoryStream(Encoding.UTF8.GetBytes(body.ToString())))
+                            {
+                                GZipStream zipStream = new GZipStream(stringStream, CompressionMode.Compress);
+                                HttpContent requestContent = new StreamContent(zipStream);
+                                request.Content = requestContent;
+                            }
+                        }
+                    break;
             }
 
             return request;

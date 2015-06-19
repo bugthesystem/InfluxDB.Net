@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using InfluxDB.Net.Models;
 
@@ -14,7 +15,7 @@ namespace InfluxDB.Net
         private readonly IInfluxDbClient _influxDbClient;
 
         public InfluxDb(string url, string username, string password)
-            : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url), username, password)))
+            : this(new InfluxDbClientV09(new InfluxDbClientConfiguration(new Uri(url), username, password)))
         {
             Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
             Check.NotNullOrEmpty(username, "The username may not be null or empty.");
@@ -36,8 +37,21 @@ namespace InfluxDB.Net
             InfluxDbApiResponse response = await _influxDbClient.Ping(NoErrorHandlers);
 
             watch.Stop();
-            var pong = response.ReadAs<Pong>();
-            pong.ResponseTime = watch.ElapsedMilliseconds;
+            Pong pong;
+            if (response.StatusCode == HttpStatusCode.NoContent) //0.9
+            {
+                pong = new Pong
+                {
+                    //TODO
+                    Status = "OK",
+                    ResponseTime = watch.ElapsedMilliseconds
+                };
+            }
+            else //0.8
+            {
+                pong = response.ReadAs<Pong>();
+                pong.ResponseTime = watch.ElapsedMilliseconds;
+            }
 
             return pong;
         }
@@ -101,7 +115,7 @@ namespace InfluxDB.Net
             InfluxDbApiResponse response =
                 await _influxDbClient.Query(NoErrorHandlers, database, query, ToTimePrecision(precision));
 
-            return response.ReadAs<List<Serie>>();
+            return response.ReadAs<QueryResult>().Results.SelectMany(t=>t.Series).ToList();
         }
 
         /// <summary>
@@ -138,7 +152,6 @@ namespace InfluxDB.Net
         public async Task<InfluxDbApiDeleteResponse> DeleteDatabaseAsync(string name)
         {
             InfluxDbApiResponse response = await _influxDbClient.DeleteDatabase(NoErrorHandlers, name);
-
             return new InfluxDbApiDeleteResponse(response.StatusCode, response.Body);
         }
 
@@ -469,6 +482,8 @@ namespace InfluxDB.Net
                     return "ms";
                 case TimeUnit.Microseconds:
                     return "u";
+                case TimeUnit.Nanoseconds:
+                    return "n";
                 default:
                     throw new ArgumentException("time precision must be " + TimeUnit.Seconds + ", " +
                                                 TimeUnit.Milliseconds + " or " + TimeUnit.Microseconds);
