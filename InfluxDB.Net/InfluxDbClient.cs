@@ -25,11 +25,11 @@ namespace InfluxDB.Net
 
 		private const string AlterRetentionPolicyStmt = "alter retention policy {0} on {1} {2} {3} {4} {5}";
 		private const string CreateContinuousQueryStmt = "create continuous query {0} on {1} begin {2} end;";
-		private const string CreateDatabaseStmt = "create database {0}";
+		private const string CreateDatabaseStmt = "create database \"{0}\"";
 		private const string CreateRetentionPolicyStmt = "create retention policy \"{0}\" on {1} {2} {3} {4} {5}";
 		private const string CreateUserStmt = "create user {0} with password {1} {2}";
 		private const string DropContinuousQueryStmt = "drop continuous query {0}";
-		private const string DropDatabaseStmt = "drop database {0}";
+		private const string DropDatabaseStmt = "drop database \"{0}\"";
 		private const string DropMeasurementStmt = "drop measurement \"{0}\"";
 		private const string DropRetentionPolicyStmt = "drop retention policy \"{0}\" on {1}";
 		private const string DropSeriesStmt = "drop series from \"{0}\"";
