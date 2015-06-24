@@ -1,170 +1,190 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using FluentAssertions;
 using InfluxDB.Net.Models;
 using NUnit.Framework;
+using Ploeh.AutoFixture;
 
 namespace InfluxDB.Net.Tests
 {
-    public class InfluxDbTests : TestBase
-    {
-        private IInfluxDb _db;
+	public class InfluxDbTests : TestBase
+	{
+		private IInfluxDb _db;
+		private string _dbName = string.Empty;
 
-        protected override void FinalizeSetUp()
-        {
-            _db = new InfluxDb("http://localhost:8086", "root", "root");
-            EnsureInfluxDbStarted();
-        }
+		protected override void FinalizeSetUp()
+		{
+			_db = new InfluxDb("http://localhost:8086", "root", "root");
 
-        protected override void FinalizeTearDown()
-        {
-           
-        }
+			_db.Should().NotBeNull();
 
-        private async void EnsureInfluxDbStarted()
-        {
-            bool influxDBstarted = false;
-            do
-            {
-                try
-                {
-                    Pong response = await _db.PingAsync();
-                    if (response.Status.Equals("ok"))
-                    {
-                        influxDBstarted = true;
-                    }
-                }
-                catch (Exception e)
-                {
-                    // NOOP intentional
-                }
-                Thread.Sleep(100);
-            } while (!influxDBstarted);
+			_dbName = GetNewDbName();
 
-            Console.WriteLine("##################################################################################");
-            Console.WriteLine("#  Connected to InfluxDB Version: " + await _db.VersionAsync() + " #");
-            Console.WriteLine("##################################################################################");
-        }
+			var createResponse = _db.CreateDatabaseAsync(_dbName).Result;
+			createResponse.Success.Should().BeTrue();
+		}
 
-        private static string GetNewDbName()
-        {
-            return Guid.NewGuid().ToString("N").Substring(10);
-        }
+		protected override void FinalizeTearDown()
+		{
+			var deleteResponse = _db.DropDatabaseAsync(_dbName).Result;
 
-        [Test]
-        public async void Create_DB_Test()
-        {
-            string dbName = GetNewDbName();
-            InfluxDbApiCreateResponse response = await _db.CreateDatabaseAsync(dbName);
+			deleteResponse.Success.Should().BeTrue();
+		}
 
-            InfluxDbApiDeleteResponse deleteResponse = await _db.DeleteDatabaseAsync(dbName);
+		private static string GetNewDbName()
+		{
+			return "T" + Guid.NewGuid().ToString("N").Substring(9);
+		}
 
-            response.Success.Should().BeTrue();
-            deleteResponse.Success.Should().BeTrue();
-        }
+		[Test]
+		public async void Create_Delete_DB_Test()
+		{
+			var dbName = GetNewDbName();
+			var createResponse = await _db.CreateDatabaseAsync(dbName);
+			var deleteResponse = await _db.DropDatabaseAsync(dbName);
 
-        [Test]
-        public async void Create_DB_With_Config_Test()
-        {
-            string dbName = Guid.NewGuid().ToString("N").Substring(10);
+			createResponse.Success.Should().BeTrue();
+			deleteResponse.Success.Should().BeTrue();
+		}
 
-            InfluxDbApiCreateResponse response = await _db.CreateDatabaseAsync(new DatabaseConfiguration
-            {
-                Name = dbName
-            });
+		[Test]
+		public async void Show_DB_Test()
+		{
+			List<Database> databases = await _db.ShowDatabasesAsync();
 
+			databases.Should().NotBeNullOrEmpty();
+			databases.Where(database => database.Name.Equals(_dbName)).Should().NotBeNull();
+		}
 
-            InfluxDbApiDeleteResponse deleteResponse = await _db.DeleteDatabaseAsync(dbName);
+		[Test]
+		public async void Ping_Test()
+		{
+			var pong = await _db.PingAsync();
 
-            response.Success.Should().BeTrue();
-            deleteResponse.Success.Should().BeTrue();
-        }
+			pong.Should().NotBeNull();
+			pong.Version.Should().NotBeEmpty();
+			pong.Success.Should().BeTrue();
+		}
 
-        [Test]
-        public async void Delete_Database_Test()
-        {
-            string dbName = GetNewDbName();
-            InfluxDbApiCreateResponse createResponse = await _db.CreateDatabaseAsync(dbName);
+		[Test]
+		public async void Write_Query_Drop_Series_With_Tags_Fields_Test()
+		{
+			var points = NewPoints(1);
 
-            createResponse.Success.Should().BeTrue();
+			var writeResponse = await _db.WriteAsync(_dbName, points);
+			writeResponse.Success.Should().BeTrue();
 
-            InfluxDbApiDeleteResponse response = await _db.DeleteDatabaseAsync(dbName);
+			var expected = points.First();
 
-            response.Success.Should().BeTrue();
-        }
+			// query
+			var actual = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
 
-        [Test]
-        public async void DescribeDatabases_Test()
-        {
-            string dbName = GetNewDbName();
-            InfluxDbApiCreateResponse createResponse = await _db.CreateDatabaseAsync(dbName);
-            createResponse.Success.Should().BeTrue();
+			actual.Should().NotBeNull();
+			actual.Count.Should().Be(1);
+			actual.First().Tags.Count().Should().Be(expected.Tags.Count);
+			actual.First().Name.Should().Be(expected.Name);
 
-            List<Database> databases = await _db.DescribeDatabasesAsync();
+			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
+			deleteSerieResponse.Success.Should().BeTrue();
+		}
 
+		[Test]
+		public async void Write_Query_Drop_Series_With_Fields_Test()
+		{
+			var points = NewPoints(1);
+			points.First().Tags.Clear();
+			points.First().Tags.Count.Should().Be(0);
 
-            InfluxDbApiDeleteResponse deleteResponse = await _db.DeleteDatabaseAsync(dbName);
+			// write
+			var writeResponse = await _db.WriteAsync(_dbName, points);
+			writeResponse.Success.Should().BeTrue();
 
-            databases.Should().NotBeNullOrEmpty();
-            databases.Where(database => database.Name.Equals(dbName)).Should().NotBeNull();
-            deleteResponse.Success.Should().BeTrue();
-        }
+			var expected = points.First();
 
-        [Test]
-        public async void Ping_Test()
-        {
-            Pong pong = await _db.PingAsync();
-            pong.Should().NotBeNull();
-            pong.Status.Should().BeEquivalentTo("ok");
-        }
+			// query
+			var actual = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
 
-        [Test]
-        public async void Query_DB_Test()
-        {
-            string dbName = GetNewDbName();
+			actual.Should().NotBeNull();
+			actual.Count.Should().Be(1);
+			actual.First().Name.Should().Be(expected.Name);
 
-            InfluxDbApiCreateResponse createResponse = await _db.CreateDatabaseAsync(dbName);
+			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
+			deleteSerieResponse.Success.Should().BeTrue();
+		}
 
-            const string TMP_SERIE_NAME = "testSeries";
-            Serie serie = new Serie.Builder(TMP_SERIE_NAME)
-                .Columns("value1", "value2")
-                .Values(DateTime.Now.Millisecond, 5)
-                .Build();
-            InfluxDbApiResponse writeResponse = await _db.WriteAsync(dbName, TimeUnit.Milliseconds, serie);
+		[Test]
+		public void Randomizes_String()
+		{
+			var actual = new Random().NextString(5000);
 
-            List<Serie> series =
-                await _db.QueryAsync(dbName, string.Format("select * from {0}", TMP_SERIE_NAME), TimeUnit.Milliseconds);
+			actual.Should().NotContain(@"\");
+		}
 
-            InfluxDbApiDeleteResponse deleteResponse = await _db.DeleteDatabaseAsync(dbName);
+		[Test]
+		public void Formats_Point()
+		{
+			const string value = @"\=&,""*"" ";
+			const string escapedValue = @"\\=&\,\""*\""\ ";
+			const string tagName = @"tag";
+			const string fieldName = @"field";
+			var dt = DateTime.Now;
 
-            series.Should().NotBeNull();
-            series.Count.Should().Be(1);
+			var point = new Point
+			{
+				Name = value,
+				Tags = new Dictionary<string, object>
+				{
+					{ tagName, value }
+				},
+				Fields = new Dictionary<string, object>
+				{
+					{ fieldName, value }
+				},
+				Timestamp = dt
+			};
 
-            createResponse.Success.Should().BeTrue();
-            writeResponse.Success.Should().BeTrue();
-            deleteResponse.Success.Should().BeTrue();
-        }
+			var expected = string.Format(Point.LineTemplate,
+				string.Join(",", escapedValue, string.Join(@"=""", tagName, escapedValue + @"""")),
+				string.Join(@"=""", fieldName, escapedValue + @""""),
+				dt.ToUnixTime());
 
-        [Test]
-        public async void Write_DB_Test()
-        {
-            string dbName = GetNewDbName();
+			var actual = point.ToString();
 
-            InfluxDbApiCreateResponse createResponse = await _db.CreateDatabaseAsync(dbName);
+			actual.Should().Be(expected);
+		}
 
-            Serie serie = new Serie.Builder("testSeries")
-                .Columns("value1", "value2")
-                .Values(DateTime.Now.Millisecond, 5)
-                .Build();
-            InfluxDbApiResponse writeResponse = await _db.WriteAsync(dbName, TimeUnit.Milliseconds, serie);
+		private Point[] NewPoints(int count)
+		{
+			var rnd = new Random();
+			var fixture = new Fixture();
 
-            InfluxDbApiDeleteResponse deleteResponse = await _db.DeleteDatabaseAsync(dbName);
+			var points = fixture
+				.Build<Point>()
+				.With(p => p.Name, rnd.NextString(10))
+				.With(p => p.Tags,
+					new Dictionary<string, object>
+					{
+						{ "tag-string", rnd.NextString(50) },
+						{ "tag-bool", rnd.Next(2) == 0 },
+						{ "tag-int", fixture.Create<int>() },
+						{ "tag-decimal", (decimal)rnd.NextDouble() },
+						{ "tag-float", (float)rnd.NextDouble() },
+						{ "tag-datetime", fixture.Create<DateTime>() }
+					})
+				.With(p => p.Fields,
+					new Dictionary<string, object>
+					{
+						{ "field-string", rnd.NextString(50) },
+						{ "field-bool", rnd.Next(2) == 0 },
+						{ "field-int", fixture.Create<int>() },
+						{ "field-decimal", (decimal)rnd.NextDouble() },
+						{ "field-float", (float)rnd.NextDouble() },
+						{ "field-datetime", fixture.Create<DateTime>() }
+					})
+				.CreateMany(count);
 
-            createResponse.Success.Should().BeTrue();
-            writeResponse.Success.Should().BeTrue();
-            deleteResponse.Success.Should().BeTrue();
-        }
-    }
+			return points.ToArray();
+		}
+	}
 }
