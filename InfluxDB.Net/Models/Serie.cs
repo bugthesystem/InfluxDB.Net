@@ -8,6 +8,7 @@ namespace InfluxDB.Net.Models
 	{
 		public Serie()
 		{
+			Tags = new Dictionary<string, object>();
 		}
 
 		private Serie(string name)
