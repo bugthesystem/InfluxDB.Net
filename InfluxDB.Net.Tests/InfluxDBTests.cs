@@ -5,6 +5,7 @@ using FluentAssertions;
 using InfluxDB.Net.Models;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
+using System.Configuration;
 
 namespace InfluxDB.Net.Tests
 {
@@ -15,7 +16,10 @@ namespace InfluxDB.Net.Tests
 
 		protected override void FinalizeSetUp()
 		{
-			_db = new InfluxDb("http://suave.local:8086", "root", "root");
+			_db = new InfluxDb(
+				ConfigurationManager.AppSettings.Get("url"),
+				ConfigurationManager.AppSettings.Get("username"),
+				ConfigurationManager.AppSettings.Get("password"));
 
 			_db.Should().NotBeNull();
 
