@@ -15,7 +15,7 @@ namespace InfluxDB.Net.Tests
 
 		protected override void FinalizeSetUp()
 		{
-			_db = new InfluxDb("http://localhost:8086", "root", "root");
+			_db = new InfluxDb("http://suave.local:8086", "root", "root");
 
 			_db.Should().NotBeNull();
 
@@ -82,8 +82,8 @@ namespace InfluxDB.Net.Tests
 
 			actual.Should().NotBeNull();
 			actual.Count.Should().Be(1);
-			actual.First().Tags.Count().Should().Be(expected.Tags.Count);
-			actual.First().Name.Should().Be(expected.Name);
+			actual.Single().Tags.Count().Should().Be(expected.Tags.Count);
+			actual.Single().Name.Should().Be(expected.Name);
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
@@ -107,7 +107,8 @@ namespace InfluxDB.Net.Tests
 
 			actual.Should().NotBeNull();
 			actual.Count.Should().Be(1);
-			actual.First().Name.Should().Be(expected.Name);
+			actual.Single().Name.Should().Be(expected.Name);
+			actual.Single().Tags.Count.Should().Be(0);
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
@@ -161,7 +162,7 @@ namespace InfluxDB.Net.Tests
 
 			var points = fixture
 				.Build<Point>()
-				.With(p => p.Name, rnd.NextString(10))
+				.With(p => p.Name, rnd.NextAlphanumericString(10))
 				.With(p => p.Tags,
 					new Dictionary<string, object>
 					{

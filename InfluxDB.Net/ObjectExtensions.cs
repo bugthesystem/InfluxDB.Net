@@ -43,9 +43,21 @@ namespace InfluxDB.Net
 					data[i] = (byte)r.Next(32, 127);
 				}
 				while (data[i] == 92);
-         }
+			}
 			var encoding = new UTF8Encoding();
+
 			return encoding.GetString(data, 0, length);
+		}
+
+		public static string NextAlphanumericString(this Random r, int length)
+		{
+			var data = new byte[length];
+			for (int i = 0; i < data.Length; i++)
+			{
+				data[i] = (byte)r.Next(48, 90);
+			}
+
+			return Encoding.UTF8.GetString(data, 0, length);
 		}
 	}
 }

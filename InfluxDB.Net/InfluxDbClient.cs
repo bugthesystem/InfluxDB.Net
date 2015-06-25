@@ -331,6 +331,7 @@ namespace InfluxDB.Net
 			HandleIfErrorResponse(response.StatusCode, content, errorHandlers);
 
 			Debug.WriteLine("[Response] {0}", response.ToJson());
+			Debug.WriteLine("[ResponseData] {0}", content);
 
 			return new InfluxDbApiResponse(response.StatusCode, content);
 		}
@@ -395,9 +396,7 @@ namespace InfluxDB.Net
 				}
 				else
 				{
-					var bytes = new ByteArrayContent(Encoding.UTF8.GetBytes(body.ToString()));
-					request.Content = bytes;
-               //request.Content = new StringContent(body.ToString());
+					request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(body.ToString()));
 				}
 			}
 
