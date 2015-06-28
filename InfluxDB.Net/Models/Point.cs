@@ -19,6 +19,12 @@ namespace InfluxDB.Net.Models
 
 		public static readonly string LineTemplate = "{0} {1} {2}"; // [key] [fields] [timestamp]
 
+		public Point()
+		{
+			Tags = new Dictionary<string, object>();
+			Fields = new Dictionary<string, object>();
+		}
+
 		/// <summary>
 		/// Returns a point represented in line protocol format for writing to the API endpoint
 		/// </summary>

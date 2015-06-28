@@ -30,7 +30,7 @@ namespace InfluxDB.Net
 			return Convert.ToInt64((date - _epoch).TotalSeconds);
 		}
 
-		public static string NextString(this Random r, int length)
+		public static string NextPrintableString(this Random r, int length)
 		{
 			var data = new byte[length];
 			for (int i = 0; i < data.Length; i++)
@@ -47,17 +47,6 @@ namespace InfluxDB.Net
 			var encoding = new UTF8Encoding();
 
 			return encoding.GetString(data, 0, length);
-		}
-
-		public static string NextAlphanumericString(this Random r, int length)
-		{
-			var data = new byte[length];
-			for (int i = 0; i < data.Length; i++)
-			{
-				data[i] = (byte)r.Next(48, 90);
-			}
-
-			return Encoding.UTF8.GetString(data, 0, length);
 		}
 	}
 }

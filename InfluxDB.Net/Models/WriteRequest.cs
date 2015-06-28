@@ -18,7 +18,7 @@ namespace InfluxDB.Net.Models
 		/// <returns></returns>
 		public string GetLines()
 		{
-			return string.Join(Environment.NewLine, Points.Select(p => p.ToString()));
+			return string.Join("\n", Points.Select(p => p.ToString()));
 		}
 	}
 

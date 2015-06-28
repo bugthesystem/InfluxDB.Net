@@ -72,6 +72,15 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
+		public async void Write_Query_Drop_Many_Series_With_Tags_Fields_Test()
+		{
+			var points = NewPoints(5);
+
+			var writeResponse = await _db.WriteAsync(_dbName, points);
+			writeResponse.Success.Should().BeTrue();
+		}
+
+		[Test]
 		public async void Write_Query_Drop_Series_With_Tags_Fields_Test()
 		{
 			var points = NewPoints(1);
@@ -82,12 +91,17 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
-			var actual = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
+			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
 
-			actual.Should().NotBeNull();
-			actual.Count.Should().Be(1);
-			actual.Single().Tags.Count().Should().Be(expected.Tags.Count);
-			actual.Single().Name.Should().Be(expected.Name);
+			result.Should().NotBeNull();
+			result.Count.Should().Be(1);
+
+			var actual = result.Single();
+
+			actual.Name.Should().Be(expected.Name);
+			actual.Tags.Count.Should().Be(expected.Tags.Count);
+			actual.Columns.Count().Should().Be(expected.Fields.Count + 1);
+			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1);
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
@@ -107,12 +121,17 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
-			var actual = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
+			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
 
-			actual.Should().NotBeNull();
-			actual.Count.Should().Be(1);
-			actual.Single().Name.Should().Be(expected.Name);
-			actual.Single().Tags.Count.Should().Be(0);
+			result.Should().NotBeNull();
+			result.Count.Should().Be(1);
+
+			var actual = result.Single();
+
+			actual.Name.Should().Be(expected.Name);
+			actual.Tags.Count.Should().Be(0);
+			actual.Columns.Count().Should().Be(expected.Fields.Count + 1);
+			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1);
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
@@ -121,7 +140,7 @@ namespace InfluxDB.Net.Tests
 		[Test]
 		public void Randomizes_String()
 		{
-			var actual = new Random().NextString(5000);
+			var actual = new Random().NextPrintableString(5000);
 
 			actual.Should().NotContain(@"\");
 		}
@@ -159,37 +178,61 @@ namespace InfluxDB.Net.Tests
 			actual.Should().Be(expected);
 		}
 
+		[Test]
+		public void Gets_Lines()
+		{
+			var points = NewPoints(2);
+			var request = new WriteRequest
+			{
+				Points = points
+			};
+
+			var actual = request.GetLines();
+			var expected = string.Join("\n", points.Select(p => p.ToString()));
+
+			actual.Should().Be(expected);
+		}
+
 		private Point[] NewPoints(int count)
 		{
 			var rnd = new Random();
 			var fixture = new Fixture();
 
-			var points = fixture
-				.Build<Point>()
-				.With(p => p.Name, rnd.NextAlphanumericString(10))
-				.With(p => p.Tags,
-					new Dictionary<string, object>
-					{
-						{ "tag-string", rnd.NextString(50) },
-						{ "tag-bool", rnd.Next(2) == 0 },
-						{ "tag-int", fixture.Create<int>() },
-						{ "tag-decimal", (decimal)rnd.NextDouble() },
-						{ "tag-float", (float)rnd.NextDouble() },
-						{ "tag-datetime", fixture.Create<DateTime>() }
-					})
-				.With(p => p.Fields,
-					new Dictionary<string, object>
-					{
-						{ "field-string", rnd.NextString(50) },
-						{ "field-bool", rnd.Next(2) == 0 },
-						{ "field-int", fixture.Create<int>() },
-						{ "field-decimal", (decimal)rnd.NextDouble() },
-						{ "field-float", (float)rnd.NextDouble() },
-						{ "field-datetime", fixture.Create<DateTime>() }
-					})
-				.CreateMany(count);
+			fixture.Customize<Point>(c => c
+				.With(p => p.Name, Guid.NewGuid().ToString().Substring(0, 10))
+				.Do(p => p.Tags = NewTags(rnd))
+				.Do(p => p.Fields = NewFields(rnd))
+				.With(p => p.Timestamp, DateTime.Now)
+				.OmitAutoProperties());
+				
 
-			return points.ToArray();
+			return fixture.CreateMany<Point>(count).ToArray();
+		}
+
+		private Dictionary<string, object> NewTags(Random rnd)
+		{
+			return new Dictionary<string, object>
+				{
+					{ "tag-string", rnd.NextPrintableString(50) },
+					{ "tag-bool", rnd.Next(2) == 0 },
+					{ "tag-int", rnd.Next() },
+					{ "tag-decimal", (decimal)rnd.NextDouble() },
+					{ "tag-float", (float)rnd.NextDouble() },
+					{ "tag-datetime", DateTime.Now }
+				};
+		}
+
+		private Dictionary<string, object> NewFields(Random rnd)
+		{
+			return new Dictionary<string, object>
+			{
+				{ "field-string", rnd.NextPrintableString(50) },
+				{ "field-bool", rnd.Next(2) == 0 },
+				{ "field-int", rnd.Next() },
+				{ "field-decimal", (decimal)rnd.NextDouble() },
+				{ "field-float", (float)rnd.NextDouble() },
+				{ "field-datetime", DateTime.Now }
+			};
 		}
 	}
 }

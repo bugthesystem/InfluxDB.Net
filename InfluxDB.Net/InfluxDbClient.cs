@@ -74,7 +74,10 @@ namespace InfluxDB.Net
 					string policyName, string dbName, string duration, int replication)
 		{
 			return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-				new Dictionary<string, string> { { Q, string.Format(AlterRetentionPolicyStmt, policyName, dbName, duration, replication) } });
+				new Dictionary<string, string>
+				{
+					{Q, string.Format(AlterRetentionPolicyStmt, policyName, dbName, duration, replication) }
+				});
 		}
 
 		/// <summary>Pings the server.</summary>
@@ -126,12 +129,13 @@ namespace InfluxDB.Net
 			IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
 			WriteRequest request, string timePrecision)
 		{
-			var result = await RequestAsync(errorHandlers, HttpMethod.Post, "write", request.GetLines(),
+			var content = new StringContent(request.GetLines(), Encoding.UTF8, "text/plain");
+			var result = await RequestAsync(errorHandlers, HttpMethod.Post, "write", content,
 				new Dictionary<string, string>
 				{
 					{ Db, request.Database },
 					{ TimePrecision, timePrecision }
-				}, true, false, "text/plain");
+				}, true, false);
 
 			return new InfluxDbApiWriteResponse(result.StatusCode, result.Body);
 		}
@@ -299,8 +303,10 @@ namespace InfluxDB.Net
 
 		private async Task<InfluxDbApiResponse> RequestAsync(
 			 IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, HttpMethod method, string path,
-			 object data = null,
-			 Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, bool headerIsBody = false, string contentType = "application/json")
+			 HttpContent data = null,
+			 Dictionary<string, string> extraParams = null,
+			 bool includeAuthToQuery = true,
+			 bool headerIsBody = false)
 		{
 			var response = await RequestInnerAsync(null,
 				HttpCompletionOption.ResponseHeadersRead,
@@ -309,8 +315,7 @@ namespace InfluxDB.Net
 				path,
 				data,
 				extraParams,
-				includeAuthToQuery,
-				contentType);
+				includeAuthToQuery);
 
 			string content = string.Empty;
 
@@ -338,7 +343,7 @@ namespace InfluxDB.Net
 
 		private async Task<HttpResponseMessage> RequestInnerAsync(TimeSpan? requestTimeout,
 			 HttpCompletionOption completionOption, CancellationToken cancellationToken, HttpMethod method, string path,
-			 object data = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true, string contentType = "application/json")
+			 HttpContent data = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
 		{
 			HttpClient client = GetHttpClient();
 
@@ -348,7 +353,7 @@ namespace InfluxDB.Net
 			}
 
 			StringBuilder uri = BuildUri(path, extraParams, includeAuthToQuery);
-			HttpRequestMessage request = PrepareRequest(method, data, contentType, uri);
+			HttpRequestMessage request = PrepareRequest(method, data, uri);
 
 			Debug.WriteLine("[Request] {0}", request.ToJson());
 			if (data != null)
@@ -380,25 +385,13 @@ namespace InfluxDB.Net
 			return urlBuilder;
 		}
 
-		private static HttpRequestMessage PrepareRequest(HttpMethod method, object body, string contentType, StringBuilder urlBuilder)
+		private static HttpRequestMessage PrepareRequest(HttpMethod method, HttpContent body, StringBuilder urlBuilder)
 		{
 			var request = new HttpRequestMessage(method, urlBuilder.ToString());
 			request.Headers.Add("User-Agent", UserAgent);
 			request.Headers.Add("Accept", "application/json");
 
-			if (body != null)
-			{
-				if (contentType.Equals("application/json"))
-				{
-					var content = new JsonRequestContent(body, new JsonSerializer());
-					var requestContent = content.GetContent();
-					request.Content = requestContent;
-				}
-				else
-				{
-					request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(body.ToString()));
-				}
-			}
+			request.Content = body;
 
 			return request;
 		}
