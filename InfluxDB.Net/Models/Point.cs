@@ -23,6 +23,7 @@ namespace InfluxDB.Net.Models
 		{
 			Tags = new Dictionary<string, object>();
 			Fields = new Dictionary<string, object>();
+			Precision = TimeUnit.Milliseconds;
 		}
 
 		/// <summary>
@@ -66,6 +67,11 @@ namespace InfluxDB.Net.Models
 			if (value.GetType() == typeof(string))
 			{
 				result = @"""" + Escape(value.ToString()) + @"""";
+			}
+			// api needs lowercase booleans
+			else if (value.GetType() == typeof(bool))
+			{
+				result = value.ToString().ToLower();
 			}
 			// convert datetime to unix
 			else if (value.GetType() == typeof(DateTime))
