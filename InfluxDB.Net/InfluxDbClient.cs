@@ -21,7 +21,7 @@ namespace InfluxDB.Net
 		private const string Id = "id";
 		private const string Name = "name";
 		private const string Db = "db";
-		private const string TimePrecision = "time_precision";
+		private const string Precision = "precision";
 
 		private const string AlterRetentionPolicyStmt = "alter retention policy {0} on {1} {2} {3} {4} {5}";
 		private const string CreateContinuousQueryStmt = "create continuous query {0} on {1} begin {2} end;";
@@ -54,6 +54,7 @@ namespace InfluxDB.Net
 		{
 			if (statusCode < HttpStatusCode.OK || statusCode >= HttpStatusCode.BadRequest)
 			{
+				Debug.WriteLine(string.Format("[Error] {0} {1}", statusCode, body));
 				throw new InfluxDbApiException(statusCode, body);
 			}
 		};
@@ -134,7 +135,7 @@ namespace InfluxDB.Net
 				new Dictionary<string, string>
 				{
 					{ Db, request.Database },
-					{ TimePrecision, timePrecision }
+					{ Precision, timePrecision }
 				}, true, false);
 
 			return new InfluxDbApiWriteResponse(result.StatusCode, result.Body);
@@ -144,17 +145,15 @@ namespace InfluxDB.Net
 		/// <param name="errorHandlers">The error handlers.</param>
 		/// <param name="name">The name.</param>
 		/// <param name="query">The query.</param>
-		/// <param name="timePrecision">The time precision.</param>
 		/// <returns></returns>
 		public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-			 string name, string query, string timePrecision)
+			 string name, string query)
 		{
 			return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
 				new Dictionary<string, string>
 				{
 					{Db, name},
-					{Q, query},
-					{TimePrecision, timePrecision}
+					{Q, query}
 				});
 		}
 
@@ -303,7 +302,7 @@ namespace InfluxDB.Net
 
 		private async Task<InfluxDbApiResponse> RequestAsync(
 			 IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, HttpMethod method, string path,
-			 HttpContent data = null,
+			 HttpContent content = null,
 			 Dictionary<string, string> extraParams = null,
 			 bool includeAuthToQuery = true,
 			 bool headerIsBody = false)
@@ -313,15 +312,15 @@ namespace InfluxDB.Net
 				CancellationToken.None,
 				method,
 				path,
-				data,
+				content,
 				extraParams,
 				includeAuthToQuery);
 
-			string content = string.Empty;
+			string responseContent = string.Empty;
 
 			if (!headerIsBody)
 			{
-				content = await response.Content.ReadAsStringAsync();
+				responseContent = await response.Content.ReadAsStringAsync();
 			}
 			else
 			{
@@ -329,21 +328,21 @@ namespace InfluxDB.Net
 
 				if (response.Headers.TryGetValues("X-Influxdb-Version", out values))
 				{
-					content = values.First();
+					responseContent = values.First();
 				}
 			}
 
-			HandleIfErrorResponse(response.StatusCode, content, errorHandlers);
+			HandleIfErrorResponse(response.StatusCode, responseContent, errorHandlers);
 
 			Debug.WriteLine("[Response] {0}", response.ToJson());
-			Debug.WriteLine("[ResponseData] {0}", content);
+			Debug.WriteLine("[ResponseData] {0}", responseContent);
 
-			return new InfluxDbApiResponse(response.StatusCode, content);
+			return new InfluxDbApiResponse(response.StatusCode, responseContent);
 		}
 
 		private async Task<HttpResponseMessage> RequestInnerAsync(TimeSpan? requestTimeout,
 			 HttpCompletionOption completionOption, CancellationToken cancellationToken, HttpMethod method, string path,
-			 HttpContent data = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
+			 HttpContent content = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
 		{
 			HttpClient client = GetHttpClient();
 
@@ -353,12 +352,12 @@ namespace InfluxDB.Net
 			}
 
 			StringBuilder uri = BuildUri(path, extraParams, includeAuthToQuery);
-			HttpRequestMessage request = PrepareRequest(method, data, uri);
+			HttpRequestMessage request = PrepareRequest(method, content, uri);
 
 			Debug.WriteLine("[Request] {0}", request.ToJson());
-			if (data != null)
+			if (content != null)
 			{
-				Debug.WriteLine("[RequestData] {0}", data.ToString());
+				Debug.WriteLine("[RequestData] {0}", content.ReadAsStringAsync().Result);
 			}
 
 			return await client.SendAsync(request, completionOption, cancellationToken);
@@ -385,13 +384,13 @@ namespace InfluxDB.Net
 			return urlBuilder;
 		}
 
-		private static HttpRequestMessage PrepareRequest(HttpMethod method, HttpContent body, StringBuilder urlBuilder)
+		private static HttpRequestMessage PrepareRequest(HttpMethod method, HttpContent content, StringBuilder urlBuilder)
 		{
 			var request = new HttpRequestMessage(method, urlBuilder.ToString());
 			request.Headers.Add("User-Agent", UserAgent);
 			request.Headers.Add("Accept", "application/json");
 
-			request.Content = body;
+			request.Content = content;
 
 			return request;
 		}

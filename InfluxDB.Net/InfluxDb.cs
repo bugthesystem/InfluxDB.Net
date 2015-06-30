@@ -62,22 +62,34 @@ namespace InfluxDB.Net
 			return await _influxDbClient.Write(NoErrorHandlers, request, ToTimePrecision(TimeUnit.Milliseconds));
 		}
 
-		/// <summary>
-		///     Execute a query agains a database.
-		/// </summary>
+		/// <summary>Execute a query agains a database.</summary>
 		/// <param name="database">the name of the database</param>
-		/// <param name="query">
-		///     the query to execute, for language specification please see
-		///     <a href="http://influxdb.org/docs/query_language">http://influxdb.org/docs/query_language</a>
-		/// </param>
-		/// <param name="precision">the precision used for the values.</param>
+		/// <param name="query">the query to execute, for language specification please see
+		/// <a href="https://influxdb.com/docs/v0.9/concepts/reading_and_writing_data.html"></a></param>
 		/// <returns>A list of Series which matched the query.</returns>
-		public async Task<List<Serie>> QueryAsync(string database, string query, TimeUnit precision)
+		/// <exception cref="InfluxDbApiException"></exception>
+		/// <remarks>Assumes one Result per QueryResult</remarks>
+		public async Task<List<Serie>> QueryAsync(string database, string query)
 		{
 			InfluxDbApiResponse response =
-				 await _influxDbClient.Query(NoErrorHandlers, database, query, ToTimePrecision(precision));
+				 await _influxDbClient.Query(NoErrorHandlers, database, query);
 
-			return response.ReadAs<QueryResult>().Results.First().Series.ToList();
+			var queryResult = response.ReadAs<QueryResult>();
+
+			Check.NotNull(queryResult, "queryResult");
+			Check.NotNull(queryResult.Results, "queryResult.Results");
+
+			// apparently a 200 OK can return an error in the results
+			// https://github.com/influxdb/influxdb/pull/1813
+			var error = queryResult.Results.Single().Error;
+			if (error != null)
+			{
+				throw new InfluxDbApiException(System.Net.HttpStatusCode.BadRequest, error);
+			}
+
+			var result = queryResult.Results.Single().Series;
+
+			return result != null ? result.ToList() : new List<Serie>();
 		}
 
 		/// <summary>

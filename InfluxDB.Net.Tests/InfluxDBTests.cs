@@ -6,6 +6,7 @@ using InfluxDB.Net.Models;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
 using System.Configuration;
+using System.Net;
 
 namespace InfluxDB.Net.Tests
 {
@@ -42,7 +43,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Create_Delete_DB_Test()
+		public async void Creates_Deletes_DB()
 		{
 			var dbName = GetNewDbName();
 			var createResponse = await _db.CreateDatabaseAsync(dbName);
@@ -53,7 +54,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Show_DB_Test()
+		public async void Shows_DB()
 		{
 			List<Database> databases = await _db.ShowDatabasesAsync();
 
@@ -62,7 +63,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Ping_Test()
+		public async void Pings_Server()
 		{
 			var pong = await _db.PingAsync();
 
@@ -72,7 +73,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Write_Query_Drop_Many_Series_With_Tags_Fields_Test()
+		public async void Writes_Many_Series_With_Tags_Fields()
 		{
 			var points = NewPoints(5);
 
@@ -81,7 +82,44 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Write_Query_Drop_Series_With_Tags_Fields_Test()
+		public void Throws_Exception_When_Writing_Series_Without_Fields()
+		{
+			var points = NewPoints(1);
+			points.Single().Timestamp = null;
+			points.Single().Fields.Clear();
+
+			Assert.Throws<InfluxDbApiException>(async () =>
+				await _db.WriteAsync(_dbName, points));
+		}
+
+		[Test]
+		public void Throws_Exception_On_Malformed_Query()
+		{
+			Assert.Throws<InfluxDbApiException>(async () =>
+				await _db.QueryAsync(_dbName, "blah"));
+		}
+
+		[Test]
+		public void Throws_Exception_When_Querying_Nonexistent_Series()
+		{
+			Assert.Throws<InfluxDbApiException>(async () =>
+				await _db.QueryAsync(_dbName, "select * from nonexistentseries"));
+		}
+
+		[Test]
+		public async void Throws_Exception_On_Query_With_Nonexistant_Field()
+		{
+			var points = NewPoints(1);
+			var response = await _db.WriteAsync(_dbName, points);
+
+			response.Success.Should().Be(true);
+
+			Assert.Throws<InfluxDbApiException>(async () =>
+				await _db.QueryAsync(_dbName, string.Format("select nonexistentfield from \"{0}\"", points.Single().Name)));
+		}
+
+		[Test]
+		public async void Write_Query_Drop_Series_With_Tags_Fields()
 		{
 			var points = NewPoints(1);
 
@@ -91,10 +129,10 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
-			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
+			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name));
 
 			result.Should().NotBeNull();
-			result.Count.Should().Be(1);
+			result.Count().Should().Be(1);
 
 			var actual = result.Single();
 
@@ -103,12 +141,18 @@ namespace InfluxDB.Net.Tests
 			actual.Columns.Count().Should().Be(expected.Fields.Count + 1);
 			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1);
 
-			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
+			var x = (DateTime)actual.Values[0][0];
+			System.Diagnostics.Debug.WriteLine(actual.Values[0][0]);
+			System.Diagnostics.Debug.WriteLine(x.ToUniversalTime());
+
+			((DateTime)actual.Values[0][0]).ToUnixTime().Should().Be(points.First().Timestamp.Value.ToUnixTime());
+
+         var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
 		}
 
 		[Test]
-		public async void Write_Query_Drop_Series_With_Fields_Test()
+		public async void Write_Query_Drop_Series_With_Fields()
 		{
 			var points = NewPoints(1);
 			points.First().Tags.Clear();
@@ -121,20 +165,33 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
-			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name), TimeUnit.Milliseconds);
+			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name));
 
 			result.Should().NotBeNull();
-			result.Count.Should().Be(1);
+			result.Count().Should().Be(1);
 
 			var actual = result.Single();
 
+			actual.Tags.Count.Should().Be(expected.Tags.Count);
+
 			actual.Name.Should().Be(expected.Name);
-			actual.Tags.Count.Should().Be(0);
-			actual.Columns.Count().Should().Be(expected.Fields.Count + 1);
-			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1);
+			actual.Columns.Count().Should().Be(expected.Fields.Count + 1);  // time field always included
+			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1); // time field always included
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
+		}
+
+		[Test]
+		public async void Query_Returns_Empty_Result()
+		{
+			var points = NewPoints(1);
+
+			var response = await _db.WriteAsync(_dbName, points);
+			response.Success.Should().Be(true);
+
+			var actual = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\" where 0=1", points.Single().Name));
+			actual.Count.Should().Be(0);
 		}
 
 		[Test]
@@ -203,6 +260,7 @@ namespace InfluxDB.Net.Tests
 				.Do(p => p.Tags = NewTags(rnd))
 				.Do(p => p.Fields = NewFields(rnd))
 				.With(p => p.Timestamp, DateTime.Now)
+				.With(p => p.Precision, TimeUnit.Milliseconds)
 				.OmitAutoProperties());
 				
 

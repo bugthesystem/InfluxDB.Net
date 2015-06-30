@@ -9,7 +9,7 @@ namespace InfluxDB.Net
 	{
 		Task<Pong> PingAsync();
 		Task<InfluxDbApiWriteResponse> WriteAsync(string database, Point[] points, string retenionPolicy = "default");
-		Task<List<Serie>> QueryAsync(string database, string query, TimeUnit precision);
+		Task<List<Serie>> QueryAsync(string database, string query);
 		Task<InfluxDbApiResponse> CreateDatabaseAsync(string name);
 		Task<InfluxDbApiResponse> DropDatabaseAsync(string name);
 		Task<List<Database>> ShowDatabasesAsync();
