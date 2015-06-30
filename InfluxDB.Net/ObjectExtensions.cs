@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Text;
 
@@ -20,14 +21,20 @@ namespace InfluxDB.Net
 			return @object;
 		}
 
-		public static DateTime FromUnixTime(this long unixTime)
+		/// <summary>Converts from unix time in milliseconds.</summary>
+		/// <param name="unixTimeInMillis">The unix time in millis.</param>
+		/// <returns></returns>
+		public static DateTime FromUnixTime(this long unixTimeInMillis)
 		{
-			return _epoch.AddSeconds(unixTime);
+			return _epoch.AddMilliseconds(unixTimeInMillis);
 		}
 
+		/// <summary>Converts to unix time in milliseconds.</summary>
+		/// <param name="date">The date.</param>
+		/// <returns>The number of elapsed milliseconds</returns>
 		public static long ToUnixTime(this DateTime date)
 		{
-			return Convert.ToInt64((date - _epoch).TotalSeconds);
+			return Convert.ToInt64((date - _epoch).TotalMilliseconds);
 		}
 
 		public static string NextPrintableString(this Random r, int length)
