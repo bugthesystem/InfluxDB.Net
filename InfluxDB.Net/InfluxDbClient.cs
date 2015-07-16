@@ -134,7 +134,7 @@ namespace InfluxDB.Net
 			var result = await RequestAsync(errorHandlers, HttpMethod.Post, "write", content,
 				new Dictionary<string, string>
 				{
-					{ Db, request.Database },
+					{ Db, request.Database},
 					{ Precision, timePrecision }
 				}, true, false);
 

@@ -120,20 +120,19 @@ namespace InfluxDB.Net
 		/// <returns>A list of all Databases</returns>
 		public async Task<List<Database>> ShowDatabasesAsync()
 		{
-			InfluxDbApiResponse response = await _influxDbClient.ShowDatabases(NoErrorHandlers);
+			var response = await _influxDbClient.ShowDatabases(NoErrorHandlers);
 
 			var results = response.ReadAs<QueryResult>();
 			var databases = new List<Database>();
 
-			foreach (var result in results.Results)
+			var serie = results.Results.Single().Series.Single();
+
+			foreach (var value in serie.Values)
 			{
-				foreach (var serie in result.Series)
+				databases.Add(new Database
 				{
-					databases.Add(new Database
-					{
-						Name = serie.Name
-					});
-				}
+					Name = (string)value[0]
+				});
 			}
 
 			return databases;

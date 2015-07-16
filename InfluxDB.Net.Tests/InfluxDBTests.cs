@@ -24,7 +24,7 @@ namespace InfluxDB.Net.Tests
 
 			_db.Should().NotBeNull();
 
-			_dbName = GetNewDbName();
+			_dbName = GetRandomName(8);
 
 			var createResponse = _db.CreateDatabaseAsync(_dbName).Result;
 			createResponse.Success.Should().BeTrue();
@@ -37,15 +37,10 @@ namespace InfluxDB.Net.Tests
 			deleteResponse.Success.Should().BeTrue();
 		}
 
-		private static string GetNewDbName()
-		{
-			return "T" + Guid.NewGuid().ToString("N").Substring(9);
-		}
-
 		[Test]
 		public async void Creates_Deletes_DB()
 		{
-			var dbName = GetNewDbName();
+			var dbName = GetRandomName(8);
 			var createResponse = await _db.CreateDatabaseAsync(dbName);
 			var deleteResponse = await _db.DropDatabaseAsync(dbName);
 
@@ -56,10 +51,17 @@ namespace InfluxDB.Net.Tests
 		[Test]
 		public async void Shows_DB()
 		{
-			List<Database> databases = await _db.ShowDatabasesAsync();
+			var databases = await _db.ShowDatabasesAsync();
 
-			databases.Should().NotBeNullOrEmpty();
-			databases.Where(database => database.Name.Equals(_dbName)).Should().NotBeNull();
+			databases
+				.Should()
+				.NotBeNullOrEmpty();
+
+			databases
+				.Where(db => db.Name.Equals(_dbName))
+				.Single()
+				.Should()
+				.NotBeNull();
 		}
 
 		[Test]
@@ -112,7 +114,7 @@ namespace InfluxDB.Net.Tests
 			var points = NewPoints(1);
 			var response = await _db.WriteAsync(_dbName, points);
 
-			response.Success.Should().Be(true);
+			response.Success.Should().BeTrue();
 
 			Assert.Throws<InfluxDbApiException>(async () =>
 				await _db.QueryAsync(_dbName, string.Format("select nonexistentfield from \"{0}\"", points.Single().Name)));
@@ -129,6 +131,14 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
+			Query(expected);
+
+			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
+			deleteSerieResponse.Success.Should().BeTrue();
+		}
+
+		private async void Query(Point expected)
+		{
 			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name));
 
 			result.Should().NotBeNull();
@@ -138,17 +148,9 @@ namespace InfluxDB.Net.Tests
 
 			actual.Name.Should().Be(expected.Name);
 			actual.Tags.Count.Should().Be(expected.Tags.Count);
-			actual.Columns.Count().Should().Be(expected.Fields.Count + 1);
-			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1);
-
-			var x = (DateTime)actual.Values[0][0];
-			System.Diagnostics.Debug.WriteLine(actual.Values[0][0]);
-			System.Diagnostics.Debug.WriteLine(x.ToUniversalTime());
-
-			((DateTime)actual.Values[0][0]).ToUnixTime().Should().Be(points.First().Timestamp.Value.ToUnixTime());
-
-         var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
-			deleteSerieResponse.Success.Should().BeTrue();
+			actual.Columns.Count().Should().Be(expected.Fields.Count + 1); // time field is always included
+			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1); // time field is always included
+			((DateTime)actual.Values[0][0]).ToUnixTime().Should().Be(expected.Timestamp.Value.ToUnixTime());
 		}
 
 		[Test]
@@ -165,18 +167,7 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
-			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name));
-
-			result.Should().NotBeNull();
-			result.Count().Should().Be(1);
-
-			var actual = result.Single();
-
-			actual.Tags.Count.Should().Be(expected.Tags.Count);
-
-			actual.Name.Should().Be(expected.Name);
-			actual.Columns.Count().Should().Be(expected.Fields.Count + 1);  // time field always included
-			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1); // time field always included
+			Query(expected);
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
@@ -188,7 +179,7 @@ namespace InfluxDB.Net.Tests
 			var points = NewPoints(1);
 
 			var response = await _db.WriteAsync(_dbName, points);
-			response.Success.Should().Be(true);
+			response.Success.Should().BeTrue();
 
 			var actual = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\" where 0=1", points.Single().Name));
 			actual.Count.Should().Be(0);
@@ -250,19 +241,22 @@ namespace InfluxDB.Net.Tests
 			actual.Should().Be(expected);
 		}
 
+		private static string GetRandomName(int length)
+		{
+			return Guid.NewGuid().ToString().Substring(length);
+		}
+
 		private Point[] NewPoints(int count)
 		{
 			var rnd = new Random();
 			var fixture = new Fixture();
 
 			fixture.Customize<Point>(c => c
-				.With(p => p.Name, Guid.NewGuid().ToString().Substring(0, 10))
+				.With(p => p.Name, GetRandomName(10))
 				.Do(p => p.Tags = NewTags(rnd))
 				.Do(p => p.Fields = NewFields(rnd))
 				.With(p => p.Timestamp, DateTime.Now)
-				.With(p => p.Precision, TimeUnit.Milliseconds)
 				.OmitAutoProperties());
-				
 
 			return fixture.CreateMany<Point>(count).ToArray();
 		}
@@ -270,14 +264,14 @@ namespace InfluxDB.Net.Tests
 		private Dictionary<string, object> NewTags(Random rnd)
 		{
 			return new Dictionary<string, object>
-				{
-					{ "tag-string", rnd.NextPrintableString(50) },
-					{ "tag-bool", rnd.Next(2) == 0 },
-					{ "tag-int", rnd.Next() },
-					{ "tag-decimal", (decimal)rnd.NextDouble() },
-					{ "tag-float", (float)rnd.NextDouble() },
-					{ "tag-datetime", DateTime.Now }
-				};
+			{
+				{ "tag-string", rnd.NextPrintableString(50) },
+				{ "tag-bool", rnd.Next(2) == 0 },
+				{ "tag-int", rnd.Next() },
+				{ "tag-decimal", (decimal)rnd.NextDouble() },
+				{ "tag-float", (float)rnd.NextDouble() },
+				{ "tag-datetime", DateTime.Now }
+			};
 		}
 
 		private Dictionary<string, object> NewFields(Random rnd)
