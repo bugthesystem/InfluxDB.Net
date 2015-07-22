@@ -254,7 +254,7 @@ namespace InfluxDB.Net
 
             if (!headerIsBody)
             {
-                content = await response.Content.ReadAsStringAsync();
+                content = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
             else
             {
@@ -285,7 +285,7 @@ namespace InfluxDB.Net
             StringBuilder uri = BuildUri(path, extraParams, includeAuthToQuery);
             HttpRequestMessage request = PrepareRequest(method, data, uri);
 
-            return await client.SendAsync(request, completionOption, cancellationToken);
+            return await client.SendAsync(request, completionOption, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private StringBuilder BuildUri(string path, Dictionary<string, string> extraParams, bool includeAuthToQuery)

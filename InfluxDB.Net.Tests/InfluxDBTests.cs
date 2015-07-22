@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Common.Testing.NUnit;
 using FluentAssertions;
 using InfluxDB.Net.Models;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeSetUp()
         {
-            _db = new InfluxDb("http://localhost:8086", "root", "root");
+            _db = new InfluxDb("http://192.168.99.100:8086", "root", "root");
             EnsureInfluxDbStarted();
         }
 
@@ -127,15 +128,15 @@ namespace InfluxDB.Net.Tests
 
             InfluxDbApiCreateResponse createResponse = await _db.CreateDatabaseAsync(dbName);
 
-            const string TMP_SERIE_NAME = "testSeries";
-            Serie serie = new Serie.Builder(TMP_SERIE_NAME)
+            const string TmpSerieName = "testSeries";
+            Serie serie = new Serie.Builder(TmpSerieName)
                 .Columns("value1", "value2")
                 .Values(DateTime.Now.Millisecond, 5)
                 .Build();
             InfluxDbApiResponse writeResponse = await _db.WriteAsync(dbName, TimeUnit.Milliseconds, serie);
 
             List<Serie> series =
-                await _db.QueryAsync(dbName, string.Format("select * from {0}", TMP_SERIE_NAME), TimeUnit.Milliseconds);
+                await _db.QueryAsync(dbName, string.Format("select * from {0}", TmpSerieName), TimeUnit.Milliseconds);
 
             InfluxDbApiDeleteResponse deleteResponse = await _db.DeleteDatabaseAsync(dbName);
 
