@@ -5,7 +5,7 @@ machine:
 dependencies:
   pre:
     - sudo apt-get update
-    - sudo apt-get upgrade
+    #- sudo apt-get upgrade
     - wget https://s3.amazonaws.com/influxdb/influxdb_0.8.7_amd64.deb
     - sudo dpkg -i influxdb_0.8.7_amd64.deb
     - sudo /etc/init.d/influxdb start
