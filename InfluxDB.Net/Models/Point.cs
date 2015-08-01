@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace InfluxDB.Net.Models
 {
 	/// <summary>
-	/// A class representing a time series point
+	/// A class representing a time series point for db writes
 	/// <see cref="https://github.com/influxdb/influxdb/blob/master/tsdb/README.md" /></summary>
 	public class Point
 	{
@@ -27,16 +25,16 @@ namespace InfluxDB.Net.Models
 		}
 
 		/// <summary>
-		/// Returns a point represented in line protocol format for writing to the API endpoint
+		/// Returns a point represented in line protocol format for writing to the InfluxDb API endpoint
 		/// </summary>
-		/// <returns>A byte array that represents this instance.</returns>
+		/// <returns>A string that represents this instance.</returns>
 		/// <remarks>
 		/// Examples:
-		/// cpu,host=serverA,region=us-west value = 1.0 10000000000
-		/// cpu,host=serverB,region=us-west value = 3.3
-		/// cpu,host=serverB,region=us-east user = 123415235,event="overloaded" 20000000000
+		/// cpu,host=serverA,region=us-west value=1.0 10000000000
+		/// cpu,host=serverB,region=us-west value=3.3
+		/// cpu,host=serverB,region=us-east user=123415235,event="overloaded" 20000000000
 		/// mem,host=serverB,region=us-east swapping=true 2000000000
-		/// my\ a\\/\\/esome\ series,tag=foo\ bar field1=\=*\= 2000000000
+		/// my\ a\/\/esome\ series,tag=foo\ bar "my-field"="\=*\=" 2000000000
 		/// </remarks>
 		public override string ToString()
 		{
@@ -66,27 +64,35 @@ namespace InfluxDB.Net.Models
 			// surround strings with quotes
 			if (value.GetType() == typeof(string))
 			{
-				result = @"""" + Escape(value.ToString()) + @"""";
+				result = Quote(Escape(value.ToString()));
 			}
 			// api needs lowercase booleans
 			else if (value.GetType() == typeof(bool))
 			{
 				result = value.ToString().ToLower();
 			}
-			// convert datetime to unix
+			// InfluxDb does not support a datetime type for fields or tags
+			// convert datetime to unix long
 			else if (value.GetType() == typeof(DateTime))
 			{
 				result = ((DateTime)value).ToUnixTime().ToString();
 			}
 
-			return string.Join("=", Escape(key), result);
+			return string.Join("=", Quote(Escape(key)), result);
 		}
 
-		private string Escape(string target)
+		private string Quote(string value)
 		{
-			Check.NotNull(target, "target");
+			Check.NotNull(value, "value");
 
-			var result = target
+			return "\"" + value + "\"";
+		}
+
+		private string Escape(string value)
+		{
+			Check.NotNull(value, "value");
+
+			var result = value
 				// literal backslash escaping is broken
 				// https://github.com/influxdb/influxdb/issues/3070
 				//.Replace(@"\", @"\\")

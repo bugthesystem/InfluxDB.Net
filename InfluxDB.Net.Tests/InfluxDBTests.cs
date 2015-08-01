@@ -6,7 +6,7 @@ using InfluxDB.Net.Models;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
 using System.Configuration;
-using System.Net;
+using System.Threading.Tasks;
 
 namespace InfluxDB.Net.Tests
 {
@@ -28,6 +28,12 @@ namespace InfluxDB.Net.Tests
 
 			var createResponse = _db.CreateDatabaseAsync(_dbName).Result;
 			createResponse.Success.Should().BeTrue();
+
+			// workaround for issue https://github.com/influxdb/influxdb/issues/3363
+			// by first creating a single point in the empty db
+			var writeResponse = _db.WriteAsync(_dbName, NewPoints(1));
+
+			writeResponse.Result.Success.Should().BeTrue();
 		}
 
 		protected override void FinalizeTearDown()
@@ -38,7 +44,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Creates_Deletes_DB()
+		public async Task Creates_Deletes_DB()
 		{
 			var dbName = GetRandomName(8);
 			var createResponse = await _db.CreateDatabaseAsync(dbName);
@@ -49,7 +55,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Shows_DB()
+		public async Task Shows_DB()
 		{
 			var databases = await _db.ShowDatabasesAsync();
 
@@ -65,7 +71,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Pings_Server()
+		public async Task Pings_Server()
 		{
 			var pong = await _db.PingAsync();
 
@@ -75,7 +81,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Writes_Many_Series_With_Tags_Fields()
+		public async Task Writes_Many_Series_With_Tags_Fields()
 		{
 			var points = NewPoints(5);
 
@@ -109,7 +115,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Throws_Exception_On_Query_With_Nonexistant_Field()
+		public async Task Throws_Exception_On_Query_With_Nonexistant_Field()
 		{
 			var points = NewPoints(1);
 			var response = await _db.WriteAsync(_dbName, points);
@@ -121,7 +127,7 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-		public async void Write_Query_Drop_Series_With_Tags_Fields()
+		public async Task Write_Query_Drop_Series_With_Tags_Fields()
 		{
 			var points = NewPoints(1);
 
@@ -131,13 +137,13 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
-			Query(expected);
+			await Query(expected);
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
 		}
 
-		private async void Query(Point expected)
+		private async Task<List<Serie>> Query(Point expected)
 		{
 			var result = await _db.QueryAsync(_dbName, string.Format("select * from \"{0}\"", expected.Name));
 
@@ -151,10 +157,12 @@ namespace InfluxDB.Net.Tests
 			actual.Columns.Count().Should().Be(expected.Fields.Count + 1); // time field is always included
 			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1); // time field is always included
 			((DateTime)actual.Values[0][0]).ToUnixTime().Should().Be(expected.Timestamp.Value.ToUnixTime());
+
+			return result;
 		}
 
 		[Test]
-		public async void Write_Query_Drop_Series_With_Fields()
+		public async Task Write_Query_Drop_Series_With_Fields()
 		{
 			var points = NewPoints(1);
 			points.First().Tags.Clear();
@@ -167,14 +175,39 @@ namespace InfluxDB.Net.Tests
 			var expected = points.First();
 
 			// query
-			Query(expected);
+			await Query(expected);
 
 			var deleteSerieResponse = await _db.DropSeriesAsync(_dbName, expected.Name);
 			deleteSerieResponse.Success.Should().BeTrue();
 		}
 
 		[Test]
-		public async void Query_Returns_Empty_Result()
+		public async Task Write_Query_Drop_Simple_Single_Point()
+		{
+			var points = new Point[]
+			{
+				new Point
+				{
+					Name = "foo",
+					Fields = new Dictionary<string, object>
+					{
+						{ "x", 1 }
+					},
+					Timestamp = DateTime.Now
+				}
+			};
+
+			var writeResponse = await _db.WriteAsync(_dbName, points);
+			writeResponse.Success.Should().BeTrue();
+
+			await Query(points.First());
+
+			var deleteResponse = await _db.DropSeriesAsync(_dbName, points.First().Name);
+			deleteResponse.Success.Should().BeTrue();
+		}
+
+		[Test]
+		public async Task Write_Query_Returns_Empty_Result()
 		{
 			var points = NewPoints(1);
 
@@ -198,13 +231,14 @@ namespace InfluxDB.Net.Tests
 		{
 			const string value = @"\=&,""*"" ";
 			const string escapedValue = @"\\=&\,\""*\""\ ";
-			const string tagName = @"tag";
-			const string fieldName = @"field";
+			const string seriesName = @"x";
+			const string tagName = @"tag-string";
+			const string fieldName = @"field-string";
 			var dt = DateTime.Now;
 
 			var point = new Point
 			{
-				Name = value,
+				Name = seriesName,
 				Tags = new Dictionary<string, object>
 				{
 					{ tagName, value }
@@ -217,9 +251,9 @@ namespace InfluxDB.Net.Tests
 			};
 
 			var expected = string.Format(Point.LineTemplate,
-				string.Join(",", escapedValue, string.Join(@"=""", tagName, escapedValue + @"""")),
-				string.Join(@"=""", fieldName, escapedValue + @""""),
-				dt.ToUnixTime());
+				/* key */ seriesName + "," + "\"" + tagName + "\"" + "=" + "\"" + escapedValue + "\"",
+				/* fields */ "\"" + fieldName + "\"" + "=" + "\"" + escapedValue + "\"",
+				/* timestamp */ dt.ToUnixTime());
 
 			var actual = point.ToString();
 

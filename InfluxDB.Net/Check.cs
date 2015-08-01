@@ -35,6 +35,12 @@ namespace InfluxDB.Net
 				throw new ArgumentOutOfRangeException(paramName);
 		}
 
+		public static void NotZeroLength<T>(T[] array, string paramName, string message)
+		{
+			if (array.Length == 0)
+				throw new ArgumentOutOfRangeException(paramName, message);
+		}
+
 		public static void NotZeroLength<T>(List<T> list, string paramName)
 		{
 			if (list.Count == 0)
