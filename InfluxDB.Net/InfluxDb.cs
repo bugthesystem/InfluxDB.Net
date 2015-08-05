@@ -6,6 +6,8 @@ using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net
 {
+    public enum InfluxDbVersion { Auto, Ver0_8X, Ver0_9X }
+
 	public class InfluxDb : IInfluxDb
 	{
 		internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
@@ -13,17 +15,28 @@ namespace InfluxDB.Net
 
 		private readonly IInfluxDbClient _influxDbClient;
 
-		public InfluxDb(string url, string username, string password)
-			 : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url), username, password)))
+		public InfluxDb(string url, string username, string password, InfluxDbVersion influxDbVersion)
+			 : this(new InfluxDbClientConfiguration(new Uri(url), username, password, influxDbVersion))
 		{
 			Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
 			Check.NotNullOrEmpty(username, "The username may not be null or empty.");
 		}
 
-		internal InfluxDb(IInfluxDbClient influxDbClient)
-		{
-			_influxDbClient = influxDbClient;
-		}
+        internal InfluxDb(InfluxDbClientConfiguration configuration)
+        {
+            switch (configuration.InfluxDbVersion)
+            {
+                case InfluxDbVersion.Auto:
+                    throw new NotImplementedException("There is yet no implementation for the Automatic version.");
+                case InfluxDbVersion.Ver0_8X:
+                    throw new NotImplementedException("There is yet no implementation for version influxDB version 0.8x.");
+                case InfluxDbVersion.Ver0_9X:
+                    _influxDbClient = new InfluxDbClient(configuration);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("configuration.InfluxDbVersion", string.Format("Unknown influx version {0}.", configuration.InfluxDbVersion));
+            }
+        }
 
 		/// <summary>
 		///     Ping this InfluxDB

@@ -17,10 +17,11 @@ namespace InfluxDB.Net.Tests
 
         protected override void FinalizeTestFixtureSetUp()
 		{
-			_db = new InfluxDb(
+            _db = new InfluxDb(
 				ConfigurationManager.AppSettings.Get("url"),
 				ConfigurationManager.AppSettings.Get("username"),
-				ConfigurationManager.AppSettings.Get("password"));
+				ConfigurationManager.AppSettings.Get("password"),
+                GetInfluxDbVersionFromConfig());
 
 			_db.Should().NotBeNull();
 
@@ -36,7 +37,17 @@ namespace InfluxDB.Net.Tests
 			writeResponse.Result.Success.Should().BeTrue();
 		}
 
-        protected override void FinalizeTestFixtureTearDown()
+	    private static InfluxDbVersion GetInfluxDbVersionFromConfig()
+	    {
+	        InfluxDbVersion dbVersion;
+	        if (!Enum.TryParse(ConfigurationManager.AppSettings.Get("InfluxDbVersion"), out dbVersion))
+	        {
+                dbVersion = InfluxDbVersion.Ver0_9X;
+	        }
+	        return dbVersion;
+	    }
+
+	    protected override void FinalizeTestFixtureTearDown()
 		{
 			var deleteResponse = _db.DropDatabaseAsync(_dbName).Result;
 
