@@ -81,6 +81,7 @@
     <Compile Include="InfluxDBTests.cs" />
     <Compile Include="Extensions\AssertExtensions.cs" />
     <Compile Include="Extensions\MoqExtensions.cs" />
+    <Compile Include="PrepareTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBase.cs" />
   </ItemGroup>

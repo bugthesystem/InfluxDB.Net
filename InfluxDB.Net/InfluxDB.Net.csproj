@@ -50,8 +50,10 @@
     <Compile Include="IInfluxDbClient.cs" />
     <Compile Include="InfluxDbClient.cs" />
     <Compile Include="InfluxDbClientConfiguration.cs" />
+    <Compile Include="InfluxDbClientV08.cs" />
     <Compile Include="InfluxDbException.cs" />
     <Compile Include="InfluxDbResponse.cs" />
+    <Compile Include="InfluxDbVersion.cs" />
     <Compile Include="IRequestContent.cs" />
     <Compile Include="JsonRequestContent.cs" />
     <Compile Include="LogLevel.cs" />

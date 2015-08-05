@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace InfluxDB.Net
 {
-	internal class InfluxDbClient : IInfluxDbClient
+    internal class InfluxDbClient : IInfluxDbClient
 	{
 		private const string UserAgent = "InfluxDb.Net";
 

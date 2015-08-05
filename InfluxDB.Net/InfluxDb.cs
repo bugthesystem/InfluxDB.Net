@@ -6,9 +6,7 @@ using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net
 {
-    public enum InfluxDbVersion { Auto, Ver0_8X, Ver0_9X }
-
-	public class InfluxDb : IInfluxDb
+    public class InfluxDb : IInfluxDb
 	{
 		internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
 			 Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
@@ -22,14 +20,15 @@ namespace InfluxDB.Net
 			Check.NotNullOrEmpty(username, "The username may not be null or empty.");
 		}
 
-        internal InfluxDb(InfluxDbClientConfiguration configuration)
+        public InfluxDb(InfluxDbClientConfiguration configuration)
         {
             switch (configuration.InfluxDbVersion)
             {
                 case InfluxDbVersion.Auto:
                     throw new NotImplementedException("There is yet no implementation for the Automatic version.");
                 case InfluxDbVersion.Ver0_8X:
-                    throw new NotImplementedException("There is yet no implementation for version influxDB version 0.8x.");
+                    _influxDbClient = new InfluxDbClientV08(configuration);
+                    return;
                 case InfluxDbVersion.Ver0_9X:
                     _influxDbClient = new InfluxDbClient(configuration);
                     break;

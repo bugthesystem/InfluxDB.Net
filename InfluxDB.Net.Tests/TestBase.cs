@@ -4,7 +4,6 @@ using Ploeh.AutoFixture;
 
 namespace InfluxDB.Net.Tests
 {
-	[TestFixture]
 	public class TestBase
 	{
 		[SetUp]

@@ -5,12 +5,7 @@ namespace InfluxDB.Net
 {
 	public class InfluxDbClientConfiguration
 	{
-        public InfluxDbClientConfiguration(Uri endpoint)
-            : this(endpoint, null, null, InfluxDbVersion.Auto)
-		{
-		}
-
-        public InfluxDbClientConfiguration(Uri endpoint, string username, string password, InfluxDbVersion influxDbVersion)
+	    public InfluxDbClientConfiguration(Uri endpoint, string username = null, string password = null, InfluxDbVersion influxDbVersion = InfluxDbVersion.Auto)
 		{
 			Check.NotNull(endpoint, "Endpoint may not be null or empty.");
 			Check.NotNullOrEmpty(password, "Password may not be null or empty.");
