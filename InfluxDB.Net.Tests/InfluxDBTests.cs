@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace InfluxDB.Net.Tests
 {
+    [TestFixture]
 	public class InfluxDbTests : TestBase
 	{
 		private IInfluxDb _db;
@@ -126,8 +127,7 @@ namespace InfluxDB.Net.Tests
 				await _db.QueryAsync(_dbName, string.Format("select nonexistentfield from \"{0}\"", points.Single().Name)));
 		}
 
-		[Test]
-        [Ignore("Fix failing test.")]
+		[Test]        
 		public async Task Write_Query_Drop_Series_With_Tags_Fields()
 		{
 			var points = NewPoints(1);
@@ -163,7 +163,6 @@ namespace InfluxDB.Net.Tests
 		}
 
 		[Test]
-        [Ignore("Fix failing test.")]
 		public async Task Write_Query_Drop_Series_With_Fields()
 		{
 			var points = NewPoints(1);
@@ -183,8 +182,7 @@ namespace InfluxDB.Net.Tests
 			deleteSerieResponse.Success.Should().BeTrue();
 		}
 
-		[Test]
-        [Ignore("Fix failing test.")]
+		[Test]        
 		public async Task Write_Query_Drop_Simple_Single_Point()
 		{
 			var points = new Point[]
