@@ -16,7 +16,10 @@ namespace InfluxDB.Net
 
 		public virtual bool Success
 		{
-			get { return StatusCode == HttpStatusCode.OK; }
+		    get
+		    {
+                return StatusCode == HttpStatusCode.OK || StatusCode == HttpStatusCode.NoContent;
+		    }
 		}
 	}
 
@@ -31,7 +34,7 @@ namespace InfluxDB.Net
 		{
 		    get
 		    {
-		        return StatusCode == HttpStatusCode.NoContent;
+                return StatusCode == HttpStatusCode.OK || StatusCode == HttpStatusCode.NoContent;
 		    }
 		}
 	}
@@ -48,7 +51,7 @@ namespace InfluxDB.Net
 			//TODO: Ask to influx db creators
 		    get
 		    {
-		        return StatusCode == HttpStatusCode.NoContent;
+                return StatusCode == HttpStatusCode.OK || StatusCode == HttpStatusCode.NoContent;
 		    }
 		}
 	}

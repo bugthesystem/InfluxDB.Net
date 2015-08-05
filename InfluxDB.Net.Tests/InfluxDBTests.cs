@@ -12,6 +12,8 @@ namespace InfluxDB.Net.Tests
 {
     [TestFixture(null, InfluxDbVersion.Ver0_9X)]
     [TestFixture("V8", InfluxDbVersion.Ver0_8X)]
+    [TestFixture(null, InfluxDbVersion.Auto)]
+    [TestFixture("V8", InfluxDbVersion.Auto)]
     public class InfluxDbTests : TestBase
 	{
         private readonly string _dbName;

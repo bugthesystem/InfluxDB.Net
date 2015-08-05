@@ -25,7 +25,8 @@ namespace InfluxDB.Net
             switch (configuration.InfluxDbVersion)
             {
                 case InfluxDbVersion.Auto:
-                    throw new NotImplementedException("There is yet no implementation for the Automatic version.");
+                    _influxDbClient = new InfluxDbClientAuto(configuration);
+                    return;
                 case InfluxDbVersion.Ver0_8X:
                     _influxDbClient = new InfluxDbClientV08(configuration);
                     return;

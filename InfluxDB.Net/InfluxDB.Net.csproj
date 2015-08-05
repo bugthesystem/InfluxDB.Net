@@ -49,6 +49,7 @@
     <Compile Include="IInfluxDb.cs" />
     <Compile Include="IInfluxDbClient.cs" />
     <Compile Include="InfluxDbClient.cs" />
+    <Compile Include="InfluxDbClientAuto.cs" />
     <Compile Include="InfluxDbClientConfiguration.cs" />
     <Compile Include="InfluxDbClientV08.cs" />
     <Compile Include="InfluxDbException.cs" />
