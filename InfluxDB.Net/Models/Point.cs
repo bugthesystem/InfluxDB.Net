@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace InfluxDB.Net.Models
@@ -77,6 +78,15 @@ namespace InfluxDB.Net.Models
 			{
 				result = ((DateTime)value).ToUnixTime().ToString();
 			}
+            //For cultures using other decimal caracters than '.'
+            else if (value.GetType() == typeof(decimal))
+            {
+                result = ((decimal)value).ToString(CultureInfo.InvariantCulture);
+            }
+            else if (value.GetType() == typeof(float))
+            {
+                result = ((float)value).ToString(CultureInfo.InvariantCulture);
+            }
 
 			return string.Join("=", Quote(Escape(key)), result);
 		}
