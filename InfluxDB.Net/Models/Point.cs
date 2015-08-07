@@ -11,7 +11,7 @@ namespace InfluxDB.Net.Models
 	public class Point
 	{
 		public string Name { get; set; }
-		public Dictionary<string, object> Tags { get; set; }
+		public Dictionary<string, string> Tags { get; set; }
 		public DateTime? Timestamp { get; set; }
 		public TimeUnit Precision { get; set; }
 		public Dictionary<string, object> Fields { get; set; }
@@ -20,7 +20,7 @@ namespace InfluxDB.Net.Models
 
 		public Point()
 		{
-			Tags = new Dictionary<string, object>();
+			Tags = new Dictionary<string, string>();
 			Fields = new Dictionary<string, object>();
 			Precision = TimeUnit.Milliseconds;
 		}
@@ -78,17 +78,17 @@ namespace InfluxDB.Net.Models
 			{
 				result = ((DateTime)value).ToUnixTime().ToString();
 			}
-            //For cultures using other decimal caracters than '.'
-            else if (value.GetType() == typeof(decimal))
-            {
-                result = ((decimal)value).ToString(CultureInfo.InvariantCulture);
-            }
-            else if (value.GetType() == typeof(float))
-            {
-                result = ((float)value).ToString(CultureInfo.InvariantCulture);
-            }
+			// For cultures using other decimal characters than '.'
+			else if (value.GetType() == typeof(decimal))
+			{
+				result = ((decimal)value).ToString(CultureInfo.InvariantCulture);
+			}
+			else if (value.GetType() == typeof(float))
+			{
+				result = ((float)value).ToString(CultureInfo.InvariantCulture);
+			}
 
-			return string.Join("=", Quote(Escape(key)), result);
+			return string.Join("=", Escape(key), result);
 		}
 
 		private string Quote(string value)

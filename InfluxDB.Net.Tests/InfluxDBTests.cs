@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace InfluxDB.Net.Tests
 {
-    [TestFixture]
+	[TestFixture]
 	public class InfluxDbTests : TestBase
 	{
 		private IInfluxDb _db;
 		private string _dbName = string.Empty;
 
-        protected override void FinalizeTestFixtureSetUp()
+		protected override void FinalizeTestFixtureSetUp()
 		{
 			_db = new InfluxDb(
 				ConfigurationManager.AppSettings.Get("url"),
@@ -37,7 +37,7 @@ namespace InfluxDB.Net.Tests
 			writeResponse.Result.Success.Should().BeTrue();
 		}
 
-        protected override void FinalizeTestFixtureTearDown()
+		protected override void FinalizeTestFixtureTearDown()
 		{
 			var deleteResponse = _db.DropDatabaseAsync(_dbName).Result;
 
@@ -127,7 +127,7 @@ namespace InfluxDB.Net.Tests
 				await _db.QueryAsync(_dbName, string.Format("select nonexistentfield from \"{0}\"", points.Single().Name)));
 		}
 
-		[Test]        
+		[Test]
 		public async Task Write_Query_Drop_Series_With_Tags_Fields()
 		{
 			var points = NewPoints(1);
@@ -155,6 +155,8 @@ namespace InfluxDB.Net.Tests
 
 			actual.Name.Should().Be(expected.Name);
 			actual.Tags.Count.Should().Be(expected.Tags.Count);
+			actual.Tags.ShouldAllBeEquivalentTo(expected.Tags);
+			//actual.Columns.ShouldAllBeEquivalentTo(expected.Fields);
 			actual.Columns.Count().Should().Be(expected.Fields.Count + 1); // time field is always included
 			actual.Values[0].Count().Should().Be(expected.Fields.Count + 1); // time field is always included
 			((DateTime)actual.Values[0][0]).ToUnixTime().Should().Be(expected.Timestamp.Value.ToUnixTime());
@@ -182,7 +184,7 @@ namespace InfluxDB.Net.Tests
 			deleteSerieResponse.Success.Should().BeTrue();
 		}
 
-		[Test]        
+		[Test]
 		public async Task Write_Query_Drop_Simple_Single_Point()
 		{
 			var points = new Point[]
@@ -233,14 +235,14 @@ namespace InfluxDB.Net.Tests
 			const string value = @"\=&,""*"" ";
 			const string escapedValue = @"\\=&\,\""*\""\ ";
 			const string seriesName = @"x";
-			const string tagName = @"tag-string";
-			const string fieldName = @"field-string";
+			const string tagName = @"tag_string";
+			const string fieldName = @"field_string";
 			var dt = DateTime.Now;
 
 			var point = new Point
 			{
 				Name = seriesName,
-				Tags = new Dictionary<string, object>
+				Tags = new Dictionary<string, string>
 				{
 					{ tagName, value }
 				},
@@ -252,8 +254,8 @@ namespace InfluxDB.Net.Tests
 			};
 
 			var expected = string.Format(Point.LineTemplate,
-				/* key */ seriesName + "," + "\"" + tagName + "\"" + "=" + "\"" + escapedValue + "\"",
-				/* fields */ "\"" + fieldName + "\"" + "=" + "\"" + escapedValue + "\"",
+				/* key */ seriesName + "," + tagName + "=" + "\"" + escapedValue + "\"",
+				/* fields */ fieldName + "=" + "\"" + escapedValue + "\"",
 				/* timestamp */ dt.ToUnixTime());
 
 			var actual = point.ToString();
@@ -296,16 +298,17 @@ namespace InfluxDB.Net.Tests
 			return fixture.CreateMany<Point>(count).ToArray();
 		}
 
-		private Dictionary<string, object> NewTags(Random rnd)
+		private Dictionary<string, string> NewTags(Random rnd)
 		{
-			return new Dictionary<string, object>
+			// return an alphanumeric sorted dictionary
+			return new Dictionary<string, string>
 			{
-				{ "tag-string", rnd.NextPrintableString(50) },
-				{ "tag-bool", rnd.Next(2) == 0 },
-				{ "tag-int", rnd.Next() },
-				{ "tag-decimal", (decimal)rnd.NextDouble() },
-				{ "tag-float", (float)rnd.NextDouble() },
-				{ "tag-datetime", DateTime.Now }
+				{ "tag_bool", (rnd.Next(2) == 0).ToString() },
+				{ "tag_datetime", DateTime.Now.ToString() }, 
+				{ "tag_decimal", ((decimal)rnd.NextDouble()).ToString() },
+				{ "tag_float", ((float)rnd.NextDouble()).ToString() },
+				{ "tag_int", rnd.Next().ToString() },
+				{ "tag_string", rnd.NextPrintableString(50) }
 			};
 		}
 
@@ -313,12 +316,12 @@ namespace InfluxDB.Net.Tests
 		{
 			return new Dictionary<string, object>
 			{
-				{ "field-string", rnd.NextPrintableString(50) },
-				{ "field-bool", rnd.Next(2) == 0 },
-				{ "field-int", rnd.Next() },
-				{ "field-decimal", (decimal)rnd.NextDouble() },
-				{ "field-float", (float)rnd.NextDouble() },
-				{ "field-datetime", DateTime.Now }
+				{ "field_string", rnd.NextPrintableString(50) },
+				{ "field_bool", rnd.Next(2) == 0 },
+				{ "field_int", rnd.Next() },
+				{ "field_decimal", (decimal)rnd.NextDouble() },
+				{ "field_float", (float)rnd.NextDouble() },
+				{ "field_datetime", DateTime.Now }
 			};
 		}
 	}
