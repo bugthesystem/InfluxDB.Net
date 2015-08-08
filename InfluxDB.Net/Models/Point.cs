@@ -81,14 +81,15 @@ namespace InfluxDB.Net.Models
             //For cultures using other decimal caracters than '.'
             else if (value.GetType() == typeof(decimal))
             {
-                result = ((decimal)value).ToString(CultureInfo.InvariantCulture);
+                result = ((decimal)value).ToString("0.0###################", CultureInfo.InvariantCulture);
             }
             else if (value.GetType() == typeof(float))
             {
-                result = ((float)value).ToString(CultureInfo.InvariantCulture);
+                result = ((float)value).ToString("0.0###################", CultureInfo.InvariantCulture);
             }
 
-			return string.Join("=", Quote(Escape(key)), result);
+			//return string.Join("=", Quote(Escape(key)), result);
+            return string.Join("=", Escape(key), result); //TODO: This works better for my project.
 		}
 
 		private string Quote(string value)
