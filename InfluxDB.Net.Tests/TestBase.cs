@@ -30,13 +30,13 @@ namespace InfluxDB.Net.Tests
 			FinalizeTearDown();
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void TestFixtureSetUp()
 		{
 			FinalizeTestFixtureSetUp();
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void TestFixtureTearDown()
 		{
 			FinalizeTestFixtureTearDown();

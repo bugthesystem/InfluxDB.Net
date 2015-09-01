@@ -43,7 +43,7 @@ namespace InfluxDB.Net.Models
 			Check.NotNull(Tags, "tags");
 			Check.NotNull(Fields, "fields");
 
-			var tags = string.Join(",", Tags.Select(t => Format(t.Key, t.Value)));
+			var tags = string.Join(",", Tags.Select(t => string.Join("=", t.Key, EscapeTagValue(t.Value))));
 			var fields = string.Join(",", Fields.Select(t => Format(t.Key, t.Value)));
 
 			var key = string.IsNullOrEmpty(tags) ? Escape(Name) : string.Join(",", Escape(Name), tags);
@@ -52,6 +52,36 @@ namespace InfluxDB.Net.Models
 			var result = string.Format(LineTemplate, key, fields, ts);
 
 			return result;
+		}
+
+		/// <summary>Converts a <see cref="Point"/> to a <see cref="Serie"/>.</summary>
+		/// <remarks>
+		/// For a Serie select result returned from the server:
+		///   The time field and value are implicitly added by server
+		/// </remarks>
+		/// <returns><see cref="Serie"/></returns>
+		public Serie ToSerie()
+		{
+			var s = new Serie
+			{
+				Name = Name
+			};
+
+			foreach (var key in Tags.Keys.ToList())
+			{
+				s.Tags.Add(key, Tags[key]);
+			}
+
+			var sortedFields = Fields.OrderBy(k => k.Key).ToDictionary(x => x.Key, x => x.Value);
+
+			s.Columns = new string[] { "time" }.Concat(sortedFields.Keys).ToArray();
+
+			s.Values = new object[][]
+			{
+				new object[] { Timestamp }.Concat(sortedFields.Values).ToArray()
+			};
+
+			return s;
 		}
 
 		private string Format(string key, object value)
@@ -87,6 +117,10 @@ namespace InfluxDB.Net.Models
 			{
 				result = ((float)value).ToString(CultureInfo.InvariantCulture);
 			}
+			else if (value.GetType() == typeof(long) || value.GetType() == typeof(int))
+			{
+				result += "i";
+			}
 
 			return string.Join("=", Escape(key), result);
 		}
@@ -107,6 +141,18 @@ namespace InfluxDB.Net.Models
 				// https://github.com/influxdb/influxdb/issues/3070
 				//.Replace(@"\", @"\\")
 				.Replace(@"""", @"\""")
+				.Replace(@" ", @"\ ")
+				.Replace(@"=", @"\=")
+				.Replace(@",", @"\,");
+
+			return result;
+		}
+
+		private string EscapeTagValue(string value)
+		{
+			Check.NotNull(value, "value");
+
+			var result = value
 				.Replace(@" ", @"\ ")
 				.Replace(@"=", @"\=")
 				.Replace(@",", @"\,");
