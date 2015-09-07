@@ -1,12 +1,9 @@
 machine:
   environment:
-    USE_SYSTEM_NUNIT_CONSOLE: 1
+    USE_SYSTEM_NUNIT_CONSOLE: 0
 
 dependencies:
   pre:
-    - wget https://s3.amazonaws.com/influxdb/influxdb_0.9.2_amd64.deb
-    - sudo dpkg -i influxdb_0.9.2_amd64.deb
-    - sudo /etc/init.d/influxdb start
     - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
     - echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
     - sudo apt-get update
@@ -16,6 +13,9 @@ dependencies:
     - mozroots --import --sync
     - mono .nuget/NuGet.exe restore InfluxDB.Net.sln
     - sudo chmod +x build.sh
+    - wget https://s3.amazonaws.com/influxdb/influxdb_0.9.2_amd64.deb
+    - sudo dpkg -i influxdb_0.9.2_amd64.deb
+    - sudo service influxdb start
 
 test:
   override:

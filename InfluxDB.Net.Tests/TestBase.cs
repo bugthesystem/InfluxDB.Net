@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Ploeh.AutoFixture;
 
 namespace InfluxDB.Net.Tests
-{	
+{
 	public class TestBase
 	{
 		[SetUp]
@@ -30,13 +30,13 @@ namespace InfluxDB.Net.Tests
 			FinalizeTearDown();
 		}
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
-        {
-            FinalizeTestFixtureSetUp();
-        }
+		[OneTimeSetUp]
+		public void TestFixtureSetUp()
+		{
+			FinalizeTestFixtureSetUp();
+		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void TestFixtureTearDown()
 		{
 			FinalizeTestFixtureTearDown();
@@ -65,11 +65,11 @@ namespace InfluxDB.Net.Tests
 		{
 		}
 
-        protected virtual void FinalizeTestFixtureSetUp()
-        {
-        }
-        
-        protected virtual void FinalizeTestFixtureTearDown()
+		protected virtual void FinalizeTestFixtureSetUp()
+		{
+		}
+
+		protected virtual void FinalizeTestFixtureTearDown()
 		{
 		}
 
