@@ -111,11 +111,11 @@ namespace InfluxDB.Net.Models
 			// For cultures using other decimal characters than '.'
 			else if (value.GetType() == typeof(decimal))
 			{
-				result = ((decimal)value).ToString(CultureInfo.InvariantCulture);
+                result = ((decimal)value).ToString("0.0###################", CultureInfo.InvariantCulture);
 			}
 			else if (value.GetType() == typeof(float))
 			{
-				result = ((float)value).ToString(CultureInfo.InvariantCulture);
+                result = ((float)value).ToString("0.0###################", CultureInfo.InvariantCulture);
 			}
 			else if (value.GetType() == typeof(long) || value.GetType() == typeof(int))
 			{
@@ -123,7 +123,7 @@ namespace InfluxDB.Net.Models
 			}
 
 			return string.Join("=", Escape(key), result);
-		}
+        }
 
 		private string Quote(string value)
 		{
