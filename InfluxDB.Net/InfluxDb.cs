@@ -6,23 +6,38 @@ using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net
 {
-	public class InfluxDb : IInfluxDb
+    public class InfluxDb : IInfluxDb
 	{
 		internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
 			 Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
 		private readonly IInfluxDbClient _influxDbClient;
 
-		public InfluxDb(string url, string username, string password)
-			 : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url), username, password)))
+        public InfluxDb(string url, string username, string password, InfluxVersion influxVersion)
+            : this(new InfluxDbClientConfiguration(new Uri(url), username, password, influxVersion))
 		{
 			Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
 			Check.NotNullOrEmpty(username, "The username may not be null or empty.");
 		}
 
-		internal InfluxDb(IInfluxDbClient influxDbClient)
+        internal InfluxDb(InfluxDbClientConfiguration influxDbClientConfiguration)
 		{
-			_influxDbClient = influxDbClient;
+            switch (influxDbClientConfiguration.InfluxVersion)
+            {
+                case InfluxVersion.Auto:
+                    _influxDbClient = new InfluxDbClientAutoVersion(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v08x:
+                    throw new NotImplementedException();
+                case InfluxVersion.v09x:
+                    _influxDbClient = new InfluxDbClient(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v092:
+                    _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("influxDbClientConfiguration", string.Format("Unknown version {0}.", influxDbClientConfiguration));
+            }            
 		}
 
 		/// <summary>
@@ -52,7 +67,7 @@ namespace InfluxDB.Net
 		/// <returns></returns>
 		public async Task<InfluxDbApiWriteResponse> WriteAsync(string database, Point[] points, string retenionPolicy = "default")
 		{
-			var request = new WriteRequest
+            var request = new WriteRequest(_influxDbClient.GetFormatter())
 			{
 				Database = database,
 				Points = points,
@@ -423,8 +438,17 @@ namespace InfluxDB.Net
 			return await _influxDbClient.CreateShardSpace(NoErrorHandlers, database, shardSpace);
 		}
 
+        public IFormatter GetFormatter()
+        {
+            return _influxDbClient.GetFormatter();
+        }
 
-		public IInfluxDb SetLogLevel(LogLevel logLevel)
+        public InfluxVersion GetClientVersion()
+        {
+            return _influxDbClient.GetVersion();
+        }
+
+        public IInfluxDb SetLogLevel(LogLevel logLevel)
 		{
 			switch (logLevel)
 			{

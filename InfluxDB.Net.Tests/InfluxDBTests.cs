@@ -11,18 +11,22 @@ using System.Diagnostics;
 
 namespace InfluxDB.Net.Tests
 {
-	[TestFixture]
 	public class InfluxDbTests : TestBase
 	{
 		private IInfluxDb _db;
 		private string _dbName = string.Empty;
 
-		protected override void FinalizeTestFixtureSetUp()
+	    protected override void FinalizeTestFixtureSetUp()
 		{
+		    InfluxVersion influxVersion;
+            if (!Enum.TryParse(ConfigurationManager.AppSettings.Get("version"), out influxVersion))
+		        influxVersion = InfluxVersion.Auto;
+
 			_db = new InfluxDb(
 				ConfigurationManager.AppSettings.Get("url"),
 				ConfigurationManager.AppSettings.Get("username"),
-				ConfigurationManager.AppSettings.Get("password"));
+				ConfigurationManager.AppSettings.Get("password"),
+                influxVersion);
 
 			_db.Should().NotBeNull();
 
@@ -82,7 +86,7 @@ namespace InfluxDB.Net.Tests
 		{
 			var points = NewPoints(count);
 
-			var req = new WriteRequest { Points = points };
+            var req = new WriteRequest(_db.GetFormatter()) { Points = points };
 			Debug.WriteLine(req.GetLines());
 
 			var writeResponse = await _db.WriteAsync(_dbName, points);
@@ -116,6 +120,11 @@ namespace InfluxDB.Net.Tests
 		[Test]
 		public async Task Write_Query_With_Nonexistant_Field()
 		{
+            if (_db.GetClientVersion() == InfluxVersion.v092)
+            {
+                Assert.Inconclusive("This scenario has not been implemented for InfluxDB version 0.9.2.");
+            }
+
 			var points = NewPoints(1);
 			var response = await _db.WriteAsync(_dbName, points);
 
@@ -129,12 +138,17 @@ namespace InfluxDB.Net.Tests
 		[Test]
 		public async Task Write_Query_Drop_Series_With_Tags_Fields()
 		{
+            if (_db.GetClientVersion() == InfluxVersion.v092)
+            {
+                Assert.Inconclusive("This scenario has not been implemented for InfluxDB version 0.9.2.");
+            }
+
 			var points = NewPoints(1);
 
 			var writeResponse = await _db.WriteAsync(_dbName, points);
 			writeResponse.Success.Should().BeTrue();
 
-			var expected = points.First().ToSerie();
+            var expected = _db.GetFormatter().PointToSerie(points.First());
 
 			// query
 			var actual = await Query(expected);
@@ -167,6 +181,11 @@ namespace InfluxDB.Net.Tests
 		[Test]
 		public async Task Write_Query_Drop_Series_With_Fields()
 		{
+            if (_db.GetClientVersion() == InfluxVersion.v092)
+            {
+                Assert.Inconclusive("This scenario has not been implemented for InfluxDB version 0.9.2.");
+            }
+
 			var points = NewPoints(1);
 			points.First().Tags.Clear();
 			points.First().Tags.Count.Should().Be(0);
@@ -175,7 +194,7 @@ namespace InfluxDB.Net.Tests
 			var writeResponse = await _db.WriteAsync(_dbName, points);
 			writeResponse.Success.Should().BeTrue();
 
-			var expected = points.First().ToSerie();
+		    var expected = _db.GetFormatter().PointToSerie(points.First());
 
 			// query
 			await Query(expected);
@@ -187,6 +206,11 @@ namespace InfluxDB.Net.Tests
 		[Test]
 		public async Task Write_Query_Drop_Simple_Single_Point()
 		{
+            if (_db.GetClientVersion() == InfluxVersion.v092)
+            {
+                Assert.Inconclusive("This scenario has not been implemented for InfluxDB version 0.9.2.");
+            }
+
 			var points = new Point[]
 			{
 				new Point
@@ -203,7 +227,8 @@ namespace InfluxDB.Net.Tests
 			var writeResponse = await _db.WriteAsync(_dbName, points);
 			writeResponse.Success.Should().BeTrue();
 
-			await Query(points.First().ToSerie());
+		    var serie = _db.GetFormatter().PointToSerie(points.First());
+            await Query(serie);
 
 			var deleteResponse = await _db.DropSeriesAsync(_dbName, points.First().Name);
 			deleteResponse.Success.Should().BeTrue();
@@ -254,12 +279,13 @@ namespace InfluxDB.Net.Tests
 				Timestamp = dt
 			};
 
-			var expected = string.Format(Point.LineTemplate,
+		    var formatter = _db.GetFormatter();
+		    var expected = string.Format(formatter.GetLineTemplate(),
 				/* key */ seriesName + "," + tagName + "=" + escapedTagValue,
 				/* fields */ fieldName + "=" + "\"" + escapedFieldValue + "\"",
 				/* timestamp */ dt.ToUnixTime());
 
-			var actual = point.ToString();
+            var actual = formatter.PointToString(point);
 
 			actual.Should().Be(expected);
 		}
@@ -268,13 +294,14 @@ namespace InfluxDB.Net.Tests
 		public void Gets_Lines()
 		{
 			var points = NewPoints(2);
-			var request = new WriteRequest
+		    var formatter = _db.GetFormatter();
+		    var request = new WriteRequest(formatter)
 			{
 				Points = points
 			};
 
 			var actual = request.GetLines();
-			var expected = string.Join("\n", points.Select(p => p.ToString()));
+			var expected = string.Join("\n", points.Select(p => formatter.PointToString(p)));
 
 			actual.Should().Be(expected);
 		}
@@ -302,29 +329,29 @@ namespace InfluxDB.Net.Tests
 		private Dictionary<string, string> NewTags(Random rnd)
 		{
 			// return an alphanumeric sorted dictionary
-			return new Dictionary<string, string>
-			{
-				{ "tag_bool", (rnd.Next(2) == 0).ToString() },
-				{ "tag_datetime", DateTime.Now.ToString() },
-				{ "tag_decimal", ((decimal)rnd.NextDouble()).ToString() },
-				{ "tag_float", ((float)rnd.NextDouble()).ToString() },
-				{ "tag_int", rnd.Next().ToString() },
-				// quotes in the tag value are creating problems
-				// https://github.com/influxdb/influxdb/issues/3928
-            { "tag_string", rnd.NextPrintableString(50).Replace("\"", string.Empty) }
-			};
+		    return new Dictionary<string, string>
+		    {
+                {"tag_bool", (rnd.Next(2) == 0).ToString()},
+                {"tag_datetime", DateTime.Now.ToString()},
+                {"tag_decimal", ((decimal) rnd.NextDouble()).ToString()},
+                {"tag_float", ((float) rnd.NextDouble()).ToString()},
+                {"tag_int", rnd.Next().ToString()},
+                // quotes in the tag value are creating problems
+                // https://github.com/influxdb/influxdb/issues/3928
+                {"tag_string", rnd.NextPrintableString(50).Replace("\"", string.Empty)}
+		    };
 		}
 
 		private Dictionary<string, object> NewFields(Random rnd)
 		{
 			return new Dictionary<string, object>
 			{
-				{ "field_string", rnd.NextPrintableString(50) },
-				{ "field_bool", rnd.Next(2) == 0 },
-				{ "field_int", rnd.Next() },
-				{ "field_decimal", (decimal)rnd.NextDouble() },
-				{ "field_float", (float)rnd.NextDouble() },
-				{ "field_datetime", DateTime.Now }
+                { "field_string", rnd.NextPrintableString(50) },
+                { "field_bool", rnd.Next(2) == 0 },
+                { "field_int", rnd.Next() },
+                { "field_decimal", (decimal)rnd.NextDouble() },
+                { "field_float", (float)rnd.NextDouble() },
+                { "field_datetime", DateTime.Now }
 			};
 		}
 	}

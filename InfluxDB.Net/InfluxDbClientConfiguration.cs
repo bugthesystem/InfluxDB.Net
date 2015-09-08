@@ -3,19 +3,21 @@ using System.Net.Http;
 
 namespace InfluxDB.Net
 {
-	public class InfluxDbClientConfiguration
+    public class InfluxDbClientConfiguration
 	{
-		public InfluxDbClientConfiguration(Uri endpoint) : this(endpoint, null, null)
+        public InfluxDbClientConfiguration(Uri endpoint)
+            : this(endpoint, null, null, InfluxVersion.Auto)
 		{
 		}
 
-		public InfluxDbClientConfiguration(Uri endpoint, string username, string password)
+		public InfluxDbClientConfiguration(Uri endpoint, string username, string password, InfluxVersion influxVersion)
 		{
 			Check.NotNull(endpoint, "Endpoint may not be null or empty.");
 			Check.NotNullOrEmpty(password, "Password may not be null or empty.");
 			Check.NotNullOrEmpty(username, "Username may not be null or empty.");
 			Username = username;
 			Password = password;
+            InfluxVersion = influxVersion;
 			EndpointBaseUri = SanitizeEndpoint(endpoint, false);
 		}
 
@@ -23,6 +25,7 @@ namespace InfluxDB.Net
 
 		public string Username { get; private set; }
 		public string Password { get; private set; }
+        public InfluxVersion InfluxVersion { get; private set; }
 
 		private static Uri SanitizeEndpoint(Uri endpoint, bool isTls)
 		{

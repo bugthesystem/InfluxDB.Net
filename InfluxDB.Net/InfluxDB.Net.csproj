@@ -46,12 +46,18 @@
   <ItemGroup>
     <Compile Include="Check.cs" />
     <Compile Include="DatabaseConfiguration.cs" />
+    <Compile Include="FormatterV092.cs" />
+    <Compile Include="FormatterV09x.cs" />
+    <Compile Include="IFormatter.cs" />
     <Compile Include="IInfluxDb.cs" />
     <Compile Include="IInfluxDbClient.cs" />
-    <Compile Include="InfluxDbClient.cs" />
+    <Compile Include="Client\InfluxDbClient.cs" />
+    <Compile Include="Client\InfluxDbClientAutoVersion.cs" />
     <Compile Include="InfluxDbClientConfiguration.cs" />
+    <Compile Include="Client\InfluxDbClientV092.cs" />
     <Compile Include="InfluxDbException.cs" />
     <Compile Include="InfluxDbResponse.cs" />
+    <Compile Include="InfluxVersion.cs" />
     <Compile Include="IRequestContent.cs" />
     <Compile Include="JsonRequestContent.cs" />
     <Compile Include="LogLevel.cs" />

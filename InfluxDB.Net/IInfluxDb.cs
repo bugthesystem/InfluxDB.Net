@@ -47,5 +47,7 @@ namespace InfluxDB.Net
 		Task<List<ShardSpace>> GetShardSpacesAsync();
 		Task<InfluxDbApiResponse> DropShardSpaceAsync(string database, string name);
 		Task<InfluxDbApiResponse> CreateShardSpaceAsync(string database, ShardSpace shardSpace);
+	    IFormatter GetFormatter();
+        InfluxVersion GetClientVersion();
 	}
 }

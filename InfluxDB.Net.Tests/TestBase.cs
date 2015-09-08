@@ -6,7 +6,7 @@ namespace InfluxDB.Net.Tests
 {
 	public class TestBase
 	{
-		[SetUp]
+	    [SetUp]
 		public void Setup()
 		{
 			_mockRepository = new MockRepository(MockBehavior.Strict);

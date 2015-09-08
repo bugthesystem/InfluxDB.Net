@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace InfluxDB.Net
 {
-	internal class InfluxDbClient : IInfluxDbClient
+    internal class InfluxDbClient : IInfluxDbClient
 	{
 		private const string UserAgent = "InfluxDb.Net";
 
@@ -81,7 +81,17 @@ namespace InfluxDB.Net
 				});
 		}
 
-		/// <summary>Pings the server.</summary>
+	    public virtual IFormatter GetFormatter()
+	    {
+	        return new FormatterV09x();
+	    }
+
+        public virtual InfluxVersion GetVersion()
+        {
+            return InfluxVersion.v09x;
+        }
+
+	    /// <summary>Pings the server.</summary>
 		/// <param name="errorHandlers">The error handlers.</param>
 		/// <returns></returns>
 		public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
