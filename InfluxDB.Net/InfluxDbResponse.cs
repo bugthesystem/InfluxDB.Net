@@ -16,10 +16,7 @@ namespace InfluxDB.Net
 
 		public virtual bool Success
 		{
-		    get
-		    {
-                return StatusCode == HttpStatusCode.OK || StatusCode == HttpStatusCode.NoContent;
-		    }
+			get { return StatusCode == HttpStatusCode.OK; }
 		}
 	}
 
@@ -32,10 +29,7 @@ namespace InfluxDB.Net
 
 		public override bool Success
 		{
-		    get
-		    {
-                return StatusCode == HttpStatusCode.OK || StatusCode == HttpStatusCode.NoContent;
-		    }
+			get { return StatusCode == HttpStatusCode.NoContent; }
 		}
 	}
 
@@ -49,10 +43,7 @@ namespace InfluxDB.Net
 		public override bool Success
 		{
 			//TODO: Ask to influx db creators
-		    get
-		    {
-                return StatusCode == HttpStatusCode.OK || StatusCode == HttpStatusCode.NoContent;
-		    }
+			get { return StatusCode == HttpStatusCode.NoContent; }
 		}
 	}
 }

@@ -6,7 +6,7 @@ namespace InfluxDB.Net.Tests
 {
 	public class TestBase
 	{
-		[SetUp]
+	    [SetUp]
 		public void Setup()
 		{
 			_mockRepository = new MockRepository(MockBehavior.Strict);
@@ -30,13 +30,13 @@ namespace InfluxDB.Net.Tests
 			FinalizeTearDown();
 		}
 
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
-        {
-            FinalizeTestFixtureSetUp();
-        }
+		[TestFixtureSetUp]
+		public void TestFixtureSetUp()
+		{
+			FinalizeTestFixtureSetUp();
+		}
 
-		[TestFixtureTearDown]
+        [TestFixtureTearDown]
 		public void TestFixtureTearDown()
 		{
 			FinalizeTestFixtureTearDown();
@@ -65,11 +65,11 @@ namespace InfluxDB.Net.Tests
 		{
 		}
 
-        protected virtual void FinalizeTestFixtureSetUp()
-        {
-        }
-        
-        protected virtual void FinalizeTestFixtureTearDown()
+		protected virtual void FinalizeTestFixtureSetUp()
+		{
+		}
+
+		protected virtual void FinalizeTestFixtureTearDown()
 		{
 		}
 

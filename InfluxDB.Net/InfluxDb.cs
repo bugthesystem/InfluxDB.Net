@@ -13,30 +13,32 @@ namespace InfluxDB.Net
 
 		private readonly IInfluxDbClient _influxDbClient;
 
-		public InfluxDb(string url, string username, string password, InfluxDbVersion influxDbVersion)
-			 : this(new InfluxDbClientConfiguration(new Uri(url), username, password, influxDbVersion))
+        public InfluxDb(string url, string username, string password, InfluxVersion influxVersion)
+            : this(new InfluxDbClientConfiguration(new Uri(url), username, password, influxVersion))
 		{
 			Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
 			Check.NotNullOrEmpty(username, "The username may not be null or empty.");
 		}
 
-        public InfluxDb(InfluxDbClientConfiguration configuration)
-        {
-            switch (configuration.InfluxDbVersion)
+        internal InfluxDb(InfluxDbClientConfiguration influxDbClientConfiguration)
+		{
+            switch (influxDbClientConfiguration.InfluxVersion)
             {
-                case InfluxDbVersion.Auto:
-                    _influxDbClient = new InfluxDbClientAuto(configuration);
-                    return;
-                case InfluxDbVersion.Ver0_8X:
-                    _influxDbClient = new InfluxDbClientV08(configuration);
-                    return;
-                case InfluxDbVersion.Ver0_9X:
-                    _influxDbClient = new InfluxDbClient(configuration);
+                case InfluxVersion.Auto:
+                    _influxDbClient = new InfluxDbClientAutoVersion(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v08x:
+                    throw new NotImplementedException();
+                case InfluxVersion.v09x:
+                    _influxDbClient = new InfluxDbClient(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v092:
+                    _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("configuration.InfluxDbVersion", string.Format("Unknown influx version {0}.", configuration.InfluxDbVersion));
-            }
-        }
+                    throw new ArgumentOutOfRangeException("influxDbClientConfiguration", string.Format("Unknown version {0}.", influxDbClientConfiguration));
+            }            
+		}
 
 		/// <summary>
 		///     Ping this InfluxDB
@@ -65,7 +67,7 @@ namespace InfluxDB.Net
 		/// <returns></returns>
 		public async Task<InfluxDbApiWriteResponse> WriteAsync(string database, Point[] points, string retenionPolicy = "default")
 		{
-			var request = new WriteRequest
+            var request = new WriteRequest(_influxDbClient.GetFormatter())
 			{
 				Database = database,
 				Points = points,
@@ -436,8 +438,17 @@ namespace InfluxDB.Net
 			return await _influxDbClient.CreateShardSpace(NoErrorHandlers, database, shardSpace);
 		}
 
+        public IFormatter GetFormatter()
+        {
+            return _influxDbClient.GetFormatter();
+        }
 
-		public IInfluxDb SetLogLevel(LogLevel logLevel)
+        public InfluxVersion GetClientVersion()
+        {
+            return _influxDbClient.GetVersion();
+        }
+
+        public IInfluxDb SetLogLevel(LogLevel logLevel)
 		{
 			switch (logLevel)
 			{

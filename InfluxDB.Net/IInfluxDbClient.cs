@@ -80,5 +80,8 @@ namespace InfluxDB.Net
 
         Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
             string database, ShardSpace shardSpace);
+
+        IFormatter GetFormatter();
+        InfluxVersion GetVersion();
     }
 }

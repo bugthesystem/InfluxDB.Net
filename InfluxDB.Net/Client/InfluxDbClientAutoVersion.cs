@@ -1,47 +1,34 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net
 {
-    internal class InfluxDbClientAuto : IInfluxDbClient
+    internal class InfluxDbClientAutoVersion : IInfluxDbClient
     {
         private readonly IInfluxDbClient _influxDbClient;
-        private readonly IEnumerable<ApiResponseErrorHandlingDelegate> _noErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
-        private string _version;
 
-        public InfluxDbClientAuto(InfluxDbClientConfiguration configuration)
+        public InfluxDbClientAutoVersion(InfluxDbClientConfiguration influxDbClientConfiguration)
         {
-            _influxDbClient = CheckClientVersion(new InfluxDbClient(configuration), "0.9") ??
-                              CheckClientVersion(new InfluxDbClientV08(configuration), "0.8");
+            _influxDbClient = new InfluxDbClient(influxDbClientConfiguration);
+            var errorHandlers = new List<ApiResponseErrorHandlingDelegate>();
+            var result = _influxDbClient.Ping(errorHandlers).Result;
+            var databaseVersion = result.Body;
 
-            if (_influxDbClient == null)
+            if (databaseVersion.StartsWith("0.9"))
             {
-                var ex = new InvalidOperationException("Cannot find a database client for the current influxDB version.");
-                ex.Data.Add("Version", _version ?? "N/A");
-                throw ex;
+                if (databaseVersion == "0.9.2")
+                {
+                    _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException(string.Format("Version {0} is not yet supported by the Auto configuration.", databaseVersion));
             }
         }
-
-        private IInfluxDbClient CheckClientVersion(IInfluxDbClient client, string version)
-        {
-            InfluxDbApiResponse response;
-            try
-            {
-                response = client.Ping(_noErrorHandlers).Result;
-            }
-            catch (Exception exception)
-            {
-                System.Diagnostics.Debug.WriteLine(exception.Message);
-                return null;
-            }
-            if (!response.Success) return null;
-            _version = response.Body;
-            return response.Body.StartsWith(version) ? client : null;
-        }
-
+        
         public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
             return await _influxDbClient.Ping(errorHandlers);
@@ -89,7 +76,7 @@ namespace InfluxDB.Net
 
         public async Task<InfluxDbApiResponse> UpdateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user, string name)
         {
-            return await _influxDbClient.UpdateClusterAdmin(errorHandlers,user, name);
+            return await _influxDbClient.UpdateClusterAdmin(errorHandlers, user, name);
         }
 
         public async Task<InfluxDbApiResponse> CreateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user)
@@ -185,6 +172,16 @@ namespace InfluxDB.Net
         public async Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, ShardSpace shardSpace)
         {
             return await _influxDbClient.CreateShardSpace(errorHandlers, database, shardSpace);
+        }
+
+        public IFormatter GetFormatter()
+        {
+            return _influxDbClient.GetFormatter();
+        }
+
+        public InfluxVersion GetVersion()
+        {
+            return _influxDbClient.GetVersion();
         }
     }
 }
