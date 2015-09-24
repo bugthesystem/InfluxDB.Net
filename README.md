@@ -3,7 +3,9 @@ InfluxDB.Net
 >[InfluxDB](http://influxdb.com/) An open-source distributed time series database
 with no external dependencies. It is the new home for all of your metrics, events, and analytics.
 
-A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.
+A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.  
+
+[![Support via Gratipay](https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.svg)](https://gratipay.com/ziyasal/)  
 
 **Installation**  
 [NuGet - InfluxDB.Net](https://www.nuget.org/packages/InfluxDB.Net-Main/1.0.0-alpha)  
