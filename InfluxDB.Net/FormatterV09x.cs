@@ -57,6 +57,10 @@ namespace InfluxDB.Net
             {
                 result = ((float)value).ToString("0.0###################", CultureInfo.InvariantCulture);
             }
+            else if (value.GetType() == typeof(double))
+            {
+                result = ((double)value).ToString("0.0###################", CultureInfo.InvariantCulture);
+            }
             else if (value.GetType() == typeof(long) || value.GetType() == typeof(int))
             {
                 result = ToInt(result);
