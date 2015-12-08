@@ -59,7 +59,9 @@ namespace InfluxDB.Net
                 RetentionPolicy = retenionPolicy
             };
 
-            return await _influxDbClient.Write(NoErrorHandlers, request, ToTimePrecision(TimeUnit.Milliseconds));
+            var result = await _influxDbClient.Write(NoErrorHandlers, request, ToTimePrecision(TimeUnit.Milliseconds));
+
+            return result;
         }
 
         /// <summary>Execute a query agains a database.</summary>

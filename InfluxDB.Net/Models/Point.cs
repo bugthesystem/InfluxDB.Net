@@ -6,16 +6,21 @@ namespace InfluxDB.Net.Models
 {
     /// <summary>
     /// A class representing a time series point for db writes
-    /// <see cref="https://github.com/influxdb/influxdb/blob/master/tsdb/README.md" /></summary>
+    /// <see cref="https://github.com/influxdb/influxdb/blob/master/tsdb/README.md" />
+    /// </summary>
     public class Point
     {
-        public string Name { get; set; }
+        /// <summary>
+        /// Serie name. Measurement is Influxes convention for Serie name.
+        /// <see cref="https://influxdb.com/docs/v0.9/write_protocols/write_syntax.html"/>
+        /// </summary>
+        public string Measurement { get; set; }
         public Dictionary<string, object> Tags { get; set; }
-        public DateTime? Timestamp { get; set; }
-        public TimeUnit Precision { get; set; }
         public Dictionary<string, object> Fields { get; set; }
+        public TimeUnit Precision { get; set; }
+        public DateTime? Timestamp { get; set; }
 
-        public static readonly string LineTemplate = "{0} {1} {2}"; // [key] [fields] [timestamp]
+        public static readonly string QueryTemplate = "{0} {1} {2}"; // [key] [fields] [time]
 
         public Point()
         {
@@ -29,26 +34,26 @@ namespace InfluxDB.Net.Models
         /// </summary>
         /// <returns>A string that represents this instance.</returns>
         /// <remarks>
-        /// Examples:
-        /// cpu,host=serverA,region=us-west value=1.0 10000000000
-        /// cpu,host=serverB,region=us-west value=3.3
-        /// cpu,host=serverB,region=us-east user=123415235,event="overloaded" 20000000000
-        /// mem,host=serverB,region=us-east swapping=true 2000000000
-        /// my\ a\/\/esome\ series,tag=foo\ bar "my-field"="\=*\=" 2000000000
+        /// Example outputs:
+        /// cpu,host=serverA,region=us_west value = 0.64
+        /// payment,device=mobile,product=Notepad,method=credit billed = 33, licenses = 3i 1434067467100293230
+        /// stock,symbol=AAPL bid = 127.46, ask = 127.48
+        /// temperature,machine=unit42,type=assembly external = 25,internal=37 1434067467000000000
         /// </remarks>
         public override string ToString()
         {
-            Check.NotNullOrEmpty(Name, "name");
+            Check.NotNullOrEmpty(Measurement, "measurement");
             Check.NotNull(Tags, "tags");
             Check.NotNull(Fields, "fields");
 
             var tags = string.Join(",", Tags.Select(t => Format(t.Key, t.Value)));
             var fields = string.Join(",", Fields.Select(t => Format(t.Key, t.Value)));
 
-            var key = string.IsNullOrEmpty(tags) ? Escape(Name) : string.Join(",", Escape(Name), tags);
-            var ts = Timestamp.HasValue ? Timestamp.Value.ToUnixTime().ToString() : string.Empty;
+            // TODO: refactor - split key into measurement + tags
+            var key = string.IsNullOrEmpty(tags) ? Escape(Measurement) : string.Join(",", Escape(Measurement), tags);
+            var time = Timestamp.HasValue ? Timestamp.Value.ToUnixTime().ToString() : string.Empty;
 
-            var result = string.Format(LineTemplate, key, fields, ts);
+            var result = string.Format(QueryTemplate, key, fields, time);
 
             return result;
         }
@@ -58,45 +63,45 @@ namespace InfluxDB.Net.Models
             Check.NotNullOrEmpty(key, "key");
             Check.NotNull(value, "value");
 
+            var valueType = value.GetType();
+
             // Format and escape the values
-            var result = value.ToString();
+            var stringValue = value.ToString();
 
             // surround strings with quotes
-            if (value.GetType() == typeof(string))
+            if (valueType == typeof(string))
             {
-                result = Quote(Escape(value.ToString()));
+                stringValue = Escape(value.ToString());
             }
             // api needs lowercase booleans
-            else if (value.GetType() == typeof(bool))
+            else if (valueType == typeof(bool))
             {
-                result = value.ToString().ToLower();
+                stringValue = value.ToString();
             }
             // InfluxDb does not support a datetime type for fields or tags
             // convert datetime to unix long
-            else if (value.GetType() == typeof(DateTime))
+            else if (valueType == typeof(DateTime))
             {
-                result = ((DateTime)value).ToUnixTime().ToString();
+                stringValue = ((DateTime)value).ToUnixTime().ToString();
             }
+            // TODO: what about number types?
 
-            return string.Join("=", Quote(Escape(key)), result);
+            return string.Join("=", Escape(key), stringValue);
         }
 
-        private string Quote(string value)
-        {
-            Check.NotNull(value, "value");
-
-            return "\"" + value + "\"";
-        }
+        //private string Quote(string value)
+        //{
+        //    return "\"" + value + "\"";
+        //}
 
         private string Escape(string value)
         {
-            Check.NotNull(value, "value");
-
             var result = value
                 // literal backslash escaping is broken
                 // https://github.com/influxdb/influxdb/issues/3070
                 //.Replace(@"\", @"\\")
-                .Replace(@"""", @"\""")
+                .Replace(@"\", @"") // NOTE: temporary fix - fully remove \ from string
+                .Replace(@"""", @"\""") // TODO: check if this is right or if "" should become \"\"
                 .Replace(@" ", @"\ ")
                 .Replace(@"=", @"\=")
                 .Replace(@",", @"\,");
