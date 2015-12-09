@@ -90,9 +90,12 @@ namespace InfluxDB.Net.Contracts
 
         Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id);
 
-        #endregion Other
+        Task<InfluxDbApiResponse> AlterRetentionPolicy(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string policyName, string dbName, string duration, int replication);
 
         IFormatter GetFormatter();
+
         InfluxVersion GetVersion();
+
+        #endregion Other
     }
 }

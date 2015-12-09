@@ -5,21 +5,21 @@ using InfluxDB.Net.Infrastructure.Formatters;
 
 namespace InfluxDB.Net
 {
-    internal class InfluxDbClientV092 : InfluxDbClientBase
+    internal class InfluxDbClientV095 : InfluxDbClientBase
     {
-        public InfluxDbClientV092(InfluxDbClientConfiguration configuration) 
+        public InfluxDbClientV095(InfluxDbClientConfiguration configuration) 
             : base(configuration)
         {
         }
 
         public override IFormatter GetFormatter()
         {
-            return new FormatterV092();
+            return new FormatterV095();
         }
 
         public override InfluxVersion GetVersion()
         {
-            return InfluxVersion.v092;
+            return InfluxVersion.v095;
         }
     }
 }

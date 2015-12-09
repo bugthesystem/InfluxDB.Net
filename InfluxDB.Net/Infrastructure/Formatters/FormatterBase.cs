@@ -8,26 +8,68 @@ using InfluxDB.Net.Helpers;
 
 namespace InfluxDB.Net.Infrastructure.Formatters
 {
-    internal class FormatterV09x : IFormatter
+    internal class FormatterBase : IFormatter
     {
-        public string PointToString(Point point)
+        private static readonly string _queryTemplate = "{0} {1} {2}"; // [key] [fields] [time]
+
+        public virtual string GetLineTemplate()
         {
-            Validate.NotNullOrEmpty(point.Measurement, "name");
+            return _queryTemplate;
+        }
+
+        /// <summary>
+        /// Returns a point represented in line protocol format for writing to the InfluxDb API endpoint
+        /// </summary>
+        /// <returns>A string that represents this instance.</returns>
+        /// <remarks>
+        /// Example outputs:
+        /// cpu,host=serverA,region=us_west value = 0.64
+        /// payment,device=mobile,product=Notepad,method=credit billed = 33, licenses = 3i 1434067467100293230
+        /// stock,symbol=AAPL bid = 127.46, ask = 127.48
+        /// temperature,machine=unit42,type=assembly external = 25,internal=37 1434067467000000000
+        /// </remarks>
+        public virtual string PointToString(Point point)
+        {
+            Validate.NotNullOrEmpty(point.Measurement, "measurement");
             Validate.NotNull(point.Tags, "tags");
             Validate.NotNull(point.Fields, "fields");
 
-            var tags = string.Join(",", point.Tags.Select(t => string.Join("=", t.Key, EscapeTagValue(t.Value.ToString()))));
-            var fields = string.Join(",", point.Fields.Select(t => Format(t.Key, t.Value)));
+            var tags = String.Join(",", point.Tags.Select(t => String.Join("=", t.Key, EscapeTagValue(t.Value.ToString()))));
+            var fields = String.Join(",", point.Fields.Select(t => FormatPointField(t.Key, t.Value)));
 
-            var key = string.IsNullOrEmpty(tags) ? Escape(point.Measurement) : string.Join(",", Escape(point.Measurement), tags);
+            var key = String.IsNullOrEmpty(tags) ? EscapeNonTagValue(point.Measurement) : String.Join(",", EscapeNonTagValue(point.Measurement), tags);
             var ts = point.Timestamp.HasValue ? point.Timestamp.Value.ToUnixTime().ToString() : string.Empty;
 
-            var result = string.Format(GetLineTemplate(), key, fields, ts);
+            var result = String.Format(GetLineTemplate(), key, fields, ts);
 
             return result;
         }
 
-        protected virtual string Format(string key, object value)
+        public virtual Serie PointToSerie(Point point)
+        {
+            var s = new Serie
+            {
+                Name = point.Measurement
+            };
+
+            foreach (var key in point.Tags.Keys.ToList())
+            {
+                s.Tags.Add(key, point.Tags[key].ToString());
+            }
+
+            var sortedFields = point.Fields.OrderBy(k => k.Key).ToDictionary(x => x.Key, x => x.Value);
+
+            s.Columns = new string[] { "time" }.Concat(sortedFields.Keys).ToArray();
+
+            s.Values = new object[][]
+            {
+                new object[] { point.Timestamp }.Concat(sortedFields.Values).ToArray()
+            };
+
+            return s;
+        }
+
+        protected virtual string FormatPointField(string key, object value)
         {
             Validate.NotNullOrEmpty(key, "key");
             Validate.NotNull(value, "value");
@@ -38,7 +80,7 @@ namespace InfluxDB.Net.Infrastructure.Formatters
             // surround strings with quotes
             if (value.GetType() == typeof(string))
             {
-                result = Quote(Escape(value.ToString()));
+                result = QuoteValue(EscapeNonTagValue(value.ToString()));
             }
             // api needs lowercase booleans
             else if (value.GetType() == typeof(bool))
@@ -69,7 +111,7 @@ namespace InfluxDB.Net.Infrastructure.Formatters
                 result = ToInt(result);
             }
 
-            return string.Join("=", Escape(key), result);
+            return String.Join("=", EscapeNonTagValue(key), result);
         }
 
         protected virtual string ToInt(string result)
@@ -77,12 +119,7 @@ namespace InfluxDB.Net.Infrastructure.Formatters
             return result + "i";
         }
 
-        public string GetLineTemplate()
-        {
-            return "{0} {1} {2}"; // [key] [fields] [timestamp]
-        }
-
-        protected virtual string Escape(string value)
+        protected virtual string EscapeNonTagValue(string value)
         {
             Validate.NotNull(value, "value");
 
@@ -90,7 +127,7 @@ namespace InfluxDB.Net.Infrastructure.Formatters
                 // literal backslash escaping is broken
                 // https://github.com/influxdb/influxdb/issues/3070
                 //.Replace(@"\", @"\\")
-                .Replace(@"""", @"\""")
+                .Replace(@"""", @"\""") // TODO: check if this is right or if "" should become \"\"
                 .Replace(@" ", @"\ ")
                 .Replace(@"=", @"\=")
                 .Replace(@",", @"\,");
@@ -110,35 +147,11 @@ namespace InfluxDB.Net.Infrastructure.Formatters
             return result;
         }
 
-        protected virtual string Quote(string value)
+        protected virtual string QuoteValue(string value)
         {
             Validate.NotNull(value, "value");
 
             return "\"" + value + "\"";
-        }
-
-        public Serie PointToSerie(Point point)
-        {
-            var s = new Serie
-            {
-                Name = point.Measurement
-            };
-
-            foreach (var key in point.Tags.Keys.ToList())
-            {
-                s.Tags.Add(key, point.Tags[key].ToString());
-            }
-
-            var sortedFields = point.Fields.OrderBy(k => k.Key).ToDictionary(x => x.Key, x => x.Value);
-
-            s.Columns = new string[] { "time" }.Concat(sortedFields.Keys).ToArray();
-
-            s.Values = new object[][]
-            {
-                new object[] { point.Timestamp }.Concat(sortedFields.Values).ToArray()
-            };
-
-            return s;
         }
     }
 }

@@ -18,7 +18,7 @@ using InfluxDB.Net.Infrastructure.Formatters;
 
 namespace InfluxDB.Net
 {
-    internal class InfluxDbClient : IInfluxDbClient
+    internal class InfluxDbClientBase : IInfluxDbClient
     {
         private const string UserAgent = "InfluxDb.Net";
 
@@ -33,25 +33,9 @@ namespace InfluxDB.Net
             }
         };
 
-        public InfluxDbClient(InfluxDbClientConfiguration configuration)
+        public InfluxDbClientBase(InfluxDbClientConfiguration configuration)
         {
             _configuration = configuration;
-        }
-
-        /// <summary>Alters the retention policy.</summary>
-        /// <param name="errorHandlers">The error handlers.</param>
-        /// <param name="policyName">Name of the policy.</param>
-        /// <param name="dbName">Name of the database.</param>
-        /// <param name="duration">The duration.</param>
-        /// <param name="replication">The replication factor.</param>
-        /// <returns><see cref="Task{TResult}"/></returns>
-        public async Task<InfluxDbApiResponse> AlterRetentionPolicy(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string policyName, string dbName, string duration, int replication)
-        {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-                new Dictionary<string, string>
-                {
-                    {QueryParams.Query, String.Format(QueryStatements.AlterRetentionPolicy, policyName, dbName, duration, replication) }
-                });
         }
 
         #region Database
@@ -259,9 +243,25 @@ namespace InfluxDB.Net
             throw new NotImplementedException();
         }
 
+        /// <summary>Alters the retention policy.</summary>
+        /// <param name="errorHandlers">The error handlers.</param>
+        /// <param name="policyName">Name of the policy.</param>
+        /// <param name="dbName">Name of the database.</param>
+        /// <param name="duration">The duration.</param>
+        /// <param name="replication">The replication factor.</param>
+        /// <returns><see cref="Task{TResult}"/></returns>
+        public async Task<InfluxDbApiResponse> AlterRetentionPolicy(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string policyName, string dbName, string duration, int replication)
+        {
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
+                new Dictionary<string, string>
+                {
+                    {QueryParams.Query, String.Format(QueryStatements.AlterRetentionPolicy, policyName, dbName, duration, replication) }
+                });
+        }
+
         public virtual IFormatter GetFormatter()
         {
-            return new FormatterV09x();
+            return new FormatterBase();
         }
 
         public virtual InfluxVersion GetVersion()

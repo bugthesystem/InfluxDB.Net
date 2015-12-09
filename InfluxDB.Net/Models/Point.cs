@@ -24,93 +24,11 @@ namespace InfluxDB.Net.Models
         public TimeUnit Precision { get; set; }
         public DateTime? Timestamp { get; set; }
 
-        //public static readonly string QueryTemplate = "{0} {1} {2}"; // [key] [fields] [time]
-
         public Point()
         {
             Tags = new Dictionary<string, object>();
             Fields = new Dictionary<string, object>();
             Precision = TimeUnit.Milliseconds;
         }
-
-        /// <summary>
-        /// Returns a point represented in line protocol format for writing to the InfluxDb API endpoint
-        /// </summary>
-        /// <returns>A string that represents this instance.</returns>
-        /// <remarks>
-        /// Example outputs:
-        /// cpu,host=serverA,region=us_west value = 0.64
-        /// payment,device=mobile,product=Notepad,method=credit billed = 33, licenses = 3i 1434067467100293230
-        /// stock,symbol=AAPL bid = 127.46, ask = 127.48
-        /// temperature,machine=unit42,type=assembly external = 25,internal=37 1434067467000000000
-        /// </remarks>
-        //public override string ToString()
-        //{
-        //    Validate.NotNullOrEmpty(Measurement, "measurement");
-        //    Validate.NotNull(Tags, "tags");
-        //    Validate.NotNull(Fields, "fields");
-
-        //    var tags = String.Join(",", Tags.Select(t => Format(t.Key, t.Value)));
-        //    var fields = String.Join(",", Fields.Select(t => Format(t.Key, t.Value)));
-
-        //    // TODO: refactor - split key into measurement + tags
-        //    var key = String.IsNullOrEmpty(tags) ? Escape(Measurement) : String.Join(",", Escape(Measurement), tags);
-        //    var time = Timestamp.HasValue ? Timestamp.Value.ToUnixTime().ToString() : String.Empty;
-
-        //    var result = String.Format(QueryTemplate, key, fields, time);
-
-        //    return result;
-        //}
-
-        //private string Format(string key, object value)
-        //{
-        //    Validate.NotNullOrEmpty(key, "key");
-        //    Validate.NotNull(value, "value");
-
-        //    var valueType = value.GetType();
-
-        //    // Format and escape the values
-        //    var stringValue = value.ToString();
-
-        //    // surround strings with quotes
-        //    if (valueType == typeof(string))
-        //    {
-        //        stringValue = Escape(value.ToString());
-        //    }
-        //    // api needs lowercase booleans
-        //    else if (valueType == typeof(bool))
-        //    {
-        //        stringValue = value.ToString();
-        //    }
-        //    // InfluxDb does not support a datetime type for fields or tags
-        //    // convert datetime to unix long
-        //    else if (valueType == typeof(DateTime))
-        //    {
-        //        stringValue = ((DateTime)value).ToUnixTime().ToString();
-        //    }
-        //    // TODO: what about number types?
-
-        //    return String.Join("=", Escape(key), stringValue);
-        //}
-
-        //private string Quote(string value)
-        //{
-        //    return "\"" + value + "\"";
-        //}
-
-        //private string Escape(string value)
-        //{
-        //    var result = value
-        //        // literal backslash escaping is broken
-        //        // https://github.com/influxdb/influxdb/issues/3070
-        //        //.Replace(@"\", @"\\")
-        //        .Replace(@"\", @"") // NOTE: temporary fix - fully remove \ from string
-        //        .Replace(@"""", @"\""") // TODO: check if this is right or if "" should become \"\"
-        //        .Replace(@" ", @"\ ")
-        //        .Replace(@"=", @"\=")
-        //        .Replace(@",", @"\,");
-
-        //    return result;
-        //}
     }
 }

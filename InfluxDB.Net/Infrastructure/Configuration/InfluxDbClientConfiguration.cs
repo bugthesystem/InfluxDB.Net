@@ -8,9 +8,13 @@ namespace InfluxDB.Net.Infrastructure.Configuration
 {
     public class InfluxDbClientConfiguration
     {
-        public InfluxDbClientConfiguration(Uri endpoint) : this(endpoint, null, null, InfluxVersion.Auto)
-        {
-        }
+        public Uri EndpointBaseUri { get; internal set; }
+
+        public string Username { get; private set; }
+
+        public string Password { get; private set; }
+
+        public InfluxVersion InfluxVersion { get; private set; }
 
         public InfluxDbClientConfiguration(Uri endpoint, string username, string password, InfluxVersion influxVersion)
         {
@@ -22,11 +26,6 @@ namespace InfluxDB.Net.Infrastructure.Configuration
             InfluxVersion = influxVersion;
             EndpointBaseUri = SanitizeEndpoint(endpoint, false);
         }
-
-        public Uri EndpointBaseUri { get; internal set; }
-        public string Username { get; private set; }
-        public string Password { get; private set; }
-        public InfluxVersion InfluxVersion { get; private set; }
 
         private static Uri SanitizeEndpoint(Uri endpoint, bool isTls)
         {

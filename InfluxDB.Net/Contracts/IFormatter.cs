@@ -4,8 +4,10 @@ namespace InfluxDB.Net.Contracts
 {
     public interface IFormatter
     {
-        string PointToString(Point point);
         string GetLineTemplate();
+
+        string PointToString(Point point);
+
         Serie PointToSerie(Point point);
     }
 }

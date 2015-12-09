@@ -220,7 +220,7 @@ namespace InfluxDB.Net.Tests
             };
 
             var formatter = _influx.GetFormatter();
-            var expected = string.Format(formatter.GetLineTemplate(),
+            var expected = String.Format(formatter.GetLineTemplate(),
                 /* key */ seriesName + "," + tagName + "=" + escapedTagValue,
                 /* fields */ fieldName + "=" + "\"" + escapedFieldValue + "\"",
                 /* timestamp */ dt.ToUnixTime());
@@ -249,7 +249,7 @@ namespace InfluxDB.Net.Tests
         private async Task<List<Serie>> Query(Serie expected)
         {
             // 0.9.3 need 'group by' to retrieve tags as tags when using select *
-            var result = await _influx.QueryAsync(_dbName, string.Format("select * from \"{0}\" group by *", expected.Name));
+            var result = await _influx.QueryAsync(_dbName, String.Format("select * from \"{0}\" group by *", expected.Name));
 
             result.Should().NotBeNull();
             result.Count().Should().Be(1);
