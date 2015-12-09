@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Helpers
 {
     public sealed class Stopwatch
     {

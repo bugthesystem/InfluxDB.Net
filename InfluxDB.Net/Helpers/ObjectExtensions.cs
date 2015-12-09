@@ -2,8 +2,9 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Text;
+using InfluxDB.Net.Infrastructure.Influx;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Helpers
 {
     public static class ObjectExtensions
     {

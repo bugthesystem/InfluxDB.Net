@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Influx
 {
     public class InfluxDbApiResponse
     {

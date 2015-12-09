@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Jsons
 {
     /// <summary>
     ///     Facade for <see cref="Newtonsoft.Json.JsonConvert" />.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Helpers
 {
     internal static class HttpUtility
     {

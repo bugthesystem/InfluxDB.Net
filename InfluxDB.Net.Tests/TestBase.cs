@@ -4,6 +4,8 @@ using Ploeh.AutoFixture;
 
 namespace InfluxDB.Net.Tests
 {
+    // NOTE: http://stackoverflow.com/questions/106907/making-code-internal-but-available-for-unit-testing-from-other-projects
+
     [TestFixture]
     public class TestBase
     {

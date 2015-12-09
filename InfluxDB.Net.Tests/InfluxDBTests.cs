@@ -8,6 +8,8 @@ using Ploeh.AutoFixture;
 using System.Configuration;
 using System.Threading.Tasks;
 using InfluxDB.Net.Contracts;
+using InfluxDB.Net.Helpers;
+using InfluxDB.Net.Infrastructure.Influx;
 
 namespace InfluxDB.Net.Tests
 {

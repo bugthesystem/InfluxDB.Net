@@ -1,7 +1,9 @@
 using System;
 using System.Net.Http;
+using InfluxDB.Net.Infrastructure;
+using InfluxDB.Net.Infrastructure.Validation;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Configuration
 {
     public class InfluxDbClientConfiguration
     {

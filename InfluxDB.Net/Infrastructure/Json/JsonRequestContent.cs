@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using InfluxDB.Net.Contracts;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Jsons
 {
     internal class JsonRequestContent : IRequestContent
     {

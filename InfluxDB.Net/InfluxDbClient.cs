@@ -8,6 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using InfluxDB.Net.Models;
 using System.Diagnostics;
+using InfluxDB.Net.Contracts;
+using InfluxDB.Net.Helpers;
+using InfluxDB.Net.Infrastructure.Configuration;
+using InfluxDB.Net.Infrastructure.Influx;
 
 namespace InfluxDB.Net
 {

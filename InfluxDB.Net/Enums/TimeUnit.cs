@@ -1,4 +1,4 @@
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Enums
 {
     public enum TimeUnit
     {
