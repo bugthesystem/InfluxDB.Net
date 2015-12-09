@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using InfluxDB.Net.Infrastructure.Influx;
 using InfluxDB.Net.Models;
+using InfluxDB.Net.Enums;
 
 namespace InfluxDB.Net.Contracts
 {
@@ -93,6 +94,10 @@ namespace InfluxDB.Net.Contracts
         Task<List<Server>> ListServersAsync();
 
         Task<InfluxDbApiResponse> RemoveServersAsync(int id);
+
+        IFormatter GetFormatter();
+
+        InfluxVersion GetClientVersion();
 
         #endregion Other
     }

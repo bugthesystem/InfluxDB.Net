@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InfluxDB.Net.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,6 +11,13 @@ namespace InfluxDB.Net.Models
     /// </summary>
     public class WriteRequest
     {
+        private readonly IFormatter _formatter;
+
+        public WriteRequest(IFormatter formatter)
+        {
+            _formatter = formatter;
+        }
+
         public string Database { get; set; }
         public string RetentionPolicy { get; set; }
         public Point[] Points { get; set; }
@@ -18,7 +26,7 @@ namespace InfluxDB.Net.Models
         /// <returns></returns>
         public string GetLines()
         {
-            return String.Join("\n", Points.Select(p => p.ToString()));
+            return String.Join("\n", Points.Select(p => _formatter.PointToString(p)));
         }
     }
 

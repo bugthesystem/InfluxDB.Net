@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using InfluxDB.Net.Infrastructure.Influx;
 using InfluxDB.Net.Models;
+using InfluxDB.Net.Enums;
 
 namespace InfluxDB.Net.Contracts
 {
@@ -90,5 +91,8 @@ namespace InfluxDB.Net.Contracts
         Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id);
 
         #endregion Other
+
+        IFormatter GetFormatter();
+        InfluxVersion GetVersion();
     }
 }

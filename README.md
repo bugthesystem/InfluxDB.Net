@@ -14,7 +14,7 @@ A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.c
 Install-Package InfluxDB.Net-Main -Pre
 ```
 
-[![Circle CI](https://circleci.com/gh/ziyasal/InfluxDB.Net/tree/master.svg?style=svg)](https://circleci.com/gh/ziyasal/InfluxDB.Net/tree/master)
+[![Circle CI](https://circleci.com/gh/jamesholcomb/InfluxDB.Net/tree/0.9.0.svg?style=svg)](https://circleci.com/gh/jamesholcomb/InfluxDB.Net/tree/0.9.0)
 
 ####List of supported methods (More documentation available soon)
 - [Ping](#ping)

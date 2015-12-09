@@ -19,16 +19,31 @@ namespace InfluxDB.Net
 
         private readonly IInfluxDbClient _influxDbClient;
 
-        public InfluxDb(string url, string username, string password)
-             : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url), username, password)))
+        public InfluxDb(string url, string username, string password, InfluxVersion influxVersion)
+             : this(new InfluxDbClientConfiguration(new Uri(url), username, password, influxVersion))
         {
             Validate.NotNullOrEmpty(url, "The URL may not be null or empty.");
             Validate.NotNullOrEmpty(username, "The username may not be null or empty.");
         }
 
-        internal InfluxDb(IInfluxDbClient influxDbClient)
+        internal InfluxDb(InfluxDbClientConfiguration influxDbClientConfiguration)
         {
-            _influxDbClient = influxDbClient;
+            switch (influxDbClientConfiguration.InfluxVersion)
+            {
+                case InfluxVersion.Auto:
+                    _influxDbClient = new InfluxDbClientAutoVersion(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v08x:
+                    throw new NotImplementedException();
+                case InfluxVersion.v09x:
+                    _influxDbClient = new InfluxDbClient(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v092:
+                    _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("influxDbClientConfiguration", string.Format("Unknown version {0}.", influxDbClientConfiguration));
+            }
         }
 
         #region Database
@@ -88,7 +103,7 @@ namespace InfluxDB.Net
         /// <returns>TODO: comment</returns>
         public async Task<InfluxDbApiWriteResponse> WriteAsync(string database, Point point, string retenionPolicy = "default")
         {
-            return await WriteAsync(database, new [] { point }, retenionPolicy);
+            return await WriteAsync(database, new[] { point }, retenionPolicy);
         }
 
         /// <summary>Write multiple serie points to the given database.</summary>
@@ -98,7 +113,7 @@ namespace InfluxDB.Net
         /// <returns>TODO: comment</returns>
         public async Task<InfluxDbApiWriteResponse> WriteAsync(string database, Point[] points, string retenionPolicy = "default")
         {
-            var request = new WriteRequest
+            var request = new WriteRequest(_influxDbClient.GetFormatter())
             {
                 Database = database,
                 Points = points,
@@ -427,6 +442,16 @@ namespace InfluxDB.Net
         public async Task<InfluxDbApiResponse> RemoveServersAsync(int id)
         {
             return await _influxDbClient.RemoveServers(NoErrorHandlers, id);
+        }
+
+        public IFormatter GetFormatter()
+        {
+            return _influxDbClient.GetFormatter();
+        }
+
+        public InfluxVersion GetClientVersion()
+        {
+            return _influxDbClient.GetVersion();
         }
 
         #endregion Other

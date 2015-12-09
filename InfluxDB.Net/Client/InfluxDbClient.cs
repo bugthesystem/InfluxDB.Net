@@ -13,14 +13,14 @@ using InfluxDB.Net.Contracts;
 using InfluxDB.Net.Helpers;
 using InfluxDB.Net.Infrastructure.Configuration;
 using InfluxDB.Net.Infrastructure.Influx;
+using InfluxDB.Net.Enums;
+using InfluxDB.Net.Infrastructure.Formatters;
 
 namespace InfluxDB.Net
 {
     internal class InfluxDbClient : IInfluxDbClient
     {
         private const string UserAgent = "InfluxDb.Net";
-
-
 
         private readonly InfluxDbClientConfiguration _configuration;
 
@@ -257,6 +257,16 @@ namespace InfluxDB.Net
         public Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual IFormatter GetFormatter()
+        {
+            return new FormatterV09x();
+        }
+
+        public virtual InfluxVersion GetVersion()
+        {
+            return InfluxVersion.v09x;
         }
 
         #endregion Other
