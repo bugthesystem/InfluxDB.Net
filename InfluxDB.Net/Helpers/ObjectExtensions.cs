@@ -22,14 +22,6 @@ namespace InfluxDB.Net.Helpers
             return @object;
         }
 
-        /// <summary>Converts from unix time in milliseconds.</summary>
-        /// <param name="unixTimeInMillis">The unix time in millis.</param>
-        /// <returns></returns>
-        public static DateTime FromUnixTime(this long unixTimeInMillis)
-        {
-            return _epoch.AddMilliseconds(unixTimeInMillis);
-        }
-
         /// <summary>Converts to unix time in milliseconds.</summary>
         /// <param name="date">The date.</param>
         /// <returns>The number of elapsed milliseconds</returns>
@@ -38,9 +30,18 @@ namespace InfluxDB.Net.Helpers
             return Convert.ToInt64((date - _epoch).TotalMilliseconds);
         }
 
-        public static string NextPrintableString(this Random r, int length)
+        /// <summary>Converts from unix time in milliseconds.</summary>
+        /// <param name="unixTimeInMillis">The unix time in millis.</param>
+        /// <returns></returns>
+        public static DateTime FromUnixTime(this long unixTimeInMillis)
+        {
+            return _epoch.AddMilliseconds(unixTimeInMillis);
+        }
+
+        public static string NextPrintableString(this Random random, int length)
         {
             var data = new byte[length];
+
             for (int i = 0; i < data.Length; i++)
             {
                 // Only printable UTF-8
@@ -48,12 +49,12 @@ namespace InfluxDB.Net.Helpers
                 // https://github.com/influxdb/influxdb/issues/3070
                 do
                 {
-                    data[i] = (byte)r.Next(32, 127);
+                    data[i] = (byte)random.Next(32, 127);
                 }
                 while (data[i] == 92);
             }
-            var encoding = new UTF8Encoding();
 
+            var encoding = new UTF8Encoding();
             return encoding.GetString(data, 0, length);
         }
     }

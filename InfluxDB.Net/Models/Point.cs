@@ -46,26 +46,26 @@ namespace InfluxDB.Net.Models
         /// </remarks>
         public override string ToString()
         {
-            Check.NotNullOrEmpty(Measurement, "measurement");
-            Check.NotNull(Tags, "tags");
-            Check.NotNull(Fields, "fields");
+            Validate.NotNullOrEmpty(Measurement, "measurement");
+            Validate.NotNull(Tags, "tags");
+            Validate.NotNull(Fields, "fields");
 
-            var tags = string.Join(",", Tags.Select(t => Format(t.Key, t.Value)));
-            var fields = string.Join(",", Fields.Select(t => Format(t.Key, t.Value)));
+            var tags = String.Join(",", Tags.Select(t => Format(t.Key, t.Value)));
+            var fields = String.Join(",", Fields.Select(t => Format(t.Key, t.Value)));
 
             // TODO: refactor - split key into measurement + tags
-            var key = string.IsNullOrEmpty(tags) ? Escape(Measurement) : string.Join(",", Escape(Measurement), tags);
-            var time = Timestamp.HasValue ? Timestamp.Value.ToUnixTime().ToString() : string.Empty;
+            var key = String.IsNullOrEmpty(tags) ? Escape(Measurement) : String.Join(",", Escape(Measurement), tags);
+            var time = Timestamp.HasValue ? Timestamp.Value.ToUnixTime().ToString() : String.Empty;
 
-            var result = string.Format(QueryTemplate, key, fields, time);
+            var result = String.Format(QueryTemplate, key, fields, time);
 
             return result;
         }
 
         private string Format(string key, object value)
         {
-            Check.NotNullOrEmpty(key, "key");
-            Check.NotNull(value, "value");
+            Validate.NotNullOrEmpty(key, "key");
+            Validate.NotNull(value, "value");
 
             var valueType = value.GetType();
 
@@ -90,7 +90,7 @@ namespace InfluxDB.Net.Models
             }
             // TODO: what about number types?
 
-            return string.Join("=", Escape(key), stringValue);
+            return String.Join("=", Escape(key), stringValue);
         }
 
         //private string Quote(string value)

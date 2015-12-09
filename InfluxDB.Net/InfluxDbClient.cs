@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using InfluxDB.Net.Models;
 using System.Diagnostics;
+using InfluxDB.Net.Constants;
 using InfluxDB.Net.Contracts;
 using InfluxDB.Net.Helpers;
 using InfluxDB.Net.Infrastructure.Configuration;
@@ -19,38 +20,7 @@ namespace InfluxDB.Net
     {
         private const string UserAgent = "InfluxDb.Net";
 
-        private const string U = "u";
-        private const string P = "p";
-        private const string Q = "q";
-        private const string Id = "id";
-        private const string Name = "name";
-        private const string Db = "db";
-        private const string Precision = "precision";
 
-        private const string AlterRetentionPolicyStmt = "alter retention policy {0} on {1} {2} {3} {4} {5}";
-        private const string CreateContinuousQueryStmt = "create continuous query {0} on {1} begin {2} end;";
-        private const string CreateDatabaseStmt = "create database \"{0}\"";
-        private const string CreateRetentionPolicyStmt = "create retention policy \"{0}\" on {1} {2} {3} {4} {5}";
-        private const string CreateUserStmt = "create user {0} with password {1} {2}";
-        private const string DropContinuousQueryStmt = "drop continuous query {0}";
-        private const string DropDatabaseStmt = "drop database \"{0}\"";
-        private const string DropMeasurementStmt = "drop measurement \"{0}\"";
-        private const string DropRetentionPolicyStmt = "drop retention policy \"{0}\" on {1}";
-        private const string DropSeriesStmt = "drop series from \"{0}\"";
-        private const string DropUserStmt = "drop user {0}";
-        private const string GrantAllStmt = "grant all to {0}";
-        private const string GrantStmt = "grant {0} on {1} to {2}";
-        private const string ShowContinuousQueriesStmt = "show continuous queries";
-        private const string ShowDatabasesStmt = "show databases";
-        private const string ShowFieldKeysStmt = "show field keys {0} {1}";
-        private const string ShowMeasurementsStmt = "show measurements";
-        private const string ShowRetentionPolicies = "show retention policies {0}";
-        private const string ShowSeriesStmt = "show series";
-        private const string ShowTagKeysStmt = "show tag keys";
-        private const string ShowTagValuesStmt = "show tag values";
-        private const string ShowUsersStmt = "show users";
-        private const string RevokeAllStmt = "revoke all privleges from {0}";
-        private const string RevokeStmt = "revoke {0} on {1} from {2}";
 
         private readonly InfluxDbClientConfiguration _configuration;
 
@@ -58,7 +28,7 @@ namespace InfluxDB.Net
         {
             if (statusCode < HttpStatusCode.OK || statusCode >= HttpStatusCode.BadRequest)
             {
-                Debug.WriteLine(string.Format("[Error] {0} {1}", statusCode, body));
+                Debug.WriteLine(String.Format("[Error] {0} {1}", statusCode, body));
                 throw new InfluxDbApiException(statusCode, body);
             }
         };
@@ -75,71 +45,63 @@ namespace InfluxDB.Net
         /// <param name="duration">The duration.</param>
         /// <param name="replication">The replication factor.</param>
         /// <returns><see cref="Task{TResult}"/></returns>
-        public async Task<InfluxDbApiResponse> AlterRetentionPolicy(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-                    string policyName, string dbName, string duration, int replication)
+        public async Task<InfluxDbApiResponse> AlterRetentionPolicy(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string policyName, string dbName, string duration, int replication)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
                 new Dictionary<string, string>
                 {
-                    {Q, string.Format(AlterRetentionPolicyStmt, policyName, dbName, duration, replication) }
+                    {QueryParams.Query, String.Format(QueryStatements.AlterRetentionPolicy, policyName, dbName, duration, replication) }
                 });
         }
 
-        /// <summary>Pings the server.</summary>
-        /// <param name="errorHandlers">The error handlers.</param>
-        /// <returns></returns>
-        public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
-        {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "ping", null, null, false, true);
-        }
+        #region Database
 
         /// <summary>Creates the database.</summary>
         /// <param name="errorHandlers">The error handlers.</param>
         /// <param name="database">The database.</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             Database database)
+        public async Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, Database database)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-                new Dictionary<string, string> { { Q, string.Format(CreateDatabaseStmt, database.Name) } });
+                new Dictionary<string, string> { { QueryParams.Query, String.Format(QueryStatements.CreateDatabase, database.Name) } });
         }
 
         /// <summary>Drops the database.</summary>
         /// <param name="errorHandlers">The error handlers.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiResponse> DropDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string name)
+        public async Task<InfluxDbApiResponse> DropDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-                new Dictionary<string, string> { { Q, string.Format(DropDatabaseStmt, name) } });
+                new Dictionary<string, string> { { QueryParams.Query, String.Format(QueryStatements.DropDatabase, name) } });
         }
 
         /// <summary>Queries the list of databases.</summary>
         /// <param name="errorHandlers">The error handlers.</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiResponse> ShowDatabases(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
+        public async Task<InfluxDbApiResponse> ShowDatabases(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-                new Dictionary<string, string> { { Q, ShowDatabasesStmt } });
+                new Dictionary<string, string> { { QueryParams.Query, QueryStatements.ShowDatabases } });
         }
+
+        #endregion Database
+
+        #region Basic Querying
 
         /// <summary>Writes the request to the endpoint.</summary>
         /// <param name="errorHandlers">The error handlers.</param>
         /// <param name="request">The request.</param>
         /// <param name="timePrecision">The time precision.</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiWriteResponse> Write(
-            IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-            WriteRequest request, string timePrecision)
+        public async Task<InfluxDbApiWriteResponse> Write(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, WriteRequest request, string timePrecision)
         {
             var content = new StringContent(request.GetLines(), Encoding.UTF8, "text/plain");
             var result = await RequestAsync(errorHandlers, HttpMethod.Post, "write", content,
                 new Dictionary<string, string>
                 {
-                    { Db, request.Database},
-                    { Precision, timePrecision }
+                    { QueryParams.Db, request.Database},
+                    { QueryParams.Precision, timePrecision }
                 }, true, false);
 
             return new InfluxDbApiWriteResponse(result.StatusCode, result.Body);
@@ -150,92 +112,126 @@ namespace InfluxDB.Net
         /// <param name="name">The name.</param>
         /// <param name="query">The query.</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string name, string query)
+        public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, string query)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
                 new Dictionary<string, string>
                 {
-                    {Db, name},
-                    {Q, query}
+                    {QueryParams.Db, name},
+                    {QueryParams.Query, query}
                 });
         }
 
-        public Task<InfluxDbApiResponse> CreateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-                User user)
+        #endregion Basic Querying
+
+        #region Continuous Queries
+
+        public Task<InfluxDbApiResponse> GetContinuousQueries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
         {
             throw new NotImplementedException();
         }
 
-        public Task<InfluxDbApiResponse> DeleteClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string name)
+        public Task<InfluxDbApiResponse> DeleteContinuousQuery(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<InfluxDbApiResponse> DescribeClusterAdmins(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion Continuous Queries
 
-        public Task<InfluxDbApiResponse> UpdateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             User user, string name)
-        {
-            throw new NotImplementedException();
-        }
+        #region Series
 
-        public Task<InfluxDbApiResponse> CreateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string database, User user)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> DeleteDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string database, string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> DescribeDatabaseUsers(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> UpdateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string database, User user, string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> AuthenticateDatabaseUser(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string user, string password)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> GetContinuousQueries(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> DeleteContinuousQuery(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<InfluxDbApiResponse> DropSeries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string database, string name)
+        public async Task<InfluxDbApiResponse> DropSeries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
                 new Dictionary<string, string>
                 {
-                    { Db, database },
-                    { Q, string.Format(DropSeriesStmt, name) }
+                    { QueryParams.Db, database },
+                    { QueryParams.Query, String.Format(QueryStatements.DropSeries, name) }
                 });
+        }
+
+        #endregion Series
+
+        #region Clustering
+
+        public Task<InfluxDbApiResponse> CreateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> DeleteClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> DescribeClusterAdmins(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> UpdateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion Clustering
+
+        #region Sharding
+
+        public Task<InfluxDbApiResponse> GetShardSpaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> DropShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, ShardSpace shardSpace)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion Sharding
+
+        #region Users
+
+        public Task<InfluxDbApiResponse> CreateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> DeleteDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> DescribeDatabaseUsers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> UpdateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<InfluxDbApiResponse> AuthenticateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string user, string password)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion Users
+
+        #region Other
+
+        /// <summary>Pings the server.</summary>
+        /// <param name="errorHandlers">The error handlers.</param>
+        /// <returns></returns>
+        public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
+        {
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "ping", null, null, false, true);
         }
 
         public Task<InfluxDbApiResponse> ForceRaftCompaction(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
@@ -258,46 +254,14 @@ namespace InfluxDB.Net
             throw new NotImplementedException();
         }
 
-        public Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             int id)
+        public Task<InfluxDbApiResponse> RemoveServers(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<InfluxDbApiResponse> CreateShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             Shard shard)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion Other
 
-        public Task<InfluxDbApiResponse> GetShards(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> DropShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             int id, Shard.Member servers)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> GetShardSpaces(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> DropShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string database, string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-             string database, ShardSpace shardSpace)
-        {
-            throw new NotImplementedException();
-        }
+        #region Base
 
         private HttpClient GetHttpClient()
         {
@@ -305,11 +269,13 @@ namespace InfluxDB.Net
         }
 
         private async Task<InfluxDbApiResponse> RequestAsync(
-             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, HttpMethod method, string path,
-             HttpContent content = null,
-             Dictionary<string, string> extraParams = null,
-             bool includeAuthToQuery = true,
-             bool headerIsBody = false)
+            IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
+            HttpMethod method, 
+            string path,
+            HttpContent content = null,
+            Dictionary<string, string> extraParams = null,
+            bool includeAuthToQuery = true,
+            bool headerIsBody = false)
         {
             var response = await RequestInnerAsync(null,
                 HttpCompletionOption.ResponseHeadersRead,
@@ -320,7 +286,7 @@ namespace InfluxDB.Net
                 extraParams,
                 includeAuthToQuery);
 
-            string responseContent = string.Empty;
+            string responseContent = String.Empty;
 
             if (!headerIsBody)
             {
@@ -344,9 +310,15 @@ namespace InfluxDB.Net
             return new InfluxDbApiResponse(response.StatusCode, responseContent);
         }
 
-        private async Task<HttpResponseMessage> RequestInnerAsync(TimeSpan? requestTimeout,
-             HttpCompletionOption completionOption, CancellationToken cancellationToken, HttpMethod method, string path,
-             HttpContent content = null, Dictionary<string, string> extraParams = null, bool includeAuthToQuery = true)
+        private async Task<HttpResponseMessage> RequestInnerAsync(
+            TimeSpan? requestTimeout,
+            HttpCompletionOption completionOption, 
+            CancellationToken cancellationToken, 
+            HttpMethod method, 
+            string path,
+            HttpContent content = null, 
+            Dictionary<string, string> extraParams = null, 
+            bool includeAuthToQuery = true)
         {
             HttpClient client = GetHttpClient();
 
@@ -374,15 +346,14 @@ namespace InfluxDB.Net
 
             if (includeAuthToQuery)
             {
-                urlBuilder.AppendFormat("?{0}={1}&{2}={3}", U, HttpUtility.UrlEncode(_configuration.Username), P,
-                     HttpUtility.UrlEncode(_configuration.Password));
+                urlBuilder.AppendFormat("?{0}={1}&{2}={3}", QueryParams.Username, HttpUtility.UrlEncode(_configuration.Username), QueryParams.Password, HttpUtility.UrlEncode(_configuration.Password));
             }
 
             if (extraParams != null && extraParams.Count > 0)
             {
                 var keyValues = new List<string>(extraParams.Count);
-                keyValues.AddRange(extraParams.Select(param => string.Format("{0}={1}", param.Key, param.Value)));
-                urlBuilder.AppendFormat("{0}{1}", includeAuthToQuery ? "&" : "?", string.Join("&", keyValues));
+                keyValues.AddRange(extraParams.Select(param => String.Format("{0}={1}", param.Key, param.Value)));
+                urlBuilder.AppendFormat("{0}{1}", includeAuthToQuery ? "&" : "?", String.Join("&", keyValues));
             }
 
             return urlBuilder;
@@ -399,8 +370,7 @@ namespace InfluxDB.Net
             return request;
         }
 
-        private void HandleIfErrorResponse(HttpStatusCode statusCode, string responseBody,
-             IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
+        private void HandleIfErrorResponse(HttpStatusCode statusCode, string responseBody, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
         {
             if (handlers == null)
             {
@@ -413,6 +383,8 @@ namespace InfluxDB.Net
             }
             _defaultErrorHandlingDelegate(statusCode, responseBody);
         }
+
+        #endregion Base
     }
 
     internal delegate void ApiResponseErrorHandlingDelegate(HttpStatusCode statusCode, string responseBody);

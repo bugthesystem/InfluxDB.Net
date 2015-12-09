@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace InfluxDB.Net.Infrastructure.Validation
 {
-    internal static class Check
+    internal static class Validate
     {
         public static void NotNull<T>(T value, string paramName) where T : class
         {
@@ -25,7 +25,7 @@ namespace InfluxDB.Net.Infrastructure.Validation
 
         public static void NotNullOrEmpty(string value, string paramName)
         {
-            if (string.IsNullOrEmpty(value))
+            if (String.IsNullOrEmpty(value))
                 throw new ArgumentException(paramName);
         }
 

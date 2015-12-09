@@ -13,9 +13,9 @@ namespace InfluxDB.Net.Infrastructure.Configuration
 
         public InfluxDbClientConfiguration(Uri endpoint, string username, string password)
         {
-            Check.NotNull(endpoint, "Endpoint may not be null or empty.");
-            Check.NotNullOrEmpty(password, "Password may not be null or empty.");
-            Check.NotNullOrEmpty(username, "Username may not be null or empty.");
+            Validate.NotNull(endpoint, "Endpoint may not be null or empty.");
+            Validate.NotNullOrEmpty(password, "Password may not be null or empty.");
+            Validate.NotNullOrEmpty(username, "Username may not be null or empty.");
             Username = username;
             Password = password;
             EndpointBaseUri = SanitizeEndpoint(endpoint, false);

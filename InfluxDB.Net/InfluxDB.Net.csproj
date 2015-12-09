@@ -44,7 +44,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Infrastructure\Validation\Check.cs" />
+    <Compile Include="Constants\QueryStatements.cs" />
+    <Compile Include="Constants\QueryParams.cs" />
+    <Compile Include="Infrastructure\Validation\Validate.cs" />
     <Compile Include="Infrastructure\Configuration\DatabaseConfiguration.cs" />
     <Compile Include="Contracts\IInfluxDb.cs" />
     <Compile Include="Contracts\IInfluxDbClient.cs" />

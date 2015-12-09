@@ -16,7 +16,7 @@ namespace InfluxDB.Net.Tests
     public class InfluxDbTests : TestBase
     {
         private IInfluxDb _influx;
-        private string _dbName = string.Empty;
+        private string _dbName = String.Empty;
         private static readonly string _fakeDbPrefix = "FakeDb";
         private static readonly string _fakeMeasurementPrefix = "FakeMeasurement";
 
@@ -154,7 +154,7 @@ namespace InfluxDB.Net.Tests
 
             response.Success.Should().BeTrue();
 
-            var result = await _influx.QueryAsync(_dbName, string.Format("select nonexistentfield from \"{0}\"", points.Single().Measurement));
+            var result = await _influx.QueryAsync(_dbName, String.Format("select nonexistentfield from \"{0}\"", points.Single().Measurement));
             result.Should().NotBeNull();
             result.Should().BeEmpty();
         }
@@ -182,7 +182,7 @@ namespace InfluxDB.Net.Tests
             writeResponse.Success.Should().BeTrue();
 
             // Act
-            var queryResponse = await _influx.QueryAsync(_dbName, string.Format("select * from \"{0}\" where 0=1", points.Single().Measurement));
+            var queryResponse = await _influx.QueryAsync(_dbName, String.Format("select * from \"{0}\" where 0=1", points.Single().Measurement));
 
             // Assert
             queryResponse.Count.Should().Be(0);
@@ -212,7 +212,7 @@ namespace InfluxDB.Net.Tests
                 Timestamp = dt
             };
 
-            var expected = string.Format(Point.QueryTemplate,
+            var expected = String.Format(Point.QueryTemplate,
                 /* key */ seriesName + "," + "\"" + tagName + "\"" + "=" + "\"" + escapedValue + "\"",
                 /* fields */ "\"" + fieldName + "\"" + "=" + "\"" + escapedValue + "\"",
                 /* timestamp */ dt.ToUnixTime());
@@ -232,7 +232,7 @@ namespace InfluxDB.Net.Tests
             };
 
             var actual = request.GetLines();
-            var expected = string.Join("\n", points.Select(p => p.ToString()));
+            var expected = String.Join("\n", points.Select(p => p.ToString()));
 
             actual.Should().Be(expected);
         }
@@ -240,7 +240,7 @@ namespace InfluxDB.Net.Tests
         private async Task<List<Serie>> Query(Point expected)
         {
             // TODO: implement proper influx date formatting
-            var result = await _influx.QueryAsync(_dbName, string.Format("select * from {0} where time='{1}'", expected.Measurement, ((DateTime)expected.Timestamp).ToString("yyyy-MM-d HH:mm:ss")));
+            var result = await _influx.QueryAsync(_dbName, String.Format("select * from {0} where time='{1}'", expected.Measurement, ((DateTime)expected.Timestamp).ToString("yyyy-MM-d HH:mm:ss")));
 
             result.Should().NotBeNull();
             result.Count().Should().Be(1);
