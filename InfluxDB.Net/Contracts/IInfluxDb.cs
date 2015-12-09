@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using InfluxDB.Net.Models;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Contracts
 {
     public interface IInfluxDb
     {

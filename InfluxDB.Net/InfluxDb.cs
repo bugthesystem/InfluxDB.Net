@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using InfluxDB.Net.Infrastructure;
 using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net

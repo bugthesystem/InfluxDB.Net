@@ -8,7 +8,6 @@ namespace InfluxDB.Net.Models
     {
         public Serie()
         {
-            Tags = new Dictionary<string, object>();
         }
 
         private Serie(string name)
@@ -17,7 +16,6 @@ namespace InfluxDB.Net.Models
         }
 
         public string Name { get; set; }
-        public Dictionary<string, object> Tags { get; set; }
         public string[] Columns { get; set; }
         public object[][] Values { get; set; }
     }

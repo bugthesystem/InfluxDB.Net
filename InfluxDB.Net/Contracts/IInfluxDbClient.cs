@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using InfluxDB.Net.Models;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Contracts
 {
     internal interface IInfluxDbClient
     {

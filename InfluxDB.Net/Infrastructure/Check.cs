@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure
 {
     internal static class Check
     {
