@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using InfluxDB.Net.Contracts;
 using InfluxDB.Net.Helpers;
 using InfluxDB.Net.Infrastructure.Influx;
+using InfluxDB.Net.Enums;
 
 namespace InfluxDB.Net.Tests
 {
@@ -21,12 +22,17 @@ namespace InfluxDB.Net.Tests
         private static readonly string _fakeMeasurementPrefix = "FakeMeasurement";
 
         // TODO: make async
-        protected override void FinalizeSetUp()
+        protected override void FinalizeTestFixtureSetUp()
         {
+            InfluxVersion influxVersion;
+            if (!Enum.TryParse(ConfigurationManager.AppSettings.Get("version"), out influxVersion))
+                influxVersion = InfluxVersion.Auto;
+
             _influx = new InfluxDb(
                 ConfigurationManager.AppSettings.Get("url"),
                 ConfigurationManager.AppSettings.Get("username"),
-                ConfigurationManager.AppSettings.Get("password"));
+                ConfigurationManager.AppSettings.Get("password"),
+                influxVersion);
 
             _influx.Should().NotBeNull();
 
@@ -40,7 +46,6 @@ namespace InfluxDB.Net.Tests
             // workaround for issue https://github.com/influxdb/influxdb/issues/3363
             // by first creating a single point in the empty db
             var writeResponse = _influx.WriteAsync(_dbName, CreateMockPoints(1));
-
             writeResponse.Result.Success.Should().BeTrue();
         }
 
@@ -166,8 +171,9 @@ namespace InfluxDB.Net.Tests
             var writeResponse = await _influx.WriteAsync(_dbName, points);
             writeResponse.Success.Should().BeTrue();
 
+            var expected = _influx.GetFormatter().PointToSerie(points.First());
             // query
-            await Query(points.First());
+            await Query(expected);
 
             var deleteSerieResponse = await _influx.DropSeriesAsync(_dbName, points.First().Measurement);
             deleteSerieResponse.Success.Should().BeTrue();
@@ -191,11 +197,12 @@ namespace InfluxDB.Net.Tests
         [Test]
         public void Formats_Point()
         {
-            const string value = @"\=&,""*"" ";
-            const string escapedValue = @"\\=&\,\""*\""\ ";
+            const string value = @"\=&,""*"" -";
+            const string escapedFieldValue = @"\\=&\,\""*\""\ -";
+            const string escapedTagValue = @"\\=&\,""*""\ -";
             const string seriesName = @"x";
-            const string tagName = @"tag-string";
-            const string fieldName = @"field-string";
+            const string tagName = @"tag_string";
+            const string fieldName = @"field_string";
             var dt = DateTime.Now;
 
             var point = new Point
@@ -212,12 +219,13 @@ namespace InfluxDB.Net.Tests
                 Timestamp = dt
             };
 
-            var expected = String.Format(Point.QueryTemplate,
-                /* key */ seriesName + "," + "\"" + tagName + "\"" + "=" + "\"" + escapedValue + "\"",
-                /* fields */ "\"" + fieldName + "\"" + "=" + "\"" + escapedValue + "\"",
+            var formatter = _influx.GetFormatter();
+            var expected = string.Format(formatter.GetLineTemplate(),
+                /* key */ seriesName + "," + tagName + "=" + escapedTagValue,
+                /* fields */ fieldName + "=" + "\"" + escapedFieldValue + "\"",
                 /* timestamp */ dt.ToUnixTime());
 
-            var actual = point.ToString();
+            var actual = formatter.PointToString(point);
 
             actual.Should().Be(expected);
         }
@@ -226,31 +234,35 @@ namespace InfluxDB.Net.Tests
         public void WriteRequestGetLines_OnCall_ShouldReturnNewLineSeparatedPoints()
         {
             var points = CreateMockPoints(2);
-            var request = new WriteRequest
+            var formatter = _influx.GetFormatter();
+            var request = new WriteRequest(formatter)
             {
                 Points = points
             };
 
             var actual = request.GetLines();
-            var expected = String.Join("\n", points.Select(p => p.ToString()));
+            var expected = String.Join("\n", points.Select(p => formatter.PointToString(p)));
 
             actual.Should().Be(expected);
         }
 
-        private async Task<List<Serie>> Query(Point expected)
+        private async Task<List<Serie>> Query(Serie expected)
         {
-            // TODO: implement proper influx date formatting
-            var result = await _influx.QueryAsync(_dbName, String.Format("select * from {0} where time='{1}'", expected.Measurement, ((DateTime)expected.Timestamp).ToString("yyyy-MM-d HH:mm:ss")));
+            // 0.9.3 need 'group by' to retrieve tags as tags when using select *
+            var result = await _influx.QueryAsync(_dbName, string.Format("select * from \"{0}\" group by *", expected.Name));
 
             result.Should().NotBeNull();
             result.Count().Should().Be(1);
 
-            var serie = result.Single();
+            var actual = result.Single();
 
-            serie.Name.Should().Be(expected.Measurement);
-            serie.Columns.Count().Should().Be(expected.Tags.Count + expected.Fields.Count + 1); // time field is always included
-            serie.Values[0].Count().Should().Be(expected.Tags.Count + expected.Fields.Count + 1); // time field is always included
-            ((DateTime)serie.Values[0][0]).ToUnixTime().Should().Be(expected.Timestamp.Value.ToUnixTime());
+            actual.Name.Should().Be(expected.Name);
+            actual.Tags.Count.Should().Be(expected.Tags.Count);
+            actual.Tags.ShouldAllBeEquivalentTo(expected.Tags);
+            actual.Columns.ShouldAllBeEquivalentTo(expected.Columns);
+            actual.Columns.Count().Should().Be(expected.Columns.Count());
+            actual.Values[0].Count().Should().Be(expected.Values[0].Count());
+            ((DateTime)actual.Values[0][0]).ToUnixTime().Should().Be(((DateTime)expected.Values[0][0]).ToUnixTime());
 
             return result;
         }
@@ -293,11 +305,14 @@ namespace InfluxDB.Net.Tests
         {
             return new Dictionary<string, object>
             {
-                //{ "tag-string", rnd.NextPrintableString(50) }, // TODO: implement good escaping
-                { "tag-bool", rnd.Next(2) == 0 },
-                { "tag-int", rnd.Next() },
-                { "tag-decimal", (decimal)rnd.NextDouble() },
-                { "tag-float", (float)rnd.NextDouble() }
+                // quotes in the tag value are creating problems
+                // https://github.com/influxdb/influxdb/issues/3928
+                //{"tag_string", rnd.NextPrintableString(50).Replace("\"", string.Empty)},
+                {"tag_bool", (rnd.Next(2) == 0).ToString()},
+                {"tag_datetime", DateTime.Now.ToString()},
+                {"tag_decimal", ((decimal) rnd.NextDouble()).ToString()},
+                {"tag_float", ((float) rnd.NextDouble()).ToString()},
+                {"tag_int", rnd.Next().ToString()}
             };
         }
 
@@ -305,11 +320,12 @@ namespace InfluxDB.Net.Tests
         {
             return new Dictionary<string, object>
             {
-                //{ "field-string", rnd.NextPrintableString(50) },
-                { "field-bool", rnd.Next(2) == 0 },
-                { "field-int", rnd.Next() },
-                { "field-decimal", (decimal)rnd.NextDouble() },
-                { "field-float", (float)rnd.NextDouble() },
+                //{ "field_string", rnd.NextPrintableString(50) },
+                { "field_bool", rnd.Next(2) == 0 },
+                { "field_int", rnd.Next() },
+                { "field_decimal", (decimal)rnd.NextDouble() },
+                { "field_float", (float)rnd.NextDouble() },
+                { "field_datetime", DateTime.Now }
             };
         }
     }

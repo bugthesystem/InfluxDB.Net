@@ -126,8 +126,7 @@ namespace InfluxDB.Net.Infrastructure.Formatters
 
             foreach (var key in point.Tags.Keys.ToList())
             {
-                // 0.9.5 does not return tags separately, they are treated like fields.
-                //s.Tags.Add(key, point.Tags[key]);
+                s.Tags.Add(key, point.Tags[key].ToString());
             }
 
             var sortedFields = point.Fields.OrderBy(k => k.Key).ToDictionary(x => x.Key, x => x.Value);

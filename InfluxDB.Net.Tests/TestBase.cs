@@ -33,6 +33,12 @@ namespace InfluxDB.Net.Tests
             FinalizeTearDown();
         }
 
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            FinalizeTestFixtureSetUp();
+        }
+
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
@@ -67,6 +73,10 @@ namespace InfluxDB.Net.Tests
         }
 
         protected virtual void FinalizeSetUp()
+        {
+        }
+
+        protected virtual void FinalizeTestFixtureSetUp()
         {
         }
     }

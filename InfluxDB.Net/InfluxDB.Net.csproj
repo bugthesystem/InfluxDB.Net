@@ -54,7 +54,6 @@
     <Compile Include="Infrastructure\Influx\InfluxDbException.cs" />
     <Compile Include="Infrastructure\Influx\InfluxDbResponse.cs" />
     <Compile Include="Contracts\IRequestContent.cs" />
-    <Compile Include="Infrastructure\Json\JsonRequestContent.cs" />
     <Compile Include="Enums\LogLevel.cs" />
     <Compile Include="Infrastructure\Formatters\FormatterV092.cs" />
     <Compile Include="Infrastructure\Formatters\FormatterV09x.cs" />
@@ -68,7 +67,6 @@
     <Compile Include="Models\WriteRequest.cs" />
     <Compile Include="Helpers\ObjectExtensions.cs" />
     <Compile Include="Helpers\HttpUtility.cs" />
-    <Compile Include="Infrastructure\Json\JsonSerializer.cs" />
     <Compile Include="InfluxDb.cs" />
     <Compile Include="Models\ContinuousQuery.cs" />
     <Compile Include="Models\Database.cs" />
