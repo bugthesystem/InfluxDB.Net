@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using InfluxDB.Net.Client;
 using InfluxDB.Net.Infrastructure.Influx;
 using InfluxDB.Net.Models;
 using InfluxDB.Net.Enums;

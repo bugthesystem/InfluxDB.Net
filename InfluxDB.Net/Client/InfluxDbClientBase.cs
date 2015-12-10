@@ -16,7 +16,7 @@ using InfluxDB.Net.Infrastructure.Influx;
 using InfluxDB.Net.Enums;
 using InfluxDB.Net.Infrastructure.Formatters;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Client
 {
     internal class InfluxDbClientBase : IInfluxDbClient
     {

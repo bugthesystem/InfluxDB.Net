@@ -1,20 +1,20 @@
 InfluxDB.Net
 ============
-####Update for 0.9.0 API changes
+####Update for 0.9.5 API changes
 
 >[InfluxDB](http://influxdb.com/) An open-source distributed time series database
 with no external dependencies. It is the new home for all of your metrics, events, and analytics.
 
 A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.
 
-**Installation**  
-[NuGet - InfluxDB.Net](https://www.nuget.org/packages/InfluxDB.Net-Main/1.0.0-alpha)  
-**P.S.** One of this project's fork already uses InfluxDB.Net name for NuGet package. So, I called my package **InfluxDB.Net-Main**.
-```
-Install-Package InfluxDB.Net-Main -Pre
-```
+**Original NuGet**  
+This is a fork of [InfluxDB.Net](https://github.com/ziyasal/InfluxDB.Net/) NuGet library which currently seems to be in hibernation. I took whatever was out there (including improvements from other forks) did some refactoring on the codebase and plan on implementing the rest of the InfluxDB API.
 
-[![Circle CI](https://circleci.com/gh/jamesholcomb/InfluxDB.Net/tree/0.9.0.svg?style=svg)](https://circleci.com/gh/jamesholcomb/InfluxDB.Net/tree/0.9.0)
+**Installation**  
+I did not create a separate NuGet for this fork so you will have to download the .sln, build it in release and add it to your project. Unit tests work, and the Influx API calls that were implemented seem to work fine.
+
+**InfluxDB v0.9.6 and the TICK stack**  
+Since Influx released InfluxDB v0.9.6 and [announced](https://influxdata.com/blog/influxdb-the-platform-for-time-series-data/) their TICK stack, I plan on creating an umbrella NuGet which would support all components of the TICK stack.
 
 ####List of supported methods (More documentation available soon)
 - [Ping](#ping)

@@ -7,7 +7,7 @@ using InfluxDB.Net.Enums;
 using InfluxDB.Net.Infrastructure.Influx;
 using InfluxDB.Net.Infrastructure.Configuration;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Client
 {
     internal class InfluxDbClientAutoVersion : IInfluxDbClient
     {
