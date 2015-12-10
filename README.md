@@ -5,13 +5,13 @@ InfluxDB.Net
 >[InfluxDB](http://influxdb.com/) An open-source distributed time series database
 with no external dependencies. It is the new home for all of your metrics, events, and analytics.
 
-A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/)  database.
+A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/) database.
 
 **Original NuGet**  
 This is a fork of [InfluxDB.Net](https://github.com/ziyasal/InfluxDB.Net/) NuGet library which currently seems to be in hibernation. I took whatever was out there (including improvements from other forks) did some refactoring on the codebase and plan on implementing the rest of the InfluxDB API.
 
 **Installation**  
-I did not create a separate NuGet for this fork so you will have to download the .sln, build it in release and add it to your project. Unit tests work, and the Influx API calls that were implemented seem to work fine.
+I did not create a separate NuGet for this fork so you will have to download the .sln, build it in release and add it to your project. Unit tests work, and the Influx API calls that were implemented previously seem to work fine.
 
 **InfluxDB v0.9.6 and the TICK stack**  
 Since Influx released InfluxDB v0.9.6 and [announced](https://influxdata.com/blog/influxdb-the-platform-for-time-series-data/) their TICK stack, I plan on creating an umbrella NuGet which would support all components of the TICK stack.
@@ -95,7 +95,7 @@ var _client = new InfluxDb("http://...:8086", "root", "root");
 ```
 
 ##Bugs
-If you encounter a bug, performance issue, or malfunction, please add an [Issue](https://github.com/ziyasal/InfluxDB.Net/issues) with steps on how to reproduce the problem.
+If you encounter a bug, performance issue, or malfunction, please add an [Issue](https://github.com/pootzko/InfluxDB.Net/issues) with steps on how to reproduce the problem.
 
 ##TODO
 - Add more tests
@@ -103,4 +103,4 @@ If you encounter a bug, performance issue, or malfunction, please add an [Issue]
 
 ##License
 
-Code and documentation are available according to the *MIT* License (see [LICENSE](https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE)).
+Code and documentation are available according to the *MIT* License (see [LICENSE](https://github.com/pootzko/InfluxDB.Net/blob/master/LICENSE)).
