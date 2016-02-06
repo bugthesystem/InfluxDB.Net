@@ -24,11 +24,7 @@ build_succeeded() {
 run_tests() {
     print_status "RUNNING TESTS"
 
-    if [ -z "$USE_SYSTEM_NUNIT_CONSOLE" ]; then
-        RUNNER_PATH="packages/NUnit.Runners.2.6.4/tools"
-    else
-        RUNNER_PATH="/usr/lib/nunit"
-    fi
+    RUNNER_PATH="packages/NUnit.Runners.2.6.4/tools"
     NUNIT_ADDT_ARGS=""
 
     if [[ $NUNIT_RUN != "" ]]; then

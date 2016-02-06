@@ -9,12 +9,12 @@ namespace InfluxDB.Net
     public class InfluxDb : IInfluxDb
     {
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers =
-            Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
+             Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
         private readonly IInfluxDbClient _influxDbClient;
 
         public InfluxDb(string url, string username, string password)
-            : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url), username, password)))
+             : this(new InfluxDbClient(new InfluxDbClientConfiguration(new Uri(url), username, password)))
         {
             Check.NotNullOrEmpty(url, "The URL may not be null or empty.");
             Check.NotNullOrEmpty(username, "The username may not be null or empty.");
@@ -31,77 +31,67 @@ namespace InfluxDB.Net
         /// <returns>The response of the ping execution.</returns>
         public async Task<Pong> PingAsync()
         {
-            Stopwatch watch = Stopwatch.StartNew();
+            var watch = Stopwatch.StartNew();
 
-            InfluxDbApiResponse response = await _influxDbClient.Ping(NoErrorHandlers);
+            var response = await _influxDbClient.Ping(NoErrorHandlers);
 
             watch.Stop();
-            var pong = response.ReadAs<Pong>();
-            pong.ResponseTime = watch.ElapsedMilliseconds;
 
-            return pong;
+            return new Pong
+            {
+                Version = response.Body,
+                ResponseTime = watch.Elapsed,
+                Success = true
+            };
         }
 
-        /// <summary>
-        ///     Return the version of the connected influxDB Server.
-        /// </summary>
-        /// <returns>The version String, otherwise unknown</returns>
-        public async Task<string> VersionAsync()
+        /// <summary>Write a series to the given database.</summary>
+        /// <param name="database">The name of the database to write to.</param>
+        /// <param name="points">A <see>
+        ///         <cref>Array{Point}</cref>
+        ///     </see>
+        ///     .</param>
+        /// <param name="retentionPolicy">The retenion policy.</param>
+        /// <returns></returns>
+        public async Task<InfluxDbApiWriteResponse> WriteAsync(string database, Point[] points, string retentionPolicy = "default")
         {
-            InfluxDbApiResponse response = await _influxDbClient.Version(NoErrorHandlers);
-            const string version = "unknown";
-
-            if (!string.IsNullOrEmpty(response.Body))
+            var request = new WriteRequest
             {
-                return response.Body;
+                Database = database,
+                Points = points,
+                RetentionPolicy = retentionPolicy
+            };
+
+            return await _influxDbClient.Write(NoErrorHandlers, request, ToTimePrecision(TimeUnit.Milliseconds));
+        }
+
+        /// <summary>Execute a query agains a database.</summary>
+        /// <param name="database">the name of the database</param>
+        /// <param name="query">the query to execute, for language specification please see
+        /// <a href="https://influxdb.com/docs/v0.9/concepts/reading_and_writing_data.html"></a></param>
+        /// <returns>A list of Series which matched the query.</returns>
+        /// <exception cref="InfluxDbApiException"></exception>
+        /// <remarks>Assumes one Result per QueryResult</remarks>
+        public async Task<List<Serie>> QueryAsync(string database, string query)
+        {
+            InfluxDbApiResponse response = await _influxDbClient.Query(NoErrorHandlers, database, query);
+
+            var queryResult = response.ReadAs<QueryResult>();
+
+            Check.NotNull(queryResult, "queryResult");
+            Check.NotNull(queryResult.Results, "queryResult.Results");
+
+            // apparently a 200 OK can return an error in the results
+            // https://github.com/influxdb/influxdb/pull/1813
+            var error = queryResult.Results.Single().Error;
+            if (error != null)
+            {
+                throw new InfluxDbApiException(System.Net.HttpStatusCode.BadRequest, error);
             }
 
-            return version;
-        }
+            var result = queryResult.Results.Single().Series;
 
-        /// <summary>
-        ///     Write a Series to the given database.
-        /// </summary>
-        /// <param name="database">The name of the database to write to</param>
-        /// <param name="precision">The precision used for the values.</param>
-        /// <param name="series">An array of <see cref="Serie" /> to write</param>
-        /// <returns></returns>
-        public async Task<InfluxDbApiResponse> WriteAsync(string database, TimeUnit precision, params Serie[] series)
-        {
-            return await _influxDbClient.Write(NoErrorHandlers, database, series, ToTimePrecision(precision));
-        }
-
-        /// <summary>
-        ///     Write a Series to the given database
-        /// </summary>
-        /// <param name="port">
-        ///     The port where to reach the influxdb udp service. The database is configured per port in the
-        ///     influxdb configuration.
-        /// </param>
-        /// <param name="precision">The precision used for the values</param>
-        /// <param name="series">An array of <see cref="Serie" /> to write</param>
-        /// <returns></returns>
-        public async Task<InfluxDbApiResponse> WriteUdpAsync(int port, TimeUnit precision, params Serie[] series)
-        {
-            throw new NotImplementedException("WriteUdpAsync is not implemented yet, sorry.");
-        }
-
-        /// <summary>
-        ///     Execute a query agains a database.
-        /// </summary>
-        /// <param name="database">the name of the database</param>
-        /// <param name="query">
-        ///     the query to execute, for language specification please see
-        ///     <a href="http://influxdb.org/docs/query_language">http://influxdb.org/docs/query_language</a>
-        /// </param>
-        /// <param name="precision">the precision used for the values.</param>
-        /// <returns>A list of Series which matched the query.</returns>
-        public async Task<List<Serie>> QueryAsync(string database, string query, TimeUnit precision)
-        {
-            InfluxDbApiResponse response =
-                await _influxDbClient.Query(NoErrorHandlers, database, query, ToTimePrecision(precision));
-
-            return response.ReadAs<List<Serie>>();
+            return result != null ? result.ToList() : new List<Serie>();
         }
 
         /// <summary>
@@ -109,48 +99,45 @@ namespace InfluxDB.Net
         /// </summary>
         /// <param name="name">The name of the new database</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiCreateResponse> CreateDatabaseAsync(string name)
+        public async Task<InfluxDbApiResponse> CreateDatabaseAsync(string name)
         {
-            var db = new Database {Name = name};
+            var db = new Database { Name = name };
 
-            InfluxDbApiResponse response = await _influxDbClient.CreateDatabase(NoErrorHandlers, db);
-
-            return new InfluxDbApiCreateResponse(response.StatusCode, response.Body);
+            return await _influxDbClient.CreateDatabase(NoErrorHandlers, db);
         }
 
         /// <summary>
-        ///     Create a new Database from a <see cref="DatabaseConfiguration" />. This is the way to create a db with shards
-        ///     specified.
-        /// </summary>
-        /// <param name="config">The configuration for the database to create..</param>
-        /// <returns></returns>
-        public async Task<InfluxDbApiCreateResponse> CreateDatabaseAsync(DatabaseConfiguration config)
-        {
-            InfluxDbApiResponse response = await _influxDbClient.CreateDatabase(NoErrorHandlers, config);
-            return new InfluxDbApiCreateResponse(response.StatusCode, response.Body);
-        }
-
-        /// <summary>
-        ///     Delete a database.
+        ///     Drops a database.
         /// </summary>
         /// <param name="name">The name of the database to delete.</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiDeleteResponse> DeleteDatabaseAsync(string name)
+        public async Task<InfluxDbApiResponse> DropDatabaseAsync(string name)
         {
-            InfluxDbApiResponse response = await _influxDbClient.DeleteDatabase(NoErrorHandlers, name);
-
-            return new InfluxDbApiDeleteResponse(response.StatusCode, response.Body);
+            return await _influxDbClient.DropDatabase(NoErrorHandlers, name);
         }
 
         /// <summary>
         ///     Describe all available databases.
         /// </summary>
         /// <returns>A list of all Databases</returns>
-        public async Task<List<Database>> DescribeDatabasesAsync()
+        public async Task<List<Database>> ShowDatabasesAsync()
         {
-            InfluxDbApiResponse response = await _influxDbClient.DescribeDatabases(NoErrorHandlers);
+            var response = await _influxDbClient.ShowDatabases(NoErrorHandlers);
 
-            return response.ReadAs<List<Database>>();
+            var results = response.ReadAs<QueryResult>();
+            var databases = new List<Database>();
+
+            var serie = results.Results.Single().Series.Single();
+
+            foreach (var value in serie.Values)
+            {
+                databases.Add(new Database
+                {
+                    Name = ((string)value[0]).Replace("\"", "")
+                });
+            }
+
+            return databases;
         }
 
         /// <summary>
@@ -161,7 +148,7 @@ namespace InfluxDB.Net
         /// <returns></returns>
         public async Task<InfluxDbApiResponse> CreateClusterAdminAsync(string username, string adminPassword)
         {
-            var user = new User {Name = username, Password = adminPassword};
+            var user = new User { Name = username, Password = adminPassword };
             return await _influxDbClient.CreateClusterAdmin(NoErrorHandlers, user);
         }
 
@@ -194,7 +181,7 @@ namespace InfluxDB.Net
         /// <returns></returns>
         public async Task<InfluxDbApiResponse> UpdateClusterAdminAsync(string username, string password)
         {
-            var user = new User {Name = username, Password = password};
+            var user = new User { Name = username, Password = password };
 
             return await _influxDbClient.UpdateClusterAdmin(NoErrorHandlers, user, username);
         }
@@ -210,9 +197,9 @@ namespace InfluxDB.Net
         /// <param name="permissions">An array of readFrom and writeTo permissions (in this order) and given in regex form.</param>
         /// <returns></returns>
         public async Task<InfluxDbApiResponse> CreateDatabaseUserAsync(string database, string name, string password,
-            params string[] permissions)
+             params string[] permissions)
         {
-            var user = new User {Name = name, Password = password};
+            var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
             return await _influxDbClient.CreateDatabaseUser(NoErrorHandlers, database, user);
         }
@@ -249,9 +236,9 @@ namespace InfluxDB.Net
         /// <param name="permissions">An array of readFrom and writeTo permissions (in this order) and given in regex form.</param>
         /// <returns></returns>
         public async Task<InfluxDbApiResponse> UpdateDatabaseUserAsync(string database, string name, string password,
-            params string[] permissions)
+             params string[] permissions)
         {
-            var user = new User {Name = name, Password = password};
+            var user = new User { Name = name, Password = password };
             user.SetPermissions(permissions);
             return await _influxDbClient.UpdateDatabaseUser(NoErrorHandlers, database, user, name);
         }
@@ -265,9 +252,9 @@ namespace InfluxDB.Net
         /// <param name="permissions">An array of readFrom and writeTo permissions (in this order) and given in regex form.</param>
         /// <returns></returns>
         public async Task<InfluxDbApiResponse> AlterDatabasePrivilegeAsync(string database, string name, bool isAdmin,
-            params string[] permissions)
+             params string[] permissions)
         {
-            var user = new User {Name = name, IsAdmin = isAdmin};
+            var user = new User { Name = name, IsAdmin = isAdmin };
             user.SetPermissions(permissions);
             return await _influxDbClient.UpdateDatabaseUser(NoErrorHandlers, database, user, name);
         }
@@ -280,7 +267,7 @@ namespace InfluxDB.Net
         /// <param name="password">The password for this user.</param>
         /// <returns></returns>
         public async Task<InfluxDbApiResponse> AuthenticateDatabaseUserAsync(string database, string user,
-            string password)
+             string password)
         {
             return await _influxDbClient.AuthenticateDatabaseUser(NoErrorHandlers, database, user, password);
         }
@@ -314,9 +301,9 @@ namespace InfluxDB.Net
         /// <param name="database">The database in which the given serie should be deleted.</param>
         /// <param name="serieName">The name of the serie.</param>
         /// <returns></returns>
-        public async Task<InfluxDbApiResponse> DeleteSeriesAsync(string database, string serieName)
+        public async Task<InfluxDbApiResponse> DropSeriesAsync(string database, string serieName)
         {
-            return await _influxDbClient.DeleteSeries(NoErrorHandlers, database, serieName);
+            return await _influxDbClient.DropSeries(NoErrorHandlers, database, serieName);
         }
 
         /// <summary>
@@ -459,7 +446,7 @@ namespace InfluxDB.Net
             return this;
         }
 
-        private static String ToTimePrecision(TimeUnit t)
+        private String ToTimePrecision(TimeUnit t)
         {
             switch (t)
             {
@@ -471,7 +458,7 @@ namespace InfluxDB.Net
                     return "u";
                 default:
                     throw new ArgumentException("time precision must be " + TimeUnit.Seconds + ", " +
-                                                TimeUnit.Milliseconds + " or " + TimeUnit.Microseconds);
+                                                         TimeUnit.Milliseconds + " or " + TimeUnit.Microseconds);
             }
         }
     }

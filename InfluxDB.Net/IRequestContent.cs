@@ -2,8 +2,8 @@
 
 namespace InfluxDB.Net
 {
-    internal interface IRequestContent
-    {
-        HttpContent GetContent();
-    }
+	internal interface IRequestContent
+	{
+		HttpContent GetContent();
+	}
 }
