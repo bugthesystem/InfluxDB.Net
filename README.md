@@ -7,6 +7,8 @@ with no external dependencies. It is the new home for all of your metrics, event
 
 A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/) database.
 
+[![Support via Gratipay](https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.svg)](https://gratipay.com/ziyasal/)  
+
 **Original NuGet**  
 This is a fork of [InfluxDB.Net](https://github.com/ziyasal/InfluxDB.Net/) NuGet library which currently seems to be in hibernation. I took whatever was out there (including improvements from other forks) did some refactoring on the codebase and plan on implementing the rest of the InfluxDB API.
 
