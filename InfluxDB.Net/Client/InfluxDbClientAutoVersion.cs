@@ -21,7 +21,11 @@ namespace InfluxDB.Net.Client
             var result = _influxDbClient.Ping(errorHandlers).Result;
             var databaseVersion = result.Body;
 
-            if (databaseVersion.StartsWith("0.9"))
+            if (databaseVersion.StartsWith("0.10"))
+            {
+                _influxDbClient = new InfluxDbClientV010x(influxDbClientConfiguration);
+            }
+            else if (databaseVersion.StartsWith("0.9"))
             {
                 switch (databaseVersion)
                 {

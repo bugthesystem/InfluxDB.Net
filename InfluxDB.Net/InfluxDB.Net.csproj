@@ -45,11 +45,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\InfluxDbClientBase.cs" />
+    <Compile Include="Client\InfluxDbClientV010x.cs" />
     <Compile Include="Client\InfluxDbClientV092.cs" />
     <Compile Include="Client\InfluxDbClientV095.cs" />
     <Compile Include="Client\InfluxDbClientV096.cs" />
     <Compile Include="Constants\QueryStatements.cs" />
     <Compile Include="Constants\QueryParams.cs" />
+    <Compile Include="Infrastructure\Formatters\FormatterV010x.cs" />
     <Compile Include="Infrastructure\Formatters\FormatterV092.cs" />
     <Compile Include="Infrastructure\Formatters\FormatterV095.cs" />
     <Compile Include="Infrastructure\Formatters\FormatterV096.cs" />
