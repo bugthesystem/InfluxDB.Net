@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using InfluxDB.Net.Models;
+using InfluxDB.Net.Contracts;
+using InfluxDB.Net.Enums;
+using InfluxDB.Net.Infrastructure.Influx;
+using InfluxDB.Net.Infrastructure.Configuration;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Client
 {
     internal class InfluxDbClientAutoVersion : IInfluxDbClient
     {
@@ -11,28 +15,34 @@ namespace InfluxDB.Net
 
         public InfluxDbClientAutoVersion(InfluxDbClientConfiguration influxDbClientConfiguration)
         {
-            _influxDbClient = new InfluxDbClient(influxDbClientConfiguration);
+            _influxDbClient = new InfluxDbClientBase(influxDbClientConfiguration);
             var errorHandlers = new List<ApiResponseErrorHandlingDelegate>();
+            // TODO: needs testing - potentially bad if it's going to ping for every request
             var result = _influxDbClient.Ping(errorHandlers).Result;
             var databaseVersion = result.Body;
 
             if (databaseVersion.StartsWith("0.9"))
             {
-                if (databaseVersion == "0.9.2")
+                switch (databaseVersion)
                 {
-                    _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
+                    case "0.9.2":
+                        _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
+                        break;
+                    case "0.9.5":
+                        _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
+                        break;
+                    case "0.9.6":
+                        _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
+                        break;
                 }
             }
             else
             {
-                throw new InvalidOperationException(string.Format("Version {0} is not yet supported by the Auto configuration.", databaseVersion));
+                throw new InvalidOperationException(String.Format("Version {0} is not supported by the Auto configuration.", databaseVersion));
             }
         }
-        
-        public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
-        {
-            return await _influxDbClient.Ping(errorHandlers);
-        }
+
+        #region Database
 
         public async Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, Database database)
         {
@@ -49,15 +59,46 @@ namespace InfluxDB.Net
             return await _influxDbClient.ShowDatabases(errorHandlers);
         }
 
+        #endregion Database
+
+        #region Basic Querying
+
         public async Task<InfluxDbApiWriteResponse> Write(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, WriteRequest request, string timePrecision)
         {
-            return await _influxDbClient.Write(errorHandlers,request, timePrecision);
+            return await _influxDbClient.Write(errorHandlers, request, timePrecision);
         }
 
         public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, string query)
         {
             return await _influxDbClient.Query(errorHandlers, name, query);
         }
+
+        #endregion Basic Querying
+
+        #region Continuous Queries
+
+        public async Task<InfluxDbApiResponse> GetContinuousQueries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
+        {
+            return await _influxDbClient.GetContinuousQueries(errorHandlers, database);
+        }
+
+        public async Task<InfluxDbApiResponse> DeleteContinuousQuery(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id)
+        {
+            return await _influxDbClient.DeleteContinuousQuery(errorHandlers, database, id);
+        }
+
+        #endregion Continuous Queries
+
+        #region Series
+
+        public async Task<InfluxDbApiResponse> DropSeries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
+        {
+            return await _influxDbClient.DropSeries(errorHandlers, database, name);
+        }
+
+        #endregion Series
+
+        #region Clustering
 
         public async Task<InfluxDbApiResponse> CreateClusterAdmin(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, User user)
         {
@@ -78,6 +119,29 @@ namespace InfluxDB.Net
         {
             return await _influxDbClient.UpdateClusterAdmin(errorHandlers, user, name);
         }
+
+        #endregion Clustering
+
+        #region Sharding
+
+        public async Task<InfluxDbApiResponse> GetShardSpaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
+        {
+            return await _influxDbClient.GetShardSpaces(errorHandlers);
+        }
+
+        public async Task<InfluxDbApiResponse> DropShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
+        {
+            return await _influxDbClient.DropShardSpace(errorHandlers, database, name);
+        }
+
+        public async Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, ShardSpace shardSpace)
+        {
+            return await _influxDbClient.CreateShardSpace(errorHandlers, database, shardSpace);
+        }
+
+        #endregion Sharding
+
+        #region Users
 
         public async Task<InfluxDbApiResponse> CreateDatabaseUser(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, User user)
         {
@@ -104,19 +168,13 @@ namespace InfluxDB.Net
             return await _influxDbClient.AuthenticateDatabaseUser(errorHandlers, database, user, password);
         }
 
-        public async Task<InfluxDbApiResponse> GetContinuousQueries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
-        {
-            return await _influxDbClient.GetContinuousQueries(errorHandlers, database);
-        }
+        #endregion Users
 
-        public async Task<InfluxDbApiResponse> DeleteContinuousQuery(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id)
-        {
-            return await _influxDbClient.DeleteContinuousQuery(errorHandlers, database, id);
-        }
+        #region Other
 
-        public async Task<InfluxDbApiResponse> DropSeries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
+        public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await _influxDbClient.DropSeries(errorHandlers, database, name);
+            return await _influxDbClient.Ping(errorHandlers);
         }
 
         public async Task<InfluxDbApiResponse> ForceRaftCompaction(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
@@ -144,34 +202,9 @@ namespace InfluxDB.Net
             return await _influxDbClient.RemoveServers(errorHandlers, id);
         }
 
-        public async Task<InfluxDbApiResponse> CreateShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, Shard shard)
+        public async Task<InfluxDbApiResponse> AlterRetentionPolicy(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string policyName, string dbName, string duration, int replication)
         {
-            return await _influxDbClient.CreateShard(errorHandlers, shard);
-        }
-
-        public async Task<InfluxDbApiResponse> GetShards(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
-        {
-            return await _influxDbClient.GetShards(errorHandlers);
-        }
-
-        public async Task<InfluxDbApiResponse> DropShard(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, int id, Shard.Member servers)
-        {
-            return await _influxDbClient.DropShard(errorHandlers, id, servers);
-        }
-
-        public async Task<InfluxDbApiResponse> GetShardSpaces(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
-        {
-            return await _influxDbClient.GetShardSpaces(errorHandlers);
-        }
-
-        public async Task<InfluxDbApiResponse> DropShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, string name)
-        {
-            return await _influxDbClient.DropShardSpace(errorHandlers, database, name);
-        }
-
-        public async Task<InfluxDbApiResponse> CreateShardSpace(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, ShardSpace shardSpace)
-        {
-            return await _influxDbClient.CreateShardSpace(errorHandlers, database, shardSpace);
+            return await _influxDbClient.AlterRetentionPolicy(errorHandlers, policyName, dbName, duration, replication);
         }
 
         public IFormatter GetFormatter()
@@ -183,5 +216,7 @@ namespace InfluxDB.Net
         {
             return _influxDbClient.GetVersion();
         }
+
+        #endregion Other
     }
 }
