@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Helpers
 {
     public sealed class Stopwatch
     {
@@ -9,7 +9,7 @@ namespace InfluxDB.Net
         private long _startTick;
 
         /// <summary>
-        ///     Gets a value indicating whether the instance is currently recording.
+        /// Gets a value indicating whether the instance is currently recording.
         /// </summary>
         public bool IsRunning
         {
@@ -17,7 +17,7 @@ namespace InfluxDB.Net
         }
 
         /// <summary>
-        ///     Gets the Elapsed time as a Timespan.
+        /// Gets the Elapsed time as a Timespan.
         /// </summary>
         public TimeSpan Elapsed
         {
@@ -25,7 +25,7 @@ namespace InfluxDB.Net
         }
 
         /// <summary>
-        ///     Gets the Elapsed time as the total number of milliseconds.
+        /// Gets the Elapsed time as the total number of milliseconds.
         /// </summary>
         public long ElapsedMilliseconds
         {
@@ -33,8 +33,8 @@ namespace InfluxDB.Net
         }
 
         /// <summary>
-        ///     Gets the Elapsed time as the total number of ticks (which is faked
-        ///     as Silverlight doesn't have a way to get at the actual "Ticks")
+        /// Gets the Elapsed time as the total number of ticks (which is faked
+        /// as Silverlight doesn't have a way to get at the actual "Ticks")
         /// </summary>
         public long ElapsedTicks
         {
@@ -42,7 +42,7 @@ namespace InfluxDB.Net
         }
 
         /// <summary>
-        ///     Creates a new instance of the class and starts the watch immediately.
+        /// Creates a new instance of the class and starts the watch immediately.
         /// </summary>
         /// <returns>An instance of Stopwatch, running.</returns>
         public static Stopwatch StartNew()
@@ -53,7 +53,7 @@ namespace InfluxDB.Net
         }
 
         /// <summary>
-        ///     Completely resets and deactivates the timer.
+        /// Completely resets and deactivates the timer.
         /// </summary>
         public void Reset()
         {
@@ -63,7 +63,7 @@ namespace InfluxDB.Net
         }
 
         /// <summary>
-        ///     Begins the timer.
+        /// Begins the timer.
         /// </summary>
         public void Start()
         {
@@ -75,7 +75,7 @@ namespace InfluxDB.Net
         }
 
         /// <summary>
-        ///     Stops the current timer.
+        /// Stops the current timer.
         /// </summary>
         public void Stop()
         {

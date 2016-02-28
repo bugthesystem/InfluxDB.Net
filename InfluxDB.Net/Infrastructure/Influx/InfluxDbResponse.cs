@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Influx
 {
     public class InfluxDbApiResponse
     {
@@ -20,23 +20,23 @@ namespace InfluxDB.Net
         }
     }
 
-    public class InfluxDbApiCreateResponse : InfluxDbApiResponse
+    public class InfluxDbApiWriteResponse : InfluxDbApiResponse
     {
-        public InfluxDbApiCreateResponse(HttpStatusCode statusCode, string body)
-            : base(statusCode, body)
+        public InfluxDbApiWriteResponse(HttpStatusCode statusCode, string body)
+             : base(statusCode, body)
         {
         }
 
         public override bool Success
         {
-            get { return StatusCode == HttpStatusCode.Created; }
+            get { return StatusCode == HttpStatusCode.NoContent; }
         }
     }
 
     public class InfluxDbApiDeleteResponse : InfluxDbApiResponse
     {
         public InfluxDbApiDeleteResponse(HttpStatusCode statusCode, string body)
-            : base(statusCode, body)
+             : base(statusCode, body)
         {
         }
 

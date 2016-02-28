@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Net;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Influx
 {
     public class InfluxDbException : Exception
     {
         public InfluxDbException(string message, Exception innerException)
-            : base(message, innerException)
+             : base(message, innerException)
         {
         }
 
         public InfluxDbException(string message)
-            : base(message)
+             : base(message)
         {
         }
     }
@@ -19,7 +19,7 @@ namespace InfluxDB.Net
     public class InfluxDbApiException : InfluxDbException
     {
         public InfluxDbApiException(HttpStatusCode statusCode, string responseBody)
-            : base(string.Format("InfluxDb API responded with status code={0}, response={1}", statusCode, responseBody))
+             : base(String.Format("InfluxDb API responded with status code={0}, response={1}", statusCode, responseBody))
         {
             StatusCode = statusCode;
             ResponseBody = responseBody;

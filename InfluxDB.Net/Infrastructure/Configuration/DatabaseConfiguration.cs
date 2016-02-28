@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using InfluxDB.Net.Models;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Configuration
 {
     public class DatabaseConfiguration
     {
         private readonly List<string> _continuousQueries;
+
         private readonly List<ShardSpace> _spaces;
 
         public DatabaseConfiguration()

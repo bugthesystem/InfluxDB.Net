@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace InfluxDB.Net
+namespace InfluxDB.Net.Infrastructure.Validation
 {
-    internal static class Check
+    internal static class Validate
     {
         public static void NotNull<T>(T value, string paramName) where T : class
         {
@@ -25,7 +25,7 @@ namespace InfluxDB.Net
 
         public static void NotNullOrEmpty(string value, string paramName)
         {
-            if (string.IsNullOrEmpty(value))
+            if (String.IsNullOrEmpty(value))
                 throw new ArgumentException(paramName);
         }
 
@@ -33,6 +33,12 @@ namespace InfluxDB.Net
         {
             if (array.Length == 0)
                 throw new ArgumentOutOfRangeException(paramName);
+        }
+
+        public static void NotZeroLength<T>(T[] array, string paramName, string message)
+        {
+            if (array.Length == 0)
+                throw new ArgumentOutOfRangeException(paramName, message);
         }
 
         public static void NotZeroLength<T>(List<T> list, string paramName)
