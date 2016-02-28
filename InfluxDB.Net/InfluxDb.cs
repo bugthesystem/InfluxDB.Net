@@ -20,8 +20,8 @@ namespace InfluxDB.Net
 
         private readonly IInfluxDbClient _influxDbClient;
 
-        public InfluxDb(string url, string username, string password, InfluxVersion influxVersion)
-             : this(new InfluxDbClientConfiguration(new Uri(url), username, password, influxVersion))
+        public InfluxDb(string url, string username, string password, InfluxVersion influxVersion, TimeSpan? requestTimeout = null)
+             : this(new InfluxDbClientConfiguration(new Uri(url), username, password, influxVersion, requestTimeout))
         {
             Validate.NotNullOrEmpty(url, "The URL may not be null or empty.");
             Validate.NotNullOrEmpty(username, "The username may not be null or empty.");

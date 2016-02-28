@@ -1,6 +1,5 @@
 using System;
 using System.Net.Http;
-using InfluxDB.Net.Infrastructure;
 using InfluxDB.Net.Infrastructure.Validation;
 using InfluxDB.Net.Enums;
 
@@ -16,7 +15,9 @@ namespace InfluxDB.Net.Infrastructure.Configuration
 
         public InfluxVersion InfluxVersion { get; private set; }
 
-        public InfluxDbClientConfiguration(Uri endpoint, string username, string password, InfluxVersion influxVersion)
+        public TimeSpan? RequestTimeout { get; private set; }
+
+        public InfluxDbClientConfiguration(Uri endpoint, string username, string password, InfluxVersion influxVersion, TimeSpan? requestTimeout)
         {
             Validate.NotNull(endpoint, "Endpoint may not be null or empty.");
             Validate.NotNullOrEmpty(password, "Password may not be null or empty.");
@@ -25,6 +26,7 @@ namespace InfluxDB.Net.Infrastructure.Configuration
             Password = password;
             InfluxVersion = influxVersion;
             EndpointBaseUri = SanitizeEndpoint(endpoint, false);
+            RequestTimeout = requestTimeout;
         }
 
         private static Uri SanitizeEndpoint(Uri endpoint, bool isTls)

@@ -28,7 +28,7 @@ namespace InfluxDB.Net.Client
         {
             if (statusCode < HttpStatusCode.OK || statusCode >= HttpStatusCode.BadRequest)
             {
-                Debug.WriteLine(String.Format("[Error] {0} {1}", statusCode, body));
+                Debug.WriteLine("[Error] {0} {1}", statusCode, body);
                 throw new InfluxDbApiException(statusCode, body);
             }
         };
@@ -47,7 +47,8 @@ namespace InfluxDB.Net.Client
         public async Task<InfluxDbApiResponse> CreateDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, Database database)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-                new Dictionary<string, string> { { QueryParams.Query, String.Format(QueryStatements.CreateDatabase, database.Name) } });
+                new Dictionary<string, string> { { QueryParams.Query, String.Format(QueryStatements.CreateDatabase, database.Name) } },
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         /// <summary>Drops the database.</summary>
@@ -57,7 +58,8 @@ namespace InfluxDB.Net.Client
         public async Task<InfluxDbApiResponse> DropDatabase(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-                new Dictionary<string, string> { { QueryParams.Query, String.Format(QueryStatements.DropDatabase, name) } });
+                new Dictionary<string, string> { { QueryParams.Query, String.Format(QueryStatements.DropDatabase, name) } },
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         /// <summary>Queries the list of databases.</summary>
@@ -66,7 +68,8 @@ namespace InfluxDB.Net.Client
         public async Task<InfluxDbApiResponse> ShowDatabases(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
-                new Dictionary<string, string> { { QueryParams.Query, QueryStatements.ShowDatabases } });
+                new Dictionary<string, string> { { QueryParams.Query, QueryStatements.ShowDatabases } },
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         #endregion Database
@@ -86,7 +89,8 @@ namespace InfluxDB.Net.Client
                 {
                     { QueryParams.Db, request.Database},
                     { QueryParams.Precision, timePrecision }
-                }, true, false);
+                }, true, false,
+                requestTimeout: _configuration.RequestTimeout);
 
             return new InfluxDbApiWriteResponse(result.StatusCode, result.Body);
         }
@@ -103,7 +107,8 @@ namespace InfluxDB.Net.Client
                 {
                     {QueryParams.Db, name},
                     {QueryParams.Query, query}
-                });
+                },
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         #endregion Basic Querying
@@ -131,7 +136,8 @@ namespace InfluxDB.Net.Client
                 {
                     { QueryParams.Db, database },
                     { QueryParams.Query, String.Format(QueryStatements.DropSeries, name) }
-                });
+                },
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         #endregion Series
@@ -215,7 +221,8 @@ namespace InfluxDB.Net.Client
         /// <returns></returns>
         public async Task<InfluxDbApiResponse> Ping(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
         {
-            return await RequestAsync(errorHandlers, HttpMethod.Get, "ping", null, null, false, true);
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "ping", null, null, false, true,
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         public Task<InfluxDbApiResponse> ForceRaftCompaction(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers)
@@ -255,8 +262,9 @@ namespace InfluxDB.Net.Client
             return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
                 new Dictionary<string, string>
                 {
-                    {QueryParams.Query, String.Format(QueryStatements.AlterRetentionPolicy, policyName, dbName, duration, replication) }
-                });
+                    {QueryParams.Query, string.Format(QueryStatements.AlterRetentionPolicy, policyName, dbName, duration, replication) }
+                },
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         public virtual IFormatter GetFormatter()
@@ -285,9 +293,10 @@ namespace InfluxDB.Net.Client
             HttpContent content = null,
             Dictionary<string, string> extraParams = null,
             bool includeAuthToQuery = true,
-            bool headerIsBody = false)
+            bool headerIsBody = false,
+            TimeSpan? requestTimeout = null)
         {
-            var response = await RequestInnerAsync(null,
+            var response = await RequestInnerAsync(requestTimeout,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None,
                 method,
