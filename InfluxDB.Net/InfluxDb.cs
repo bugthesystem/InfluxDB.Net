@@ -6,7 +6,6 @@ using InfluxDB.Net.Client;
 using InfluxDB.Net.Contracts;
 using InfluxDB.Net.Enums;
 using InfluxDB.Net.Helpers;
-using InfluxDB.Net.Infrastructure;
 using InfluxDB.Net.Infrastructure.Configuration;
 using InfluxDB.Net.Infrastructure.Influx;
 using InfluxDB.Net.Infrastructure.Validation;
