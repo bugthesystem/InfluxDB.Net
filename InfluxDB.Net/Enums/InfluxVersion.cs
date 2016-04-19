@@ -3,6 +3,7 @@ namespace InfluxDB.Net.Enums
     public enum InfluxVersion
     {
         Auto,
+        v012x,
         v011x,
         v010x,
         v09x,
