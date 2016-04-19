@@ -33,6 +33,15 @@ namespace InfluxDB.Net
                 case InfluxVersion.Auto:
                     _influxDbClient = new InfluxDbClientAutoVersion(influxDbClientConfiguration);
                     break;
+                case InfluxVersion.v012x:
+                    _influxDbClient = new InfluxDbClientV012x(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v011x:
+                    _influxDbClient = new InfluxDbClientV011x(influxDbClientConfiguration);
+                    break;
+                case InfluxVersion.v010x:
+                    _influxDbClient = new InfluxDbClientV010x(influxDbClientConfiguration);
+                    break;
                 case InfluxVersion.v09x:
                     _influxDbClient = new InfluxDbClientBase(influxDbClientConfiguration);
                     break;
@@ -48,7 +57,7 @@ namespace InfluxDB.Net
                 case InfluxVersion.v08x:
                     throw new NotImplementedException();
                 default:
-                    throw new ArgumentOutOfRangeException("influxDbClientConfiguration", String.Format("Unknown version {0}.", influxDbClientConfiguration));
+                    throw new ArgumentOutOfRangeException("influxDbClientConfiguration", String.Format("Unknown version {0}.", influxDbClientConfiguration.InfluxVersion));
             }
         }
 
