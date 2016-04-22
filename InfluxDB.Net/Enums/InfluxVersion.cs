@@ -10,6 +10,7 @@ namespace InfluxDB.Net.Enums
         v096,
         v095,
         v092,
-        v08x
+        v08x,
+        v0x
     }
 }

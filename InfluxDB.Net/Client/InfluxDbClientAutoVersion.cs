@@ -50,7 +50,7 @@ namespace InfluxDB.Net.Client
             }
             else
             {
-                throw new InvalidOperationException(String.Format("Version {0} is not supported by the Auto configuration.", databaseVersion));
+                _influxDbClient = new InfluxDbClientV0x(influxDbClientConfiguration);
             }
         }
 
