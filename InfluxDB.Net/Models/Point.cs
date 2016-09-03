@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using InfluxDB.Net.Enums;
-using InfluxDB.Net.Helpers;
-using InfluxDB.Net.Infrastructure;
-using InfluxDB.Net.Infrastructure.Validation;
 
 namespace InfluxDB.Net.Models
 {
