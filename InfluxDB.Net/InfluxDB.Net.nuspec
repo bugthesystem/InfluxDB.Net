@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>InfluxDB.Net</id>
-    <version>1.0.1</version>
+    <id>InfluxDB.Net-Main</id>
+    <version>1.0.0</version>
     <title>InfluxDB.Net</title>
-    <authors>Tihomir Kit (pootzko), Ziya SARIKAYA</authors>
-    <owners>pootzko</owners>
-    <licenseUrl>https://github.com/pootzko/InfluxDB.Net/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/pootzko/InfluxDB.Net</projectUrl>
+    <authors>Ziya SARIKAYA, Daniel Bohlin</authors>
+    <owners>ziyasal, poxet</owners>
+    <licenseUrl>https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ziyasal/InfluxDB.Net</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Portable .NET client for InfluxDB.
