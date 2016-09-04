@@ -3,7 +3,7 @@
   <metadata>
     <id>InfluxDB.Net-Main</id>
     <version>1.0.0</version>
-    <title>InfluxDB.Net</title>
+    <title>InfluxDB.Net Main</title>
     <authors>Ziya SARIKAYA, Daniel Bohlin</authors>
     <owners>ziyasal, poxet</owners>
     <licenseUrl>https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE</licenseUrl>
