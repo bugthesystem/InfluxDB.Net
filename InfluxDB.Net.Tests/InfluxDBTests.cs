@@ -21,9 +21,9 @@ namespace InfluxDB.Net.Tests
         private static readonly string _fakeDbPrefix = "FakeDb";
         private static readonly string _fakeMeasurementPrefix = "FakeMeasurement";
 
-        // TODO: make async
-        protected override void FinalizeTestFixtureSetUp()
+        protected override async Task FinalizeSetUp()
         {
+            //TODO: Have this injectable so it can be executed from the test server with different data
             InfluxVersion influxVersion;
             if (!Enum.TryParse(ConfigurationManager.AppSettings.Get("version"), out influxVersion))
                 influxVersion = InfluxVersion.Auto;
@@ -61,7 +61,7 @@ namespace InfluxDB.Net.Tests
             }
         }
 
-        protected override void FinalizeTearDown()
+        protected override async Task FinalizeTearDown()
         {
             var deleteResponse = _influx.DropDatabaseAsync(_dbName).Result;
 

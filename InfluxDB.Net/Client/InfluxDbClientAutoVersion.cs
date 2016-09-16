@@ -28,7 +28,7 @@ namespace InfluxDB.Net.Client
             else if (databaseVersion.StartsWith("0.12."))
             {
                 _influxDbClient = new InfluxDbClientV012x(influxDbClientConfiguration);
-            }
+            }   
             else if (databaseVersion.StartsWith("0.11."))
             {
                 _influxDbClient = new InfluxDbClientV011x(influxDbClientConfiguration);

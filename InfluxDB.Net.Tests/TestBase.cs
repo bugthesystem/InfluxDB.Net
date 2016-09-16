@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System.Threading.Tasks;
+using Moq;
 using NUnit.Framework;
 using Ploeh.AutoFixture;
 
@@ -10,16 +11,17 @@ namespace InfluxDB.Net.Tests
     public class TestBase
     {
         [SetUp]
-        public void Setup()
+        public async Task Setup()
         {
             _mockRepository = new MockRepository(MockBehavior.Strict);
             FixtureRepository = new Fixture();
             VerifyAll = true;
-            FinalizeSetUp();
+
+            await FinalizeSetUp();
         }
 
         [TearDown]
-        public void TearDown()
+        public async Task TearDown()
         {
             if (VerifyAll)
             {
@@ -30,19 +32,19 @@ namespace InfluxDB.Net.Tests
                 _mockRepository.Verify();
             }
 
-            FinalizeTearDown();
+            await FinalizeTearDown();
         }
 
         [TestFixtureSetUp]
-        public void TestFixtureSetUp()
+        public async Task TestFixtureSetUp()
         {
-            FinalizeTestFixtureSetUp();
+            await FinalizeTestFixtureSetUp();
         }
 
         [TestFixtureTearDown]
-        public void TestFixtureTearDown()
+        public async Task TestFixtureTearDown()
         {
-            FinalizeTestFixtureTearDown();
+            await FinalizeTestFixtureTearDown();
         }
 
         private MockRepository _mockRepository;
@@ -64,19 +66,19 @@ namespace InfluxDB.Net.Tests
             customization.Customize(FixtureRepository);
         }
 
-        protected virtual void FinalizeTearDown()
+        protected virtual async Task FinalizeTearDown()
         {
         }
 
-        protected virtual void FinalizeTestFixtureTearDown()
+        protected virtual async Task FinalizeTestFixtureTearDown()
         {
         }
 
-        protected virtual void FinalizeSetUp()
+        protected virtual async Task FinalizeSetUp()
         {
         }
 
-        protected virtual void FinalizeTestFixtureSetUp()
+        protected virtual async Task FinalizeTestFixtureSetUp()
         {
         }
     }
