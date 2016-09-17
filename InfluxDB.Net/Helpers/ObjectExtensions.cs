@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Text;
 using InfluxDB.Net.Infrastructure.Influx;
@@ -13,6 +12,12 @@ namespace InfluxDB.Net.Helpers
         public static string ToJson(this object @object)
         {
             return JsonConvert.SerializeObject(@object);
+        }
+
+        public static T FromJson<T>(this string item)
+        {
+            var response = JsonConvert.DeserializeObject<T>(item);
+            return response;
         }
 
         public static T ReadAs<T>(this InfluxDbApiResponse response)

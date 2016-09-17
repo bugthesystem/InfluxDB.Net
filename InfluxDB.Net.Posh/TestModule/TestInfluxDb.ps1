@@ -12,25 +12,40 @@ $host.ui.rawui.WindowTitle = "Test InfluxDb"
 
 if($copyFiles)
 {
-	$srcPath = "..\Build\*"
-	$dstPath = ".\Modules\InfluxPS"
+	$srcPath = "..\bin\Debug\*"
+	$dstPath = ".\Modules\InfluxDb"
 	new-Item -Path ".\Modules" -ItemType:Directory -Force
-	new-Item -Path ".\Modules\InfluxPS" -ItemType:Directory -Force
-	write-host "Copy '$srcPath' to '$dstPath'"
-	copy-item $srcPath $dstPath -container -recurse -force -erroraction:Stop
+	new-Item -Path ".\Modules\InfluxDb" -ItemType:Directory -Force
+	write-host "Copy '$srcPath' to '$dstPath'" -f Yellow
+	#Try
+	#{
+		copy-item $srcPath $dstPath -container -recurse -force -erroraction:Stop
+	#}
+	#Catch
+	#{
+	#	write-host "Oups!" -f Red
+	#	write.host $_.Exception
+	#}
 }
 
-import-module .\modules\InfluxPS -force
-get-command -module:InfluxPS | select Name | ft 
+import-module .\modules\InfluxDb -force
+get-command -module:InfluxDb | select Name | ft 
 
+#Create a database connection
+$db = Open-InfluxDb -Uri:"http://...:8086" -User:"root" -Password:"root"
 
-$db = Open-InfluxDb -Uri:"http://192.168.1.107:8086" -User:"root" -Password:"root"
-$pong = Ping-InfluxDb -dbConnection:$db
+#Ping the connection
+$pong = Ping-InfluxDb -Connection:$db
 $pong
-Add-InfluxDb -dbConnection:$db -name:"TheTest"
 
-Write-InfluxDb -dbConnection:$db -dbName:"TheTest" -seriesName:"TheSeries" -columns:@("value1", "value2") -values:@(23, 45)
- 
+#Create a new database
+Add-InfluxDb -Connection:$db -Name:"TheTest"
 
+#Write measurement data to the database
+Write-InfluxDb -Connection:$db -Name:"TheTest" -Data:"{'Measurement':'SomeData','Tags':{'Tag1':'A','Tag2':'B'},'Fields':{'Val1':12,'Val2':1.2},'Precision':1,'Timestamp':null}"
+
+remove-module InfluxDb
 
 #***************************************************************************************************************
+
+pause

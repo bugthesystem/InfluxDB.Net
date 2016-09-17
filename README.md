@@ -1,6 +1,5 @@
 InfluxDB.Net
 ============
-####Update for 0.9.5 API changes
 
 >[InfluxDB](http://influxdb.com/) An open-source distributed time series database
 with no external dependencies. It is the new home for all of your metrics, events, and analytics.
@@ -13,12 +12,12 @@ A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.c
 This is a fork of [InfluxDB.Net](https://github.com/ziyasal/InfluxDB.Net/) NuGet library which currently seems to be in hibernation. I took whatever was out there (including improvements from other forks) did some refactoring on the codebase and plan on implementing the rest of the InfluxDB API.
 
 **Installation**  
-I did not create a separate NuGet for this fork so you will have to download the .sln, build it in release and add it to your project. Unit tests work, and the Influx API calls that were implemented previously seem to work fine.
+There is a nuget package for this project on [nuget.org](https://www.nuget.org/packages/InfluxDB.Net-Main/)
 
-**InfluxDB v0.9.6 and the TICK stack**  
-Since Influx released InfluxDB v0.9.6 and [announced](https://influxdata.com/blog/influxdb-the-platform-for-time-series-data/) their TICK stack, I plan on creating an umbrella NuGet which would support all components of the TICK stack.
+**Versions of InfluxDB**  
+The currently supported versions of InfluxDB is 0.9 - 0.13. When creating a connection to the database you can specify the version to use, or the *auto* configuration that starts by determening the version.
 
-####List of supported methods (More documentation available soon)
+####List of supported methods
 - [Ping](#ping)
 - [Version](#version)
 - [CreateDatabase](#create-database)
@@ -99,9 +98,33 @@ var _client = new InfluxDb("http://...:8086", "root", "root");
 ##Bugs
 If you encounter a bug, performance issue, or malfunction, please add an [Issue](https://github.com/pootzko/InfluxDB.Net/issues) with steps on how to reproduce the problem.
 
-##TODO
-- Add more tests
-- Add more documentation
+##PowerShell Cmdlet
+The *PowerShell Cmdlet* can be tested using the script *TestInfluxDb.ps1*.
+
+**Installation**  
+import-module [PATH]\InfluxDb -force
+
+**Open**  
+```
+$db = Open-InfluxDb -Uri:"http://...:8086" -User:"root" -Password:"root"
+```
+
+**Ping**  
+```
+$pong = Ping-InfluxDb -Connection:$db
+```
+
+**Add**  
+Adds a new database.
+```
+Add-InfluxDb -Connection:$db -Name:"SomeDatabase"
+```
+
+**Write**  
+*Not yet implemented*
+```
+Write-InfluxDb
+```
 
 ##License
 

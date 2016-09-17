@@ -1,46 +1,44 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PingInfluxDb.cs">
-// </copyright>
-// <summary>
-//   Pings an InfluxDb
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-
-using System.Management.Automation;
+﻿using System.Management.Automation;
+using InfluxDB.Net.Contracts;
+using InfluxDB.Net.Helpers;
 using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net.Posh
 {
-    /// <summary>
-    /// Opens a connection to an InfluxDB
-    /// </summary>
     [Cmdlet(VerbsDiagnostic.Ping, "InfluxDb")]
     public class PingInfluxDb : Cmdlet
     {
-        /// <summary>
-        /// A connection object to the InfluxDB instance
-        /// </summary>
-        [Parameter]
-        public IInfluxDb dbConnection { get; set; }
+        [Parameter(Mandatory = false)]
+        public IInfluxDb Connection { get; set; }
 
-        /// <summary>
-        /// Ping the db 
-        /// </summary>
-        /// <returns>A pong object containing status and response time</returns>
-        private Pong Ping()
-        {
-            var pong = this.dbConnection.PingAsync().Result;
+        [Parameter(Mandatory = false)]
+        public string Uri { get; set; }
 
-            return pong;
-        }
+        [Parameter(Mandatory = false)]
+        public string User { get; set; }
 
-        /// <summary>
-        /// Processes the pipeline
-        /// </summary>
+        [Parameter(Mandatory = false)]
+        public string Password { get; set; }
+
         protected override void ProcessRecord()
         {
-            var pong = this.Ping();
-            this.WriteObject(pong.ToJson());
+            Pong response;
+
+            if (Connection != null)
+            {
+                response = Connection.PingAsync().Result;
+            }
+            else if (Uri != null)
+            {
+                var db = new InfluxDb(Uri, User ?? "root", Password ?? "root");
+                response = db.PingAsync().Result;
+            }
+            else
+            {
+                throw new InvalidJobStateException("Parameter Connection or Uri has to be provided.");
+            }
+
+            WriteObject(response.ToJson());
         }
     }
 }

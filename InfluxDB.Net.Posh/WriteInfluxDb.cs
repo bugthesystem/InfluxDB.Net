@@ -1,73 +1,27 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="WriteInfluxDb.cs">
-// </copyright>
-// <summary>
-//   Writes data to an InfluxDb
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-
-using System.Management.Automation;
+﻿using System.Management.Automation;
+using InfluxDB.Net.Contracts;
+using InfluxDB.Net.Helpers;
 using InfluxDB.Net.Models;
 
 namespace InfluxDB.Net.Posh
 {
-    /// <summary>
-    /// Writes data to an InfluxDb
-    /// </summary>
     [Cmdlet(VerbsCommunications.Write, "InfluxDb")]
     public class WriteInfluxDb : Cmdlet
     {
-        /// <summary>
-        /// The connection for the InfluxDB instance
-        /// </summary>
-        [Parameter]
-        public IInfluxDb dbConnection { get; set; }
+        [Parameter(Mandatory = true)]
+        public IInfluxDb Connection { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        [Parameter]
-        public string dbName { get; set; }
+        [Parameter(Mandatory = true)]
+        public string Name { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        [Parameter]
-        public string seriesName { get; set; }
+        [Parameter(Mandatory = true)]
+        public string Data { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        [Parameter]
-        public string[] columns { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Parameter]
-        public object[] values { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public InfluxDbApiResponse Write()
-        {
-            Serie serie = new Serie.Builder(seriesName)
-                .Columns(columns)
-                .Values(values)
-                .Build();
-            InfluxDbApiResponse writeResponse = dbConnection.WriteAsync(dbName, TimeUnit.Milliseconds, serie).Result;
-            return writeResponse;
-        }
-
-        /// <summary>
-        /// Processes the pipeline
-        /// </summary>
         protected override void ProcessRecord()
         {
-            var writeResponse = this.Write();
-            this.WriteObject(writeResponse.ToJson());
+            var point = Data.FromJson<Point>();
+            var response = Connection.WriteAsync(Name, point).Result;
+            WriteObject(response.ToJson());
         }
     }
 }
