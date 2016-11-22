@@ -15,7 +15,7 @@ This is a fork of [InfluxDB.Net](https://github.com/ziyasal/InfluxDB.Net/) NuGet
 There is a nuget package for this project on [nuget.org](https://www.nuget.org/packages/InfluxDB.Net-Main/)
 
 **Versions of InfluxDB**  
-The currently supported versions of InfluxDB is 0.9 - 0.13. When creating a connection to the database you can specify the version to use, or the *auto* configuration that starts by determening the version.
+The currently supported versions of InfluxDB is 0.9 - 1.1. When creating a connection to the database you can specify the version to use, or the *auto* configuration that starts by determening the version.
 
 ####List of supported methods
 - [Ping](#ping)

@@ -17,18 +17,23 @@ namespace InfluxDB.Net.Client
         {
             _influxDbClient = new InfluxDbClientBase(influxDbClientConfiguration);
             var errorHandlers = new List<ApiResponseErrorHandlingDelegate>();
-            // TODO: needs testing - potentially bad if it's going to ping for every request
+
+            //NOTE: Only performs ping when the client is connected. (Do not use multiple connections with the "Client Auto Version" setting.)
             var result = _influxDbClient.Ping(errorHandlers).Result;
             var databaseVersion = result.Body;
 
-            if (databaseVersion.StartsWith("0.13."))
+            if (databaseVersion.StartsWith("1.1."))
+            {
+                _influxDbClient = new InfluxDbClientV013x(influxDbClientConfiguration);
+            }
+            else if (databaseVersion.StartsWith("0.13."))
             {
                 _influxDbClient = new InfluxDbClientV013x(influxDbClientConfiguration);
             }
             else if (databaseVersion.StartsWith("0.12."))
             {
                 _influxDbClient = new InfluxDbClientV012x(influxDbClientConfiguration);
-            }   
+            }
             else if (databaseVersion.StartsWith("0.11."))
             {
                 _influxDbClient = new InfluxDbClientV011x(influxDbClientConfiguration);
