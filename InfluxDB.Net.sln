@@ -23,6 +23,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluxDB.Net.Tests", "InfluxDB.Net.Tests\InfluxDB.Net.Tests.csproj", "{56B4EF11-8B2A-4862-8723-FC4368274768}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{4432DAE4-D05D-4AC6-9EB5-761A34D882A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluxDB.Sample.Console", "InfluxDB.Sample.Console\InfluxDB.Sample.Console.csproj", "{7F519002-5C7D-4D38-87FA-C4B51B8CBBAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,9 +41,16 @@ Global
 		{56B4EF11-8B2A-4862-8723-FC4368274768}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56B4EF11-8B2A-4862-8723-FC4368274768}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56B4EF11-8B2A-4862-8723-FC4368274768}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F519002-5C7D-4D38-87FA-C4B51B8CBBAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F519002-5C7D-4D38-87FA-C4B51B8CBBAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F519002-5C7D-4D38-87FA-C4B51B8CBBAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F519002-5C7D-4D38-87FA-C4B51B8CBBAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7F519002-5C7D-4D38-87FA-C4B51B8CBBAA} = {4432DAE4-D05D-4AC6-9EB5-761A34D882A4}
 	EndGlobalSection
 	GlobalSection(CodealikeProperties) = postSolution
 		SolutionGuid = 8c17e567-62f8-4eb6-bc82-a3715bfa171d

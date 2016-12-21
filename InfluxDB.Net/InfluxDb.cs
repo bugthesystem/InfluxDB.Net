@@ -55,7 +55,7 @@ namespace InfluxDB.Net
                     _influxDbClient = new InfluxDbClientV092(influxDbClientConfiguration);
                     break;
                 case InfluxVersion.v08x:
-                    throw new NotImplementedException();
+                    throw new NotSupportedException();
                 default:
                     throw new ArgumentOutOfRangeException("influxDbClientConfiguration", String.Format("Unknown version {0}.", influxDbClientConfiguration.InfluxVersion));
             }
