@@ -47,12 +47,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PingCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\InfluxDB.Net\InfluxDB.Net.csproj">
+      <Project>{9092CDD0-1585-48DE-B619-98F6FF01F8CC}</Project>
+      <Name>InfluxDB.Net</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -10,6 +10,7 @@ namespace InfluxDB.Sample.Console
         {
             var console = new ClientConsole();
             var rootCommand = new RootCommand(console);
+            rootCommand.RegisterCommand(new PingCommand());
             var engine = new CommandEngine(rootCommand);
             engine.Run(args);
         }
