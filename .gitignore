@@ -107,3 +107,9 @@ _NCrunch*/
 */TestModule/Modules/*
 
 *.orig
+
+# JetBrains IDE
+.idea/
+
+# dotnet core / VS2017
+project.lock.json
