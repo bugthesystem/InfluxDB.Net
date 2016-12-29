@@ -4,7 +4,6 @@ using System.Linq;
 using FluentAssertions;
 using InfluxDB.Net.Models;
 using NUnit.Framework;
-using Ploeh.AutoFixture;
 using System.Configuration;
 using System.Threading.Tasks;
 using InfluxDB.Net.Contracts;
