@@ -3,25 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{91B2CB56-7AB0-4AF1-A081-95525F8A754C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0A0D0D4E-3939-4CBD-BB4B-FD88FDA1228C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3FC89A26-1175-480E-8303-17565AE0AA65}"
 	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
+		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluxDB.Net", "src\InfluxDB.Net\InfluxDB.Net.csproj", "{9092CDD0-1585-48DE-B619-98F6FF01F8CC}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "InfluxDB.Net", "src\InfluxDB.Net\InfluxDB.Net.xproj", "{7F910597-F8DB-4857-B4BF-D9034C22AD0A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9B34D123-58D5-4291-8651-9231C8875A86}"
-	ProjectSection(SolutionItems) = preProject
-		build.sh = build.sh
-		circle.yml = circle.yml
-		InfluxDB.Net\InfluxDB.Net.nuspec = InfluxDB.Net\InfluxDB.Net.nuspec
-		LICENSE = LICENSE
-		README.md = README.md
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7F6F50BA-CB75-4D33-A2FE-6F4AD7F50A80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfluxDB.Net.Tests", "test\InfluxDB.Net.Tests\InfluxDB.Net.Tests.csproj", "{56B4EF11-8B2A-4862-8723-FC4368274768}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "InfluxDB.Net.Tests", "test\InfluxDB.Net.Tests\InfluxDB.Net.Tests.xproj", "{66194DEE-47AD-45F3-8762-34AFB0312989}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,19 +22,20 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9092CDD0-1585-48DE-B619-98F6FF01F8CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9092CDD0-1585-48DE-B619-98F6FF01F8CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9092CDD0-1585-48DE-B619-98F6FF01F8CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9092CDD0-1585-48DE-B619-98F6FF01F8CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{56B4EF11-8B2A-4862-8723-FC4368274768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{56B4EF11-8B2A-4862-8723-FC4368274768}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{56B4EF11-8B2A-4862-8723-FC4368274768}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{56B4EF11-8B2A-4862-8723-FC4368274768}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F910597-F8DB-4857-B4BF-D9034C22AD0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F910597-F8DB-4857-B4BF-D9034C22AD0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F910597-F8DB-4857-B4BF-D9034C22AD0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F910597-F8DB-4857-B4BF-D9034C22AD0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66194DEE-47AD-45F3-8762-34AFB0312989}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66194DEE-47AD-45F3-8762-34AFB0312989}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66194DEE-47AD-45F3-8762-34AFB0312989}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66194DEE-47AD-45F3-8762-34AFB0312989}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(CodealikeProperties) = postSolution
-		SolutionGuid = 8c17e567-62f8-4eb6-bc82-a3715bfa171d
+	GlobalSection(NestedProjects) = preSolution
+		{7F910597-F8DB-4857-B4BF-D9034C22AD0A} = {0A0D0D4E-3939-4CBD-BB4B-FD88FDA1228C}
+		{66194DEE-47AD-45F3-8762-34AFB0312989} = {7F6F50BA-CB75-4D33-A2FE-6F4AD7F50A80}
 	EndGlobalSection
 EndGlobal
