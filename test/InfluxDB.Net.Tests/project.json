@@ -1,9 +1,19 @@
 {
   "version": "1.0.0-*",
 
+  "buildOptions": {
+    "copyToOutput": {
+      "include": "appsettings.json"
+    },
+    "emitEntryPoint": true
+  },
+
   "dependencies": {
     "FluentAssertions": "4.18.0",
     "InfluxDB.Net": "1.0.0-*",
+    "Microsoft.Extensions.Configuration": "1.1.0",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0",
+    "Microsoft.Extensions.Configuration.Json": "1.1.0",
     "Moq": "4.6.38-alpha",
     "NETStandard.Library": "1.6.0",
     "NUnit": "3.5.0",

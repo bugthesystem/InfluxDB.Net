@@ -4,12 +4,13 @@ using System.Linq;
 using FluentAssertions;
 using InfluxDB.Net.Models;
 using NUnit.Framework;
-using System.Configuration;
+using System.IO;
 using System.Threading.Tasks;
 using InfluxDB.Net.Contracts;
 using InfluxDB.Net.Helpers;
 using InfluxDB.Net.Infrastructure.Influx;
 using InfluxDB.Net.Enums;
+using Microsoft.Extensions.Configuration;
 
 namespace InfluxDB.Net.Tests
 {
@@ -19,18 +20,26 @@ namespace InfluxDB.Net.Tests
         private string _dbName = String.Empty;
         private static readonly string _fakeDbPrefix = "FakeDb";
         private static readonly string _fakeMeasurementPrefix = "FakeMeasurement";
+        private static IConfigurationRoot Configuration { get; set; }
 
         protected override async Task FinalizeSetUp()
         {
             //TODO: Have this injectable so it can be executed from the test server with different data
+            var builder = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetCurrentDirectory())
+                        .AddJsonFile("appsettings.json");
+
+            Configuration = builder.Build();
+
             InfluxVersion influxVersion;
-            if (!Enum.TryParse(ConfigurationManager.AppSettings.Get("version"), out influxVersion))
+
+            if (!Enum.TryParse(Configuration["InfluxSettings:Version"], out influxVersion))
                 influxVersion = InfluxVersion.Auto;
 
             _influx = new InfluxDb(
-                ConfigurationManager.AppSettings.Get("url"),
-                ConfigurationManager.AppSettings.Get("username"),
-                ConfigurationManager.AppSettings.Get("password"),
+                Configuration["InfluxSettings:Url"],
+                Configuration["InfluxSettings:Username"],
+                Configuration["InfluxSettings:Password"],
                 influxVersion);
 
             _influx.Should().NotBeNull();
