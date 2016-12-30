@@ -4,8 +4,7 @@
   "buildOptions": {
     "copyToOutput": {
       "include": "appsettings.json"
-    },
-    "emitEntryPoint": true
+    }
   },
 
   "dependencies": {
