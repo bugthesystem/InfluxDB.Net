@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
-using Ploeh.AutoFixture;
 
 namespace InfluxDB.Net.Tests
 {
@@ -14,7 +13,6 @@ namespace InfluxDB.Net.Tests
         public async Task Setup()
         {
             _mockRepository = new MockRepository(MockBehavior.Strict);
-            FixtureRepository = new Fixture();
             VerifyAll = true;
 
             await FinalizeSetUp();
@@ -48,7 +46,7 @@ namespace InfluxDB.Net.Tests
         }
 
         private MockRepository _mockRepository;
-        protected IFixture FixtureRepository { get; set; }
+
         protected bool VerifyAll { get; set; }
 
         protected Mock<T> MockFor<T>() where T : class
@@ -59,11 +57,6 @@ namespace InfluxDB.Net.Tests
         protected Mock<T> MockFor<T>(params object[] @params) where T : class
         {
             return _mockRepository.Create<T>(@params);
-        }
-
-        protected void EnableCustomization(ICustomization customization)
-        {
-            customization.Customize(FixtureRepository);
         }
 
         protected virtual async Task FinalizeTearDown()
