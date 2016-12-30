@@ -19,6 +19,8 @@
     "NUnit.Console": "3.5.0"
   },
 
+  "testRunner": "nunit",
+
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
