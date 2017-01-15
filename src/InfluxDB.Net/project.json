@@ -1,6 +1,18 @@
 ﻿{
-  "version": "1.0.0-*",
-
+  "version": "1.1.0-*",
+  "name": "InfluxDB.Net.Core",
+  "title": "InfluxDB.Net Core",
+  "packOptions" : {
+    "summary": "Portable .NET Core client for InfluxDB.",
+	"tags": ["influx", "influxdb"],
+    "owners": ["ziyasal", "poxet"],
+    "licenseUrl": "https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE",
+    "projectUrl": "https://github.com/ziyasal/InfluxDB.Net",
+    "requireLicenseAcceptance": "false",
+    "description": "Portable .NET Core client for InfluxDB. It is fully asynchronous and non-blocking way to interact with InfluxDB programmatically.",
+    "copyright": "",
+  },
+  
   "dependencies": {
     "NETStandard.Library": "1.6.0",
     "Newtonsoft.Json": "9.0.1"
