@@ -6,13 +6,10 @@ with no external dependencies. It is the new home for all of your metrics, event
 
 A Portable .NET library to access the REST API of a [InfluxDB](http://influxdb.com/) database.
 
-[![Support via Gratipay](https://cdn.rawgit.com/gratipay/gratipay-badge/2.3.0/dist/gratipay.svg)](https://gratipay.com/ziyasal/)  
-
-**Original NuGet**  
-This is a fork of [InfluxDB.Net](https://github.com/ziyasal/InfluxDB.Net/) NuGet library which currently seems to be in hibernation. I took whatever was out there (including improvements from other forks) did some refactoring on the codebase and plan on implementing the rest of the InfluxDB API.
-
 **Installation**  
-There is a nuget package for this project on [nuget.org](https://www.nuget.org/packages/InfluxDB.Net-Main/)
+```sh
+Install-Package InfluxDB.Net-Main
+```
 
 **Versions of InfluxDB**  
 The currently supported versions of InfluxDB is 0.9 - 1.1. When creating a connection to the database you can specify the version to use, or the *auto* configuration that starts by determening the version.
@@ -128,4 +125,4 @@ Write-InfluxDb
 
 ##License
 
-Code and documentation are available according to the *MIT* License (see [LICENSE](https://github.com/pootzko/InfluxDB.Net/blob/master/LICENSE)).
+Code and documentation are available according to the *MIT* License (see [LICENSE](https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE)).
