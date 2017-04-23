@@ -33,6 +33,9 @@ namespace InfluxDB.Net
                 case InfluxVersion.Auto:
                     _influxDbClient = new InfluxDbClientAutoVersion(influxDbClientConfiguration);
                     break;
+                case InfluxVersion.v013x:
+                    _influxDbClient = new InfluxDbClientV013x(influxDbClientConfiguration);
+                    break;
                 case InfluxVersion.v012x:
                     _influxDbClient = new InfluxDbClientV012x(influxDbClientConfiguration);
                     break;
