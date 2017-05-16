@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace InfluxDB.Net.Models
 {
@@ -9,6 +7,8 @@ namespace InfluxDB.Net.Models
         public Serie()
         {
             Tags = new Dictionary<string, string>();
+            Columns = new string[] { };
+            Values = new object[][] { };
         }
 
         private Serie(string name)

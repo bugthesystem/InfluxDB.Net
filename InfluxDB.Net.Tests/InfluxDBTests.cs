@@ -195,6 +195,24 @@ namespace InfluxDB.Net.Tests
         }
 
         [Test]
+        public async Task DbQuery_Multiple_ShouldReturnTwoSeries()
+        {
+            // Arrange
+            var points = CreateMockPoints(1);
+            var writeResponse = await _influx.WriteAsync(_dbName, points);
+            writeResponse.Success.Should().BeTrue();
+
+            // Act
+            var query1 = String.Format("select * from \"{0}\"", points.Single().Measurement);
+            var query2 = String.Format("select * from \"{0}\"", points.Single().Measurement);
+            var queries = new List<string> { query1, query2 };
+            var queryResponse = await _influx.QueryAsync(_dbName, queries);
+
+            // Assert
+            queryResponse.Count.Should().Be(queries.Count);
+        }
+
+        [Test]
         public void Formats_Point()
         {
             const string value = @"\=&,""*"" -";
