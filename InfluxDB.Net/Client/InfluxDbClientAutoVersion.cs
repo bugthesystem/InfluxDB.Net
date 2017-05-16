@@ -94,6 +94,11 @@ namespace InfluxDB.Net.Client
             return await _influxDbClient.Query(errorHandlers, name, query);
         }
 
+        public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, List<string> queries)
+        {
+            return await _influxDbClient.Query(errorHandlers, name, queries);
+        }
+
         #endregion Basic Querying
 
         #region Continuous Queries

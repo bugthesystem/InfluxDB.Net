@@ -27,6 +27,8 @@ namespace InfluxDB.Net.Contracts
 
         Task<List<Serie>> QueryAsync(string database, string query);
 
+        Task<List<Serie>> QueryAsync(string database, List<string> queries);
+
         #endregion Basic Querying
 
         #region Continuous Queries

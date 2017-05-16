@@ -143,7 +143,7 @@ namespace InfluxDB.Net
             return result;
         }
 
-        /// <summary>Execute a query agains a database.</summary>
+        /// <summary>Execute a query against a database.</summary>
         /// <param name="database">The name of the database.</param>
         /// <param name="query">The query to execute. For language specification please see
         /// <a href="https://influxdb.com/docs/v0.9/concepts/reading_and_writing_data.html">InfluxDb documentation</a>.</param>
@@ -167,6 +167,34 @@ namespace InfluxDB.Net
             }
 
             var result = queryResult.Results.Single().Series;
+
+            return result != null ? result.ToList() : new List<Serie>();
+        }
+
+        /// <summary>Execute queries against a database.</summary>
+        /// <param name="database">The name of the database.</param>
+        /// <param name="queries">Queries to execute. For language specification please see
+        /// <a href="https://influxdb.com/docs/v0.9/concepts/reading_and_writing_data.html">InfluxDb documentation</a>.</param>
+        /// <returns>A list of Series which matched the queries.</returns>
+        /// <exception cref="InfluxDbApiException"></exception>
+        public async Task<List<Serie>> QueryAsync(string database, List<string> queries)
+        {
+            InfluxDbApiResponse response = await _influxDbClient.Query(NoErrorHandlers, database, queries);
+
+            var queryResult = response.ReadAs<QueryResult>();
+
+            Validate.NotNull(queryResult, "queryResult");
+            Validate.NotNull(queryResult.Results, "queryResult.Results");
+
+            // Apparently a 200 OK can return an error in the results
+            // https://github.com/influxdb/influxdb/pull/1813
+            var errors = queryResult.Results.Where(res => res.Error != null).Select(res => res.Error).ToList();
+            if (errors.Any())
+            {
+                throw new InfluxDbApiException(System.Net.HttpStatusCode.BadRequest, string.Join(", ", errors));
+            }
+
+            var result = queryResult.Results.SelectMany(res => res.Series.DefaultIfEmpty(new Serie()));
 
             return result != null ? result.ToList() : new List<Serie>();
         }

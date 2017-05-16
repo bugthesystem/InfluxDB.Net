@@ -8,6 +8,11 @@
 
     public class Result
     {
+        public Result()
+        {
+            Series = new Serie[] {};    
+        }
+
         public string Error { get; set; }
         public Serie[] Series { get; set; }
     }
