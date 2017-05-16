@@ -111,6 +111,22 @@ namespace InfluxDB.Net.Client
                 requestTimeout: _configuration.RequestTimeout);
         }
 
+        /// <summary>Queries the endpoint.</summary>
+        /// <param name="errorHandlers">The error handlers.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="queries">The query list.</param>
+        /// <returns></returns>
+        public async Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, List<string> queries)
+        {
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
+                new Dictionary<string, string>
+                {
+                    {QueryParams.Db, name},
+                    {QueryParams.Query, string.Join("%3B", queries)}
+                },
+                requestTimeout: _configuration.RequestTimeout);
+        }
+
         #endregion Basic Querying
 
         #region Continuous Queries
@@ -288,7 +304,7 @@ namespace InfluxDB.Net.Client
 
         private async Task<InfluxDbApiResponse> RequestAsync(
             IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,
-            HttpMethod method, 
+            HttpMethod method,
             string path,
             HttpContent content = null,
             Dictionary<string, string> extraParams = null,
@@ -331,12 +347,12 @@ namespace InfluxDB.Net.Client
 
         private async Task<HttpResponseMessage> RequestInnerAsync(
             TimeSpan? requestTimeout,
-            HttpCompletionOption completionOption, 
-            CancellationToken cancellationToken, 
-            HttpMethod method, 
+            HttpCompletionOption completionOption,
+            CancellationToken cancellationToken,
+            HttpMethod method,
             string path,
-            HttpContent content = null, 
-            Dictionary<string, string> extraParams = null, 
+            HttpContent content = null,
+            Dictionary<string, string> extraParams = null,
             bool includeAuthToQuery = true)
         {
             HttpClient client = GetHttpClient();

@@ -25,6 +25,8 @@ namespace InfluxDB.Net.Contracts
 
         Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, string query);
 
+        Task<InfluxDbApiResponse> Query(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string name, List<string> queries);
+
         #endregion Basic Querying
 
         #region Continuous Queries
