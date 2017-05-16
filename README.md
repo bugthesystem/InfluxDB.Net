@@ -14,7 +14,7 @@ Install-Package InfluxDB.Net-Main
 **Versions of InfluxDB**  
 The currently supported versions of InfluxDB is 0.9 - 1.1. When creating a connection to the database you can specify the version to use, or the *auto* configuration that starts by determening the version.
 
-####List of supported methods
+#### List of supported methods
 - [Ping](#ping)
 - [Version](#version)
 - [CreateDatabase](#create-database)
@@ -92,7 +92,7 @@ var _client = new InfluxDb("http://...:8086", "root", "root");
  List<Serie> series = await _client.QueryAsync("MyDb", "select * from testSeries"), TimeUnit.Milliseconds);
 ```
 
-##Bugs
+## Bugs
 If you encounter a bug, performance issue, or malfunction, please add an [Issue](https://github.com/pootzko/InfluxDB.Net/issues) with steps on how to reproduce the problem.
 
 ##PowerShell Cmdlet
@@ -123,6 +123,6 @@ Add-InfluxDb -Connection:$db -Name:"SomeDatabase"
 Write-InfluxDb
 ```
 
-##License
+## License
 
 Code and documentation are available according to the *MIT* License (see [LICENSE](https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE)).
