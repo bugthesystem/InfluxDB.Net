@@ -194,9 +194,9 @@ namespace InfluxDB.Net
                 throw new InfluxDbApiException(System.Net.HttpStatusCode.BadRequest, string.Join(", ", errors));
             }
 
-            var result = queryResult.Results.SelectMany(res => res.Series.DefaultIfEmpty(new Serie()));
+            var result = queryResult.Results.SelectMany(res => res.Series == null ? new List<Serie> { new Serie() } : res.Series.DefaultIfEmpty(new Serie()));
 
-            return result != null ? result.ToList() : new List<Serie>();
+            return result.ToList();
         }
 
         #endregion Basic Querying
