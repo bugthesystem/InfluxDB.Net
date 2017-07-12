@@ -74,7 +74,7 @@ InfluxDbApiDeleteResponse deleteResponse = await _client.DeleteDatabaseAsync("My
 ## Describe Databases
 ```csharp
 var _client = new InfluxDb("http://...:8086", "root", "root");
-List<Database> databases = await _client.DescribeDatabasesAsync();
+List<Database> databases = await _client.ShowDatabasesAsync();
 ```
 ## Write
 ```csharp
