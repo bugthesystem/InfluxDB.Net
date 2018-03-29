@@ -17,6 +17,8 @@ namespace InfluxDB.Net.Infrastructure.Configuration
 
         public TimeSpan? RequestTimeout { get; private set; }
 
+        private readonly HttpClient _httpClient;
+
         public InfluxDbClientConfiguration(Uri endpoint, string username, string password, InfluxVersion influxVersion, TimeSpan? requestTimeout)
         {
             Validate.NotNull(endpoint, "Endpoint may not be null or empty.");
@@ -27,6 +29,7 @@ namespace InfluxDB.Net.Infrastructure.Configuration
             InfluxVersion = influxVersion;
             EndpointBaseUri = SanitizeEndpoint(endpoint, false);
             RequestTimeout = requestTimeout;
+            _httpClient = new HttpClient();
         }
 
         private static Uri SanitizeEndpoint(Uri endpoint, bool isTls)
@@ -48,7 +51,7 @@ namespace InfluxDB.Net.Infrastructure.Configuration
 
         public HttpClient BuildHttpClient()
         {
-            return new HttpClient();
+            return _httpClient;
         }
     }
 }
