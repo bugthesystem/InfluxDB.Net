@@ -2,10 +2,10 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>InfluxDB.Net-Main</id>
-    <version>1.0.0</version>
+    <version>1.0.47</version>
     <title>InfluxDB.Net Main</title>
-    <authors>Ziya SARIKAYA, Daniel Bohlin</authors>
-    <owners>ziyasal, poxet</owners>
+    <authors>Ziya SARIKAYA, Daniel Bohlin, Adam Schaible</authors>
+    <owners>ziyasal, poxet, aschaible</owners>
     <licenseUrl>https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/ziyasal/InfluxDB.Net</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -15,7 +15,7 @@
     </description>
     <summary>Portable .NET client for InfluxDB.</summary>
     <copyright />
-    <releaseNotes>Added explicit support for version 1.1.x.</releaseNotes>
+    <releaseNotes>Improved usage of HttpClient to prevent socket exhaustion and memory leaks.</releaseNotes>
     <dependencies>
       <dependency id="Microsoft.Bcl.Async" version="1.0.168" />
       <dependency id="Newtonsoft.Json" version="6.0.5" />
