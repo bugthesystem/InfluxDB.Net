@@ -127,7 +127,3 @@ Add-InfluxDb -Connection:$db -Name:"SomeDatabase"
 ```
 Write-InfluxDb
 ```
-
-## License
-
-Code and documentation are available according to the *MIT* License (see [LICENSE](https://github.com/ziyasal/InfluxDB.Net/blob/master/LICENSE)).
