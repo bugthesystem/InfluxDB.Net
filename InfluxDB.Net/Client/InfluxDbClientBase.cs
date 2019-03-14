@@ -131,9 +131,15 @@ namespace InfluxDB.Net.Client
 
         #region Continuous Queries
 
-        public Task<InfluxDbApiResponse> GetContinuousQueries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
+        public async Task<InfluxDbApiResponse> GetContinuousQueries(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database)
         {
-            throw new NotImplementedException();
+            return await RequestAsync(errorHandlers, HttpMethod.Get, "query", null,
+                new Dictionary<string, string>
+                {
+                    {QueryParams.Db, database},
+                    {QueryParams.Query, "SHOW CONTINUOUS QUERIES"}
+                },
+                requestTimeout: _configuration.RequestTimeout);
         }
 
         public Task<InfluxDbApiResponse> DeleteContinuousQuery(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, string database, int id)
